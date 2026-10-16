@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { ArrowUpRight, Mail } from "lucide-react";
-import { initials, type Member } from "@/data/members";
+import { initials, type Member } from "@/lib/members";
 import { Hud } from "@/components/hud";
 import { cn } from "@/lib/utils";
+
+const FLOW = [0.65, 0, 0.35, 1] as const;
 
 const query = "(min-width: 768px)";
 const subscribe = (cb: () => void) => {
@@ -24,35 +26,44 @@ const useDesktop = () =>
 
 const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.075, delayChildren: 0.22 } },
+  show: { transition: { staggerChildren: 0.1, delayChildren: 0.4 } },
 };
 const rise: Variants = {
   hidden: { opacity: 0, y: 26 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.2, 0.7, 0.2, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: FLOW } },
 };
 // text that slides up out of a mask
 const mask: Variants = {
   hidden: { y: "108%" },
-  show: { y: 0, transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] } },
+  show: { y: 0, transition: { duration: 0.9, ease: FLOW } },
 };
 
 // Expanding panels: the active panel grows while the rest compress into
-// labelled slats. When a panel opens, its colour block fills, an accent
-// bar rises along the edge and the content builds in piece by piece.
-// Below the md breakpoint every panel is shown open and stacked.
+// labelled slats. The width change is a slow ease-in-out, a short hover
+// delay stops it thrashing when the pointer sweeps across several tabs, and
+// once a panel is open its colour block fills, an accent bar rises along
+// the edge and the content builds in piece by piece.
+// Below the md breakpoint every panel is shown open, stacked.
 export function PeopleStrip({ people }: { people: Member[] }) {
-  const [active, setActive] = useState(2);
+  const [active, setActive] = useState(Math.min(2, people.length - 1));
   const desktop = useDesktop();
   const reduce = useReducedMotion();
+  const intent = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const choose = (i: number, delay = 140) => {
+    clearTimeout(intent.current);
+    intent.current = setTimeout(() => setActive(i), delay);
+  };
 
   return (
     <div
-      className="grid gap-px border-y border-ink/20 bg-ink/20 md:h-[30rem] md:[grid-template-columns:var(--cols)] md:transition-[grid-template-columns] md:duration-[650ms] md:ease-[cubic-bezier(.22,.8,.2,1)]"
+      className="grid gap-px border-y border-ink/20 bg-ink/20 md:h-[30rem] md:[grid-template-columns:var(--cols)] md:transition-[grid-template-columns] md:duration-[1100ms] md:ease-flow"
       style={
         {
           "--cols": people.map((_, i) => (i === active ? "3.4fr" : "1fr")).join(" "),
         } as React.CSSProperties
       }
+      onMouseLeave={() => clearTimeout(intent.current)}
     >
       {people.map((m, i) => {
         const open = i === active;
@@ -61,11 +72,11 @@ export function PeopleStrip({ people }: { people: Member[] }) {
           <Link
             key={m.slug}
             href={`/members?m=${m.slug}`}
-            onMouseEnter={() => setActive(i)}
-            onFocus={() => setActive(i)}
+            onMouseEnter={() => choose(i)}
+            onFocus={() => choose(i, 0)}
             aria-label={`${m.name}, ${m.role}`}
             className={cn(
-              "group relative flex min-h-48 flex-col justify-between overflow-hidden p-5 transition-colors duration-500",
+              "group relative flex min-h-48 flex-col justify-between overflow-hidden p-5 transition-colors duration-[900ms] ease-flow",
               open ? "bg-paper" : "bg-paper-raised hover:bg-paper-sunken",
             )}
           >
@@ -75,7 +86,7 @@ export function PeopleStrip({ people }: { people: Member[] }) {
               className="absolute inset-y-0 left-0 hidden w-1 origin-bottom bg-clay md:block"
               initial={false}
               animate={{ scaleY: open ? 1 : 0 }}
-              transition={{ duration: reduce ? 0 : 0.55, ease: [0.22, 0.8, 0.2, 1] }}
+              transition={{ duration: reduce ? 0 : 1, ease: FLOW }}
             />
 
             <div className="flex items-start justify-between gap-3">
@@ -88,14 +99,14 @@ export function PeopleStrip({ people }: { people: Member[] }) {
                   rotate: open && desktop && !reduce ? [0, -8, 0] : 0,
                   scale: open && desktop && !reduce ? [1, 1.14, 1] : 1,
                 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.9, ease: FLOW }}
               >
                 {initials(m.name)}
               </motion.span>
               <ArrowUpRight
                 aria-hidden
                 className={cn(
-                  "size-5 transition-all duration-300",
+                  "size-5 transition-all duration-700 ease-flow",
                   open ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0 md:opacity-30",
                 )}
               />
@@ -105,9 +116,9 @@ export function PeopleStrip({ people }: { people: Member[] }) {
             <span
               aria-hidden
               className={cn(
-                "absolute bottom-5 left-5 hidden font-display text-2xl leading-none transition-all duration-300 md:block",
+                "absolute bottom-5 left-5 hidden font-display text-2xl leading-none transition-all duration-700 ease-flow md:block",
                 "[writing-mode:vertical-rl] rotate-180",
-                open ? "translate-y-3 opacity-0" : "opacity-100",
+                open ? "translate-y-3 opacity-0" : "opacity-100 delay-300",
               )}
             >
               {m.name}
@@ -120,7 +131,7 @@ export function PeopleStrip({ people }: { people: Member[] }) {
                   variants={stagger}
                   initial={desktop && !reduce ? "hidden" : false}
                   animate="show"
-                  exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                  exit={{ opacity: 0, transition: { duration: 0.35, ease: FLOW } }}
                   className="md:absolute md:inset-x-5 md:bottom-5"
                 >
                   {desktop && (
@@ -133,11 +144,15 @@ export function PeopleStrip({ people }: { people: Member[] }) {
                           scale: 1,
                           rotate: 0,
                           x: 0,
-                          transition: { type: "spring", stiffness: 160, damping: 13, delay: 0.3 },
+                          transition: { type: "spring", stiffness: 90, damping: 15, delay: 0.5 },
                         },
                       }}
                     >
-                      <Image src={m.art} alt="" width={120} height={120} className="size-28 object-contain" />
+                      {m.photo ? (
+                        <Image src={m.photo} alt="" width={112} height={112} className="size-28 object-cover" />
+                      ) : (
+                        <Image src={m.art} alt="" width={120} height={120} className="size-28 object-contain" />
+                      )}
                     </motion.div>
                   )}
                   <motion.div variants={rise}>

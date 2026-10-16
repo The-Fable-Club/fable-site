@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { club } from "@/data/club";
+import type { Club } from "@/lib/content";
 import { Hud, Ph } from "@/components/hud";
 
 const cols = [
@@ -17,11 +17,12 @@ const cols = [
     links: [
       { label: "Apply to the club", href: "/join" },
       { label: "Current events", href: "/events#current" },
+      { label: "Contact", href: "/#contact" },
     ],
   },
 ] as const;
 
-export function Footer() {
+export function Footer({ club }: { club: Club }) {
   return (
     <footer className="bg-night text-night-soft">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:grid-cols-[1.6fr_1fr_1fr_1fr] md:px-12">
@@ -39,7 +40,7 @@ export function Footer() {
             <ul className="mt-4 space-y-2.5">
               {c.links.map((l) => (
                 <li key={l.label}>
-                  <Link href={l.href} className="text-sm transition-colors hover:text-paper">
+                  <Link href={l.href} className="text-sm transition-colors duration-500 ease-flow hover:text-paper">
                     {l.label}
                   </Link>
                 </li>
@@ -52,13 +53,13 @@ export function Footer() {
           <Hud className="text-night-faint">Contact</Hud>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li>
-              <a href={`mailto:${club.contactEmail}`} className="transition-colors hover:text-paper">
+              <a href={`mailto:${club.contactEmail}`} className="transition-colors duration-500 ease-flow hover:text-paper">
                 {club.contactEmail}
               </a>
             </li>
             {club.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} className="transition-colors hover:text-paper">
+                <a href={s.href} className="transition-colors duration-500 ease-flow hover:text-paper">
                   {s.label}
                 </a>
               </li>
@@ -68,7 +69,9 @@ export function Footer() {
       </div>
       <div className="border-t border-paper/10">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-night-faint md:flex-row md:justify-between md:px-12">
-          <Hud>© 2026 {club.name} · {club.institution}</Hud>
+          <Hud>
+            © 2026 {club.name} · {club.institution}
+          </Hud>
           <Hud>{club.disclaimer}</Hud>
         </div>
       </div>

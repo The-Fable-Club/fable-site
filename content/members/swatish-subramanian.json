@@ -1,0 +1,19 @@
+{
+  "name": "Swatish Subramanian",
+  "role": "Chairperson",
+  "group": "Board",
+  "order": 30,
+  "department": "Placeholder department",
+  "year": "Placeholder year",
+  "bio": "Placeholder bio. Sets the club’s direction for the year and chairs the board. Ask about partnerships, the flagship hackathon or starting something new.",
+  "focus": [
+    "Direction",
+    "Partnerships",
+    "Hackathon"
+  ],
+  "email": "chair@thefableclub.example",
+  "linkedin": "#",
+  "github": "#",
+  "art": "steps",
+  "photo": null
+}

@@ -141,3 +141,23 @@ export function Frame({
     </div>
   );
 }
+
+/** High-contrast arrow / icon button. Solid fill so it never blends into its background. */
+export function ArrowBtn({
+  tone = "ink",
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { tone?: "ink" | "paper" }) {
+  return (
+    <button
+      {...props}
+      className={cn(
+        "grid size-11 shrink-0 place-items-center transition-colors duration-500 ease-flow disabled:cursor-not-allowed",
+        tone === "ink"
+          ? "bg-ink text-paper hover:bg-clay-deep disabled:bg-ink/25 disabled:text-paper/70 disabled:hover:bg-ink/25"
+          : "bg-paper text-ink hover:bg-clay disabled:bg-paper/25 disabled:text-ink/60 disabled:hover:bg-paper/25",
+        className,
+      )}
+    />
+  );
+}

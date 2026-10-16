@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ------------------------------------------------------------------
+   The Fable Club — design tokens
+   Palette and type come from the TFC prototype (_reference/TFC-Web).
+   Layout language is borrowed from the Endfield reference
+   (see _reference/endfield-notes.md): fixed icon rail, full-height
+   stages, flat banner strips, sharp corners, HUD-style micro labels.
+------------------------------------------------------------------- */
+
+@theme inline {
+  --font-sans: var(--f-sans), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-serif: var(--f-serif), "Iowan Old Style", Georgia, serif;
+  --font-display: var(--f-display), "Iowan Old Style", Georgia, serif;
+  --font-heading: var(--f-display), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--f-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-paper: #faf9f5;
+  --color-paper-raised: #f0eee6;
+  --color-paper-sunken: #f5f4ed;
+  --color-paper-field: #e8e6dc;
+  --color-ink: #141413;
+  --color-ink-soft: #3d3d3a;
+  --color-ink-faint: #73726c;
+  --color-night: #262624;
+  --color-night-raised: #30302e;
+  --color-night-sunken: #1f1e1d;
+  --color-night-soft: #c2c0b6;
+  --color-night-faint: #9c9a92;
+  --color-clay: #d97757;
+  --color-clay-deep: #c6613f;
+  --color-kraft: #d4a27f;
+  --color-manilla: #ebdbbc;
+  --color-oat: #e3dacc;
+  --color-sky: #6a9bcc;
+  --color-olive: #788c5d;
+  --color-heather: #ccccdc;
+  --color-cactus: #bcd1ca;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  --text-hud: 0.6875rem;
+}
+
+:root {
+  --radius: 0px;
+  --background: #faf9f5;
+  --foreground: #141413;
+  --card: #f0eee6;
+  --card-foreground: #141413;
+  --popover: #faf9f5;
+  --popover-foreground: #141413;
+  --primary: #141413;
+  --primary-foreground: #faf9f5;
+  --secondary: #e8e6dc;
+  --secondary-foreground: #141413;
+  --muted: #f0eee6;
+  --muted-foreground: #73726c;
+  --accent: #d97757;
+  --accent-foreground: #141413;
+  --destructive: #b3261e;
+  --border: #d8d5c8;
+  --input: #bdbaac;
+  --ring: #d97757;
+
+  --rail-w: 4.25rem;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-paper);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-manilla);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 3px;
+}
+
+/* Rail offset: desktop = left rail, mobile = bottom bar */
+.with-rail {
+  padding-left: var(--rail-w);
+}
+@media (max-width: 767px) {
+  .with-rail {
+    padding-left: 0;
+    padding-bottom: 4rem;
+  }
+}
+
+/* HUD micro label (Endfield-style tiny technical captions) */
+.hud {
+  font-family: var(--font-mono);
+  font-size: var(--text-hud);
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+}
+
+/* Placeholder marker — shown wherever content is not final */
+.ph-underline {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-clay) 0 4px,
+    transparent 4px 7px
+  );
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+}
+
+/* Hero idle motion for the sprout nodes */
+@keyframes node-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

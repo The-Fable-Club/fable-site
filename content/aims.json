@@ -1,0 +1,29 @@
+{
+  "aims": [
+    {
+      "title": "Teach Claude for everything",
+      "body": "Writing, research, studying, coding and everyday problem-solving: the whole range of work a student actually does, not one narrow use case.",
+      "model": "pages"
+    },
+    {
+      "title": "Deliver Anthropic’s own curriculum",
+      "body": "We work through Anthropic Academy together in guided labs: AI Fluency, Claude for daily work, Claude Code, and agents with MCP.",
+      "model": "book"
+    },
+    {
+      "title": "Run a structured build programme",
+      "body": "Biweekly hands-on sessions and ten events a year, so every member ships real, working projects instead of collecting notes.",
+      "model": "blocks"
+    },
+    {
+      "title": "Build a portfolio and a placement pipeline",
+      "body": "Club projects become resume lines, mock-interview material and, in time, internship and placement outcomes.",
+      "model": "steps"
+    },
+    {
+      "title": "Grow campus-wide visibility",
+      "body": "A flagship hackathon open to every student on campus, and a year-end demo day where members show what they built.",
+      "model": "network"
+    }
+  ]
+}

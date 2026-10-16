@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHead, Ph } from "@/components/hud";
 import { MembersGrid } from "@/components/members-grid";
-import { members } from "@/data/members";
+import { getContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Members",
   description: "The faculty coordinators, board and leads of The Fable Club, with contact details.",
 };
 
-export default function MembersPage() {
+export default async function MembersPage() {
+  const { members } = await getContent();
   return (
     <>
       <PageHead

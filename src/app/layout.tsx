@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Rail } from "@/components/rail";
-import { Footer } from "@/components/footer";
-import { club } from "@/data/club";
 
 // Anthropic type family, supplied by the club (see src/fonts).
 const sans = localFont({
@@ -37,12 +34,15 @@ const mono = localFont({
   src: [{ path: "../fonts/mono-regular.otf", weight: "400", style: "normal" }],
 });
 
+const description =
+  "The Fable Club is a student-led AI learning and building community at VIT Chennai, focused on Claude.";
+
 export const metadata: Metadata = {
   title: {
-    default: `${club.name} — A Claude club at ${club.institution}`,
-    template: `%s — ${club.name}`,
+    default: "The Fable Club — A Claude club at VIT Chennai",
+    template: "%s — The Fable Club",
   },
-  description: club.description,
+  description,
 };
 
 export const viewport: Viewport = {
@@ -55,19 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${sans.variable} ${serif.variable} ${display.variable} ${mono.variable}`}
     >
-      <body className="min-h-dvh">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-20 focus:top-3 focus:z-[100] focus:bg-ink focus:px-3 focus:py-2 focus:text-paper"
-        >
-          Skip to content
-        </a>
-        <Rail />
-        <div className="with-rail">
-          <main id="main">{children}</main>
-          <Footer />
-        </div>
-      </body>
+      <body className="min-h-dvh">{children}</body>
     </html>
   );
 }

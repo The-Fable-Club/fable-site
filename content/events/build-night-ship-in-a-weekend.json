@@ -1,0 +1,22 @@
+{
+  "title": "Build Night: Ship in a Weekend",
+  "kind": "Build night",
+  "phase": "2",
+  "status": "auto",
+  "start": "2027-01-23",
+  "end": "2027-01-24",
+  "time": "Saturday 10 am to Sunday 5 pm",
+  "venue": "Placeholder Innovation Lab",
+  "summary": "Teams take an idea from nothing to a working, shareable project over a weekend, using everything from Phase 1.",
+  "description": "Form a mixed-department team, pick an idea and ship it. Board members and mentors float between teams. Projects are shown at the end of the weekend.",
+  "highlights": [
+    "Mixed-department teams",
+    "Mentors on the floor",
+    "Show-and-tell finish"
+  ],
+  "art": "steps",
+  "photo": null,
+  "applyUrl": "#placeholder-apply-build-night",
+  "seats": "Teams of 3 to 4 (placeholder)",
+  "hub": []
+}

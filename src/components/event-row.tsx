@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { dateLabel, type ClubEvent } from "@/data/events";
+import { dateLabel, type ClubEvent } from "@/lib/events";
 import { Hud } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { cn } from "@/lib/utils";

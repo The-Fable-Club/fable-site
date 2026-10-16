@@ -1,0 +1,52 @@
+{
+  "title": "Claude Academy Sprint",
+  "kind": "Lab sprint",
+  "phase": "1",
+  "status": "auto",
+  "start": "2026-10-14",
+  "end": "2026-11-06",
+  "time": "Rolling, with two guided labs a week",
+  "venue": "Placeholder Lab 2 + online",
+  "summary": "Guided lab time to work through Anthropic Academy courses together, with help on hand, and come out with certificates.",
+  "description": "Pick a track, book a lab slot and work through the course with board members and mentors close by. The sprint runs for three weeks and applications stay open while it does.\n\nYou will need a laptop and a Claude account; we can help you set one up on the day.",
+  "highlights": [
+    "Track A: AI Fluency fundamentals",
+    "Track B: Claude.ai for daily work",
+    "Free certificates on completion"
+  ],
+  "art": "book",
+  "applyUrl": "#placeholder-apply-academy-sprint",
+  "seats": "Open to all members",
+  "hub": [
+    {
+      "kind": "announcement",
+      "title": "Sprint is live — start with Track A",
+      "body": "If you are new, begin with AI Fluency. Lab slots are on the schedule below; bring a charged laptop.",
+      "postedBy": "Events lead (placeholder)",
+      "postedAt": "2026-10-14"
+    },
+    {
+      "kind": "link",
+      "title": "Anthropic Academy course list",
+      "body": "The courses we are working through. Certificates are free.",
+      "href": "#placeholder-academy-courses",
+      "postedBy": "Chairperson (placeholder)",
+      "postedAt": "2026-10-14"
+    },
+    {
+      "kind": "schedule",
+      "title": "Lab slots: weeks 1 to 3",
+      "body": "Tue and Thu, 4:30 pm. Room details are posted here before each slot.",
+      "postedBy": "Secretary (placeholder)",
+      "postedAt": "2026-10-15"
+    },
+    {
+      "kind": "file",
+      "title": "Sprint checklist (PDF)",
+      "body": "Tick off modules as you go; show it to a board member for sign-off.",
+      "href": "#placeholder-checklist",
+      "postedBy": "Secretary (placeholder)",
+      "postedAt": "2026-10-15"
+    }
+  ]
+}

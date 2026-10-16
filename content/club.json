@@ -1,0 +1,62 @@
+{
+  "tagline": "Learn Claude thoroughly. Then build with it.",
+  "description": "The Fable Club is a student-led AI learning and building community at VIT Chennai. We help students from every department get reliably good work out of Claude, from writing, research and studying to Claude Code and building agents.",
+  "institution": "VIT Chennai",
+  "office": "Office of Students’ Welfare",
+  "contactEmail": "hello@thefableclub.example",
+  "disclaimer": "An independent student club. Not affiliated with or endorsed by Anthropic.",
+  "socials": [
+    {
+      "label": "Instagram",
+      "href": "#"
+    },
+    {
+      "label": "LinkedIn",
+      "href": "#"
+    },
+    {
+      "label": "GitHub",
+      "href": "#"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Build sessions",
+      "value": "2 hrs",
+      "note": "Every other week, hands-on."
+    },
+    {
+      "label": "Events this year",
+      "value": "10",
+      "note": "Workshops, a hackathon, a demo day."
+    },
+    {
+      "label": "Phases",
+      "value": "4",
+      "note": "Foundations to outcomes."
+    },
+    {
+      "label": "Open to",
+      "value": "All",
+      "note": "Every department. No prior experience."
+    }
+  ],
+  "phases": [
+    {
+      "name": "Foundations",
+      "span": "Oct – Nov 2026"
+    },
+    {
+      "name": "Building Skills",
+      "span": "Jan – Feb 2027"
+    },
+    {
+      "name": "Advanced & Flagship",
+      "span": "Mar 2027"
+    },
+    {
+      "name": "Outcomes & Handover",
+      "span": "Apr 2027"
+    }
+  ]
+}

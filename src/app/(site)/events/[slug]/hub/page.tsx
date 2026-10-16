@@ -5,13 +5,13 @@ import { ArrowLeft } from "lucide-react";
 import { Hud, Ph } from "@/components/hud";
 import { HubFeed } from "@/components/hub-feed";
 import { StatusDot } from "@/components/timeline";
-import { bySlug, dateLabel, events, isOpen } from "@/data/events";
+import { getContent } from "@/lib/content";
+import { bySlug, dateLabel, isOpen } from "@/lib/events";
 
 // Hubs only exist for active and upcoming events.
-const hubEvents = events.filter(isOpen);
-
-export function generateStaticParams() {
-  return hubEvents.map((e) => ({ slug: e.slug }));
+export async function generateStaticParams() {
+  const { events } = await getContent();
+  return events.filter(isOpen).map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({
@@ -20,7 +20,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const e = bySlug(slug);
+  const { events } = await getContent();
+  const e = bySlug(events, slug);
   return e ? { title: `${e.title} — participant hub`, robots: { index: false } } : {};
 }
 
@@ -30,7 +31,8 @@ export default async function HubPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const e = bySlug(slug);
+  const { events } = await getContent();
+  const e = bySlug(events, slug);
   if (!e || !isOpen(e)) notFound();
 
   return (
@@ -61,7 +63,7 @@ export default async function HubPage({
       </header>
       <section className="bg-paper">
         <div className="mx-auto max-w-4xl px-6 py-14 md:px-12 md:py-20">
-          <HubFeed initial={e.hub ?? []} />
+          <HubFeed initial={e.hub} />
         </div>
       </section>
     </>

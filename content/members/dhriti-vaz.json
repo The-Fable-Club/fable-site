@@ -1,0 +1,18 @@
+{
+  "name": "Dhriti Vaz",
+  "role": "Secretary",
+  "group": "Board",
+  "order": 50,
+  "department": "Placeholder department",
+  "year": "Placeholder year",
+  "bio": "Placeholder bio. Keeps schedules, records and the member list. Write to the secretary for attendance questions or event logistics.",
+  "focus": [
+    "Schedules",
+    "Records"
+  ],
+  "email": "secretary@thefableclub.example",
+  "linkedin": "#",
+  "github": "",
+  "art": "writing",
+  "photo": null
+}

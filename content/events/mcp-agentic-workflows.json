@@ -1,0 +1,22 @@
+{
+  "title": "MCP + Agentic Workflows",
+  "kind": "Workshop",
+  "phase": "3",
+  "status": "auto",
+  "start": "2027-03-06",
+  "end": null,
+  "time": "4:00 – 6:00 pm",
+  "venue": "Placeholder Lab 2, VIT Chennai",
+  "summary": "Connect Claude to tools and data with the Model Context Protocol, and design workflows where Claude carries a task through several steps.",
+  "description": "Hands-on: wire up an MCP server and build a small multi-step agent.",
+  "highlights": [
+    "Model Context Protocol",
+    "Multi-step workflows",
+    "A small working agent"
+  ],
+  "art": "network",
+  "photo": null,
+  "applyUrl": "#placeholder-apply-mcp",
+  "seats": "40 seats (placeholder)",
+  "hub": []
+}

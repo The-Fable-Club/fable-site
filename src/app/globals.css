@@ -67,6 +67,9 @@
   --radius-4xl: 0px;
 
   --text-hud: 0.6875rem;
+
+  /* Motion pattern for the whole site: soft start, quick middle, soft landing. */
+  --ease-flow: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 :root {

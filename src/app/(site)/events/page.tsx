@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 import { Hud, PageHead, Ph } from "@/components/hud";
 import { EventRow } from "@/components/event-row";
 import { Timeline } from "@/components/timeline";
-import { events, openEvents, pastEvents } from "@/data/events";
+import { getContent } from "@/lib/content";
+import { openEvents, pastEvents } from "@/lib/events";
 
 export const metadata: Metadata = {
   title: "Events",
   description: "Current and upcoming events, the year’s timeline and event history.",
 };
 
-export default function EventsPage() {
-  const current = openEvents();
-  const past = pastEvents();
+export default async function EventsPage() {
+  const { events } = await getContent();
+  const current = openEvents(events);
+  const past = pastEvents(events);
 
   return (
     <>
@@ -41,9 +43,9 @@ export default function EventsPage() {
       <section id="timeline" className="bg-paper-sunken">
         <div className="mx-auto max-w-6xl px-6 pt-16 md:px-12 md:pt-24">
           <Hud className="text-ink-faint">Timeline</Hud>
-          <h2 className="font-display text-4xl leading-none md:text-5xl">The whole year</h2>
+          <h2 className="font-display text-4xl leading-none md:text-5xl">The next two months</h2>
           <p className="mt-4 max-w-[52ch] font-serif text-ink-soft">
-            Drag or scroll sideways. Each card opens that event.
+            Step through with the arrows or swipe. Each card opens that event.
           </p>
         </div>
         <div className="mx-auto max-w-[90rem] px-6 pb-16 pt-10 md:px-12 md:pb-24">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CalendarClock, FileText, Link2, Megaphone, Plus } from "lucide-react";
-import type { HubItem } from "@/data/events";
+import type { HubItem } from "@/lib/events";
 import { Hud, Ph } from "@/components/hud";
 import { cn } from "@/lib/utils";
 

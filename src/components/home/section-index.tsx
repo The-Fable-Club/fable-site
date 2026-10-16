@@ -10,6 +10,7 @@ const sections = [
   { id: "events", label: "Events" },
   { id: "people", label: "People" },
   { id: "join", label: "Join" },
+  { id: "contact", label: "Contact" },
 ] as const;
 const ids = sections.map((s) => s.id);
 
@@ -36,7 +37,7 @@ export function SectionIndex() {
               >
                 <span
                   className={cn(
-                    "hud bg-ink px-1.5 py-0.5 text-paper transition-all duration-200",
+                    "hud bg-ink px-1.5 py-0.5 text-paper transition-all duration-500 ease-flow",
                     on
                       ? "translate-x-0 opacity-100"
                       : "translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100",
@@ -46,7 +47,7 @@ export function SectionIndex() {
                 </span>
                 <span
                   className={cn(
-                    "block h-[3px] transition-all duration-300 mix-blend-difference",
+                    "block h-[3px] transition-all duration-700 ease-flow mix-blend-difference",
                     on ? "w-8 bg-white" : "w-3 bg-white/70 group-hover:w-6",
                   )}
                 />

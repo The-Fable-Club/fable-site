@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
 import { Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
-import { bySlug, dateLabel, events, isOpen } from "@/data/events";
+import { getContent } from "@/lib/content";
+import { bySlug, dateLabel, isOpen } from "@/lib/events";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const { events } = await getContent();
   return events.map((e) => ({ slug: e.slug }));
 }
 
@@ -17,7 +19,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const e = bySlug(slug);
+  const { events } = await getContent();
+  const e = bySlug(events, slug);
   return e ? { title: e.title, description: e.summary } : {};
 }
 
@@ -27,7 +30,8 @@ export default async function EventPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const e = bySlug(slug);
+  const { events } = await getContent();
+  const e = bySlug(events, slug);
   if (!e) notFound();
   const open = isOpen(e);
 

@@ -3,26 +3,23 @@
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { aims } from "@/data/club";
-import { Hud, Ph } from "@/components/hud";
-import { MODEL_NAMES, PointCloud } from "@/components/home/point-cloud";
+import type { Aim } from "@/lib/content";
+import { ArrowBtn, Hud, Ph } from "@/components/hud";
+import { MODEL_LABEL, PointCloud } from "@/components/home/point-cloud";
 import { cn } from "@/lib/utils";
 
 const TICKS = 72;
+const FLOW = [0.65, 0, 0.35, 1] as const;
 
-// Carousel stage with a rotating dial, after Endfield's "Lore" panel.
-// Changing slide turns the dial one step and swaps the copy.
-export function AimsDial() {
+// Carousel stage with a rotating dial and a 3D model viewer, after
+// Endfield's "Lore" panel. Changing slide turns the dial one step, swaps the
+// copy, and re-forms the 3D model with a laser scan.
+export function AimsDial({ aims }: { aims: Aim[] }) {
   const [i, setI] = useState(0);
   const reduce = useReducedMotion();
   const n = aims.length;
 
-  const go = useCallback(
-    (d: number) => {
-      setI((v) => (v + d + n) % n);
-    },
-    [n],
-  );
+  const go = useCallback((d: number) => setI((v) => (v + d + n) % n), [n]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -35,6 +32,7 @@ export function AimsDial() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go]);
 
+  if (!n) return null;
   const a = aims[i];
 
   return (
@@ -58,18 +56,18 @@ export function AimsDial() {
           <Ph className="mt-5 border-clay text-clay">Placeholder copy</Ph>
         </div>
 
-        {/* centre: dial */}
+        {/* centre: dial + model */}
         <div className="relative mx-auto size-[min(78vw,26rem)]">
           <motion.svg
             viewBox="-210 -210 420 420"
             aria-hidden
             className="absolute inset-0 size-full"
             animate={{ rotate: reduce ? 0 : -i * (360 / n) }}
-            transition={{ type: "spring", stiffness: 70, damping: 16 }}
+            transition={{ duration: 1.1, ease: FLOW }}
           >
             {Array.from({ length: TICKS }).map((_, k) => {
               const ang = (k / TICKS) * Math.PI * 2;
-              const major = k % (TICKS / n) === 0;
+              const major = k % Math.round(TICKS / n) === 0;
               const r1 = major ? 176 : 184;
               const r2 = 196;
               return (
@@ -104,12 +102,12 @@ export function AimsDial() {
           </motion.svg>
 
           <PointCloud
-            index={i}
-            label={`3D model for "${a.title}": ${MODEL_NAMES[i]}. Drag to turn it.`}
+            model={a.model}
+            label={`3D model for "${a.title}": ${MODEL_LABEL[a.model]}. Drag to turn it.`}
             className="absolute inset-[6%] size-[88%]"
           />
           <p className="hud pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-night-faint">
-            Model {String(i + 1).padStart(2, "0")} · {MODEL_NAMES[i]} · drag to turn
+            Model {String(i + 1).padStart(2, "0")} · {MODEL_LABEL[a.model]}
           </p>
         </div>
 
@@ -122,10 +120,10 @@ export function AimsDial() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: reduce ? 0 : 14 }}
+                initial={{ opacity: 0, y: reduce ? 0 : 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: reduce ? 0 : -10 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.55, ease: FLOW }}
               >
                 <h3 className="mt-3 font-display text-3xl leading-tight md:text-4xl">{a.title}</h3>
                 <p className="mt-4 max-w-[40ch] font-serif text-lg leading-relaxed text-night-soft">
@@ -143,14 +141,12 @@ export function AimsDial() {
                   role="tab"
                   aria-selected={k === i}
                   aria-label={x.title}
-                  onClick={() => {
-                    setI(k);
-                  }}
+                  onClick={() => setI(k)}
                   className="group relative h-6 flex-1"
                 >
                   <span
                     className={cn(
-                      "absolute inset-x-0 bottom-1.5 h-[3px] transition-colors",
+                      "absolute inset-x-0 bottom-1.5 h-[3px] transition-colors duration-500 ease-flow",
                       k === i ? "bg-clay" : "bg-paper/25 group-hover:bg-paper/50",
                     )}
                   />
@@ -158,20 +154,12 @@ export function AimsDial() {
               ))}
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => go(-1)}
-                aria-label="Previous"
-                className="grid size-11 place-items-center border border-paper/40 transition-colors hover:bg-paper hover:text-ink"
-              >
+              <ArrowBtn tone="paper" onClick={() => go(-1)} aria-label="Previous">
                 <ChevronLeft className="size-5" aria-hidden />
-              </button>
-              <button
-                onClick={() => go(1)}
-                aria-label="Next"
-                className="grid size-11 place-items-center border border-paper/40 transition-colors hover:bg-paper hover:text-ink"
-              >
+              </ArrowBtn>
+              <ArrowBtn tone="paper" onClick={() => go(1)} aria-label="Next">
                 <ChevronRight className="size-5" aria-hidden />
-              </button>
+              </ArrowBtn>
             </div>
           </div>
         </div>

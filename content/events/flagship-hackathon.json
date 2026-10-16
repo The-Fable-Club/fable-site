@@ -1,0 +1,22 @@
+{
+  "title": "Flagship Hackathon",
+  "kind": "Flagship",
+  "phase": "3",
+  "status": "auto",
+  "start": "2027-03-20",
+  "end": "2027-03-21",
+  "time": "Saturday 9 am to Sunday 4 pm",
+  "venue": "Placeholder Main Auditorium",
+  "summary": "The club’s biggest event of the year, open to every student on campus. Teams build with Claude and present what they made.",
+  "description": "Open to all students, members or not. Teams build with Claude over a weekend and present to a panel on Sunday.",
+  "highlights": [
+    "Open to the whole campus",
+    "Panel judging",
+    "Prizes (placeholder)"
+  ],
+  "art": "party",
+  "photo": null,
+  "applyUrl": "#placeholder-apply-hackathon",
+  "seats": "Teams of up to 4",
+  "hub": []
+}

@@ -20,9 +20,9 @@ npm run build && npm start
 | `/join` | Recruitment form (no backend: produces an email draft) |
 
 ## Content
-All content is **placeholder** and lives in `src/data/` (`club.ts`, `events.ts`, `members.ts`). Pages show "Placeholder" markers (`<Ph />`) wherever copy is not final; remove them as content is finalised.
+Content lives in `content/` (JSON) and is edited at `/keystatic`; see **docs/CMS.md**. It is all **placeholder** for now. Pages show "Placeholder" markers (`<Ph />`) wherever copy is not final; remove them as content is finalised.
 
-Event `status` (`active` | `upcoming` | `past`) controls who gets an Apply button and a hub.
+Event status (Live / Open / Past) is derived from the dates and decides who gets an Apply button and a hub.
 
 ## Not built yet (no backend)
 - Real form submission for `/join` (currently opens a `mailto:` draft).
@@ -37,7 +37,9 @@ Event `status` (`active` | `upcoming` | `past`) controls who gets an Apply butto
 ## Interaction notes
 - Left rail: icons only until hovered/focused, then expands with labels; on `/` it follows the section being scrolled, elsewhere it marks the current page. The right-edge section index is kept.
 - "What we're for": canvas point-cloud viewer (`components/home/point-cloud.tsx`), procedural models per aim; drag to orbit. Swap generators for real models later.
-- Events: scrollable carousel (`components/home/events-carousel.tsx`) + draggable timeline.
+- Events: path-style carousel (`components/home/events-carousel.tsx`) + two-month timeline. Motion across the site uses one easing, `ease-flow` (soft start, quick middle, soft landing).
+- Snapshots of earlier versions of reworked sections are in `_backups/` (see its README).
+- Open asks for the club: `docs/ASKS.md`.
 - ReactBits components live in `src/components/` (installed via `npx shadcn@latest add https://reactbits.dev/r/<Name>-TS-TW.json`). `CountUp` is used for the stats.
 
 ## Claude skills

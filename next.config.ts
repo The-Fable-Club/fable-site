@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // CMS content is read from ./content at runtime when pages revalidate.
+  outputFileTracingIncludes: { "/**": ["./content/**/*"] },
   turbopack: {
     rules: {
       "*.css": {
