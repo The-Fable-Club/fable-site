@@ -1,5 +1,7 @@
 'use client';
 
+import { prefersReducedMotion } from '@/lib/motion';
+
 import { animate, cubicBezier, useInView } from 'motion/react';
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
@@ -380,7 +382,7 @@ export default function CountUp({
       latestRef.current?.onEnd?.();
     };
 
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReducedMotion()) {
       finish();
       return undefined;
     }

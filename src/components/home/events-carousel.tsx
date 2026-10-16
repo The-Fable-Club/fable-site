@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, type Variants } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 import { dateLabel, type ClubEvent } from "@/lib/events";
 import { ArrowBtn, Hud } from "@/components/hud";

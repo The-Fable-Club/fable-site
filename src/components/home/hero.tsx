@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { Hud, Ph } from "@/components/hud";
+import { prefersReducedMotion } from "@/lib/motion";
 import { dateLabel, type ClubEvent } from "@/lib/events";
 import type { Club } from "@/lib/content";
 
@@ -22,7 +23,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = prefersReducedMotion();
     const target = { x: 0, y: 0 };
     const cur = { x: 0, y: 0 };
     let raf = 0;
@@ -154,7 +155,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
                   d={d}
                   pathLength={1}
                   strokeDasharray={1}
-                  className="motion-safe:animate-[draw_1.4s_cubic-bezier(.65,0,.35,1)_both]"
+                  className="animate-[draw_1.4s_cubic-bezier(.65,0,.35,1)_both]"
                 />
               ))}
             </g>
@@ -166,7 +167,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
                 r="106"
                 pathLength={1}
                 strokeDasharray={1}
-                className="motion-safe:animate-[draw_1.8s_cubic-bezier(.65,0,.35,1)_.3s_both]"
+                className="animate-[draw_1.8s_cubic-bezier(.65,0,.35,1)_.3s_both]"
               />
             </g>
             {/* nodes */}
@@ -185,7 +186,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
                   cy={cy}
                   r="46"
                   fill="var(--color-clay)"
-                  className="origin-center motion-safe:animate-[pop_.8s_cubic-bezier(.65,0,.35,1)_both]"
+                  className="origin-center animate-[pop_.8s_cubic-bezier(.65,0,.35,1)_both]"
                   style={{
                     animationDelay: `${delay}s`,
                     transformBox: "fill-box",

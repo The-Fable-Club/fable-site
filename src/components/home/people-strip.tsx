@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
+import { useReducedMotion } from "@/lib/motion";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { initials, type Member } from "@/lib/members";
 import { Hud } from "@/components/hud";

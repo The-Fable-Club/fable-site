@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MoveHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // A small dependency-free 3D point-cloud viewer, after Endfield's lore
 // model viewer.
@@ -170,7 +171,7 @@ export function PointCloud({ model, className, label }: Props) {
     if (!cv) return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = prefersReducedMotion();
 
     const built = {} as Record<ModelKey, Built>;
     (Object.keys(BUILDERS) as ModelKey[]).forEach((k) => (built[k] = build(k)));
