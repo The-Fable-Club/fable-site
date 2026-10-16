@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Fable Club — website
 
-## Getting Started
-
-First, run the development server:
+Landing site for The Fable Club, a Claude learning club at VIT Chennai.
+Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind v4 · shadcn/ui (base-nova) · motion.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build && npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Pages
+| Route | What |
+|---|---|
+| `/` | Landing: hero, about + aims dial, highlighted event + timeline, board strip, join |
+| `/events` | Current/upcoming, full timeline, event history |
+| `/events/[slug]` | Event details. Apply button + hub link only for active/upcoming events |
+| `/events/[slug]/hub` | Participant hub (board → participants). 404 for past events |
+| `/members` | Everyone; click a card for the bio. Deep link: `/members?m=<slug>` |
+| `/join` | Recruitment form (no backend: produces an email draft) |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Content
+All content is **placeholder** and lives in `src/data/` (`club.ts`, `events.ts`, `members.ts`). Pages show "Placeholder" markers (`<Ph />`) wherever copy is not final; remove them as content is finalised.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Event `status` (`active` | `upcoming` | `past`) controls who gets an Apply button and a hub.
 
-## Learn More
+## Not built yet (no backend)
+- Real form submission for `/join` (currently opens a `mailto:` draft).
+- Hub posting/auth: the board "post" form is a local demo; hubs are public to anyone with the link.
+- Apply links are `#placeholder-…`.
 
-To learn more about Next.js, take a look at the following resources:
+## Assets
+- Fonts: Anthropic Sans / Serif / Mono in `src/fonts` (loaded with `next/font/local`). Confirm licence before public launch.
+- Illustrations: `public/art/*.svg`. Brand images: `public/logo-*.jpg`, `public/banner-*.jpg`.
+- `_reference/` (gitignored): prototype, font archives, Endfield notes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Claude skills
+`.claude/skills/frontend-design` (from anthropics/skills).
