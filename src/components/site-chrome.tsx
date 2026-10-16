@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Rail } from "@/components/rail";
 import { Footer } from "@/components/footer";
+import { DevContentRefresh } from "@/components/dev-content-refresh";
 import { getContent } from "@/lib/content";
 
 // Rail + footer around the public pages. Used by the (site) route group;
@@ -15,6 +16,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
+      {process.env.NODE_ENV === "development" && <DevContentRefresh />}
       <Rail name={club.name} />
       <div className="with-rail">
         <main id="main">{children}</main>

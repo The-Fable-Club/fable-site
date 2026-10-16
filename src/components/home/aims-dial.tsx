@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 
 const TICKS = 72;
 const FLOW = [0.65, 0, 0.35, 1] as const;
+// Round trig output: Node and the browser disagree in the last float digits,
+// which React flags as a hydration mismatch.
+const r3 = (n: number) => Math.round(n * 1000) / 1000;
 
 // Carousel stage with a rotating dial and a 3D model viewer, after
 // Endfield's "Lore" panel. Changing slide turns the dial one step, swaps the
@@ -74,10 +77,10 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
               return (
                 <line
                   key={k}
-                  x1={Math.sin(ang) * r1}
-                  y1={-Math.cos(ang) * r1}
-                  x2={Math.sin(ang) * r2}
-                  y2={-Math.cos(ang) * r2}
+                  x1={r3(Math.sin(ang) * r1)}
+                  y1={r3(-Math.cos(ang) * r1)}
+                  x2={r3(Math.sin(ang) * r2)}
+                  y2={r3(-Math.cos(ang) * r2)}
                   stroke={major ? "var(--color-clay)" : "var(--color-night-faint)"}
                   strokeWidth={major ? 3 : 1.5}
                 />

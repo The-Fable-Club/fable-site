@@ -1,5 +1,5 @@
 import { createReader } from "@keystatic/core/reader";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import config from "../../keystatic.config";
 import type { ClubEvent, EventStatus, HubItem } from "@/lib/events";
 import type { Member } from "@/lib/members";
@@ -35,14 +35,15 @@ const ymd = (d: Date) =>
 
 /**
  * Everything the site renders, read from ./content (the CMS files).
- * Cached for an hour in production, so event status (Live / Open / Past)
- * follows the calendar without a redeploy; near-instant in dev so CMS
- * edits show up straight away.
+ * Cached for an hour, so event status (Live / Open / Past) follows the
+ * calendar without a redeploy. The cache is tagged "content": in development
+ * a small watcher (components/dev-content-refresh.tsx) clears it when a CMS
+ * edit changes the files, so edits show up straight away.
  */
 export async function getContent(): Promise<Content> {
   "use cache";
-  if (process.env.NODE_ENV === "development") cacheLife("seconds");
-  else cacheLife("hours");
+  cacheLife("hours");
+  cacheTag("content");
 
   const today = ymd(new Date());
 

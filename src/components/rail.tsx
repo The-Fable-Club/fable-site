@@ -33,11 +33,10 @@ const items: Item[] = [
 ];
 const ids = items.map((i) => i.id);
 
-// Reveal pattern used across the site: a soft start, a quick middle and a
-// soft landing (ease-flow). Labels fade in a beat after the width starts
-// moving and fade out first when it closes.
+// Timings measured on the Endfield reference: everything moves in parallel
+// at 0.3s `ease`; labels fade in over 0.2s while sliding in ~9px from the left.
 const label =
-  "opacity-0 transition-opacity duration-300 ease-flow group-hover/rail:opacity-100 group-hover/rail:delay-300 group-hover/rail:duration-500 group-focus-within/rail:opacity-100 group-focus-within/rail:delay-300 group-focus-within/rail:duration-500";
+  "opacity-0 -translate-x-2 [transition:opacity_.2s_ease,transform_.3s_ease] group-hover/rail:translate-x-0 group-hover/rail:opacity-100 group-focus-within/rail:translate-x-0 group-focus-within/rail:opacity-100";
 
 // Endfield-style rail: icons only until hovered or focused, then it slides
 // open over the page with labels. On the home page it follows the section
@@ -62,7 +61,7 @@ export function Rail({ name }: { name: string }) {
         "inset-x-0 bottom-0 flex h-16 border-t border-ink/15",
         // desktop: slim rail that widens over the content
         "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-[var(--rail-w)] md:flex-col md:overflow-hidden md:border-r md:border-t-0",
-        "md:transition-[width,box-shadow] md:duration-[750ms] md:ease-flow",
+        "md:transition-[width,box-shadow] md:duration-300 md:ease-[ease]",
         "md:hover:w-64 md:hover:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)] md:focus-within:w-64 md:focus-within:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)]",
       )}
     >
@@ -88,7 +87,7 @@ export function Rail({ name }: { name: string }) {
                 href={href(i)}
                 aria-current={on ? "page" : undefined}
                 className={cn(
-                  "relative flex h-full w-full flex-col items-center justify-center gap-1 transition-colors duration-500 ease-flow md:h-12 md:flex-row md:justify-start md:gap-0",
+                  "relative flex h-full w-full flex-col items-center justify-center gap-1 transition-colors duration-300 ease-[ease] md:h-12 md:flex-row md:justify-start md:gap-0",
                   on ? "bg-ink text-paper" : "text-ink-faint hover:bg-paper-raised hover:text-ink",
                 )}
               >
@@ -100,7 +99,7 @@ export function Rail({ name }: { name: string }) {
                 <span
                   aria-hidden
                   className={cn(
-                    "absolute left-0 top-0 hidden h-full w-[3px] origin-top bg-clay transition-transform duration-500 ease-flow md:block",
+                    "absolute left-0 top-0 hidden h-full w-[3px] origin-top bg-clay transition-transform duration-300 ease-[ease] md:block",
                     on ? "scale-y-100" : "scale-y-0",
                   )}
                 />
@@ -118,7 +117,7 @@ export function Rail({ name }: { name: string }) {
           <li key={u.label}>
             <Link
               href={u.href}
-              className="flex h-11 items-center text-ink-soft transition-colors duration-500 ease-flow hover:bg-paper-field hover:text-ink"
+              className="flex h-11 items-center text-ink-soft transition-colors duration-300 ease-[ease] hover:bg-paper-field hover:text-ink"
             >
               <span className="grid w-[calc(var(--rail-w)-1rem)] shrink-0 place-items-center">
                 <u.icon className="size-4" strokeWidth={1.7} aria-hidden />
@@ -134,7 +133,7 @@ export function Rail({ name }: { name: string }) {
         <Link
           href="/join"
           className={cn(
-            "absolute left-1/2 top-0 flex w-11 -translate-x-1/2 flex-col items-center gap-3 bg-ink py-4 text-paper transition-opacity duration-300 ease-flow",
+            "absolute left-1/2 top-0 flex w-11 -translate-x-1/2 flex-col items-center gap-3 bg-ink py-4 text-paper transition-opacity duration-200 ease-[ease]",
             "group-hover/rail:pointer-events-none group-hover/rail:opacity-0 group-focus-within/rail:pointer-events-none group-focus-within/rail:opacity-0",
           )}
         >
@@ -146,8 +145,8 @@ export function Rail({ name }: { name: string }) {
         <Link
           href="/join"
           className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 flex h-14 items-center justify-between bg-clay px-4 font-medium text-ink opacity-0 transition-[opacity,background-color] duration-300 ease-flow hover:bg-ink hover:text-paper",
-            "group-hover/rail:pointer-events-auto group-hover/rail:opacity-100 group-hover/rail:delay-300 group-hover/rail:duration-500 group-focus-within/rail:pointer-events-auto group-focus-within/rail:opacity-100 group-focus-within/rail:delay-300 group-focus-within/rail:duration-500",
+            "pointer-events-none absolute inset-x-0 top-0 flex h-14 items-center justify-between bg-clay px-4 font-medium text-ink opacity-0 transition-[opacity,background-color] duration-200 ease-[ease] hover:bg-ink hover:text-paper",
+            "group-hover/rail:pointer-events-auto group-hover/rail:opacity-100 group-focus-within/rail:pointer-events-auto group-focus-within/rail:opacity-100",
           )}
         >
           Join the club

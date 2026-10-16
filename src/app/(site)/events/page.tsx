@@ -43,12 +43,12 @@ export default async function EventsPage() {
       <section id="timeline" className="bg-paper-sunken">
         <div className="mx-auto max-w-6xl px-6 pt-16 md:px-12 md:pt-24">
           <Hud className="text-ink-faint">Timeline</Hud>
-          <h2 className="font-display text-4xl leading-none md:text-5xl">The next two months</h2>
+          <h2 className="font-display text-4xl leading-none md:text-5xl">The whole year</h2>
           <p className="mt-4 max-w-[52ch] font-serif text-ink-soft">
-            Step through with the arrows or swipe. Each card opens that event.
+            Drag or scroll sideways. Each card opens that event.
           </p>
         </div>
-        <div className="mx-auto max-w-[90rem] px-6 pb-16 pt-10 md:px-12 md:pb-24">
+        <div className="mx-auto max-w-[90rem] px-6 pb-16 pt-24 md:px-12 md:pb-24">
           <Timeline events={events} />
         </div>
       </section>

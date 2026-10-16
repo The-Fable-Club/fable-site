@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +26,7 @@ export async function generateMetadata({
   return e ? { title: `${e.title} — participant hub`, robots: { index: false } } : {};
 }
 
-export default async function HubPage({
+async function HubDetail({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -67,5 +68,15 @@ export default async function HubPage({
         </div>
       </section>
     </>
+  );
+}
+
+// `params` is read inside a Suspense boundary so navigation to this page can
+// show instantly while the event data resolves.
+export default function HubPage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={<div className="min-h-[70dvh] bg-paper" />}>
+      <HubDetail params={params} />
+    </Suspense>
   );
 }

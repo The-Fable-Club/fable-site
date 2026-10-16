@@ -10,12 +10,27 @@ import type { Club } from "@/lib/content";
 
 const STROKE = "var(--color-paper)";
 
-// Hero stage. The sprout mark is split into depth layers that drift with
-// the pointer, so the mark reads as floating parts rather than a flat logo.
+// Critically-damped spring ("smooth damp"): the value glides to its target
+// with no overshoot, and its velocity is continuous, so it always starts and
+// ends gently no matter how far away the target jumps.
+function smoothDamp(cur: number, target: number, vel: { v: number }, smoothTime: number, dt: number) {
+  const omega = 2 / smoothTime;
+  const x = omega * dt;
+  const e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+  const change = cur - target;
+  const temp = (vel.v + omega * change) * dt;
+  vel.v = (vel.v - omega * temp) * e;
+  return target + (change + temp) * e;
+}
+
+// Hero stage. The sprout mark is split into depth layers that follow the
+// cursor with a delay, so the mark reads as floating parts rather than a flat
+// logo.
 //
-// Pointer is tracked on the whole window, not just this section, and the
-// mark eases toward the last known position. Leaving the section (towards
-// the rail or the next section) just parks it there; it never snaps back.
+// The cursor is tracked across the whole window (clamped to the stage), and
+// the mark always glides toward it with a spring. There is no "inside /
+// outside" logic and nothing is predicted: wherever the pointer leaves or
+// re-enters, the mark just accelerates smoothly from where it is.
 export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
   const stage = useRef<HTMLElement>(null);
   const readout = useRef<HTMLSpanElement>(null);
@@ -26,35 +41,39 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
     const reduce = prefersReducedMotion();
     const target = { x: 0, y: 0 };
     const cur = { x: 0, y: 0 };
+    const vx = { v: 0 };
+    const vy = { v: 0 };
+    let last = performance.now();
     let raf = 0;
     let visible = true;
 
     const onMove = (e: PointerEvent) => {
       const r = el.getBoundingClientRect();
-      // Pointer left the stage (towards the rail, or down to the next
-      // section): park the mark where it was instead of snapping back.
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      // clamp so far-away pointer positions don't throw the layers off-canvas
       target.x = Math.max(-1, Math.min(1, x * 2));
       target.y = Math.max(-1, Math.min(1, y * 2));
     };
 
-    const tick = () => {
+    const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
       if (!visible) return;
-      // ease-out follow: soft start from rest, long settle at the end
-      const k = reduce ? 1 : 0.055;
-      cur.x += (target.x - cur.x) * k;
-      cur.y += (target.y - cur.y) * k;
+      if (reduce) {
+        cur.x = target.x;
+        cur.y = target.y;
+      } else {
+        cur.x = smoothDamp(cur.x, target.x, vx, 0.6, dt);
+        cur.y = smoothDamp(cur.y, target.y, vy, 0.6, dt);
+      }
       el.style.setProperty("--px", cur.x.toFixed(4));
       el.style.setProperty("--py", cur.y.toFixed(4));
       if (readout.current) {
         readout.current.textContent = `X ${(cur.x * 100).toFixed(0).padStart(4, " ")}  Y ${(cur.y * 100).toFixed(0).padStart(4, " ")}`;
       }
     };
-    tick();
+    raf = requestAnimationFrame(tick);
 
     const io = new IntersectionObserver(([en]) => {
       visible = en.isIntersecting;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -24,7 +25,7 @@ export async function generateMetadata({
   return e ? { title: e.title, description: e.summary } : {};
 }
 
-export default async function EventPage({
+async function EventDetail({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -166,5 +167,15 @@ export default async function EventPage({
         </div>
       </div>
     </>
+  );
+}
+
+// `params` is read inside a Suspense boundary so navigation to this page can
+// show instantly while the event data resolves.
+export default function EventPage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={<div className="min-h-[70dvh] bg-paper" />}>
+      <EventDetail params={params} />
+    </Suspense>
   );
 }

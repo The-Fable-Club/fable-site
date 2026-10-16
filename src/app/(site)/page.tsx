@@ -84,7 +84,7 @@ export default async function Home() {
             <div className="mt-20 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <Hud className="text-ink-faint">Timeline</Hud>
-                <h3 className="font-display text-4xl leading-none md:text-5xl">The next two months</h3>
+                <h3 className="font-display text-4xl leading-none md:text-5xl">The year, in order</h3>
               </div>
               <Link
                 href="/events"
@@ -94,7 +94,7 @@ export default async function Home() {
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
             </div>
-            <div className="mt-10">
+            <div className="mt-24">
               <Timeline events={events} />
             </div>
           </div>
