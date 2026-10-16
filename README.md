@@ -34,5 +34,11 @@ Event `status` (`active` | `upcoming` | `past`) controls who gets an Apply butto
 - Illustrations: `public/art/*.svg`. Brand images: `public/logo-*.jpg`, `public/banner-*.jpg`.
 - `_reference/` (gitignored): prototype, font archives, Endfield notes.
 
+## Interaction notes
+- Left rail: icons only until hovered/focused, then expands with labels; on `/` it follows the section being scrolled, elsewhere it marks the current page. The right-edge section index is kept.
+- "What we're for": canvas point-cloud viewer (`components/home/point-cloud.tsx`), procedural models per aim; drag to orbit. Swap generators for real models later.
+- Events: scrollable carousel (`components/home/events-carousel.tsx`) + draggable timeline.
+- ReactBits components live in `src/components/` (installed via `npx shadcn@latest add https://reactbits.dev/r/<Name>-TS-TW.json`). `CountUp` is used for the stats.
+
 ## Claude skills
 `.claude/skills/frontend-design` (from anthropics/skills).

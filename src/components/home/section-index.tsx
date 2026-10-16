@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useActiveSection } from "@/hooks/use-active-section";
 import { cn } from "@/lib/utils";
 
 const sections = [
@@ -10,28 +11,13 @@ const sections = [
   { id: "people", label: "People" },
   { id: "join", label: "Join" },
 ] as const;
+const ids = sections.map((s) => s.id);
 
 // Right-edge section tracker for the home page: shows where you are and
 // jumps between stages.
 export function SectionIndex() {
-  const [current, setCurrent] = useState<string>("top");
-
-  useEffect(() => {
-    const els = sections
-      .map((s) => document.getElementById(s.id))
-      .filter((e): e is HTMLElement => !!e);
-    const io = new IntersectionObserver(
-      (entries) => {
-        const vis = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (vis) setCurrent(vis.target.id);
-      },
-      { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.01] },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+  const pathname = usePathname();
+  const current = useActiveSection(ids, pathname);
 
   return (
     <nav
@@ -51,7 +37,9 @@ export function SectionIndex() {
                 <span
                   className={cn(
                     "hud bg-ink px-1.5 py-0.5 text-paper transition-all duration-200",
-                    on ? "translate-x-0 opacity-100" : "translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100",
+                    on
+                      ? "translate-x-0 opacity-100"
+                      : "translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100",
                   )}
                 >
                   {s.label}

@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { aims } from "@/data/club";
 import { Hud, Ph } from "@/components/hud";
+import { MODEL_NAMES, PointCloud } from "@/components/home/point-cloud";
 import { cn } from "@/lib/utils";
 
 const TICKS = 72;
@@ -14,13 +14,11 @@ const TICKS = 72;
 // Changing slide turns the dial one step and swaps the copy.
 export function AimsDial() {
   const [i, setI] = useState(0);
-  const [dir, setDir] = useState(1);
   const reduce = useReducedMotion();
   const n = aims.length;
 
   const go = useCallback(
     (d: number) => {
-      setDir(d);
       setI((v) => (v + d + n) % n);
     },
     [n],
@@ -105,21 +103,14 @@ export function AimsDial() {
             />
           </motion.svg>
 
-          <div className="absolute inset-[17%] grid place-items-center overflow-hidden rounded-full bg-paper">
-            <AnimatePresence mode="popLayout" custom={dir}>
-              <motion.div
-                key={i}
-                custom={dir}
-                initial={{ opacity: 0, x: reduce ? 0 : dir * 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: reduce ? 0 : dir * -40 }}
-                transition={{ duration: 0.35, ease: [0.2, 0.7, 0.2, 1] }}
-                className="size-[68%]"
-              >
-                <Image src={a.art} alt="" width={240} height={240} className="size-full object-contain" />
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <PointCloud
+            index={i}
+            label={`3D model for "${a.title}": ${MODEL_NAMES[i]}. Drag to turn it.`}
+            className="absolute inset-[6%] size-[88%]"
+          />
+          <p className="hud pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-night-faint">
+            Model {String(i + 1).padStart(2, "0")} · {MODEL_NAMES[i]} · drag to turn
+          </p>
         </div>
 
         {/* right: copy + controls */}
@@ -153,7 +144,6 @@ export function AimsDial() {
                   aria-selected={k === i}
                   aria-label={x.title}
                   onClick={() => {
-                    setDir(k > i ? 1 : -1);
                     setI(k);
                   }}
                   className="group relative h-6 flex-1"

@@ -3,16 +3,16 @@ import { ArrowRight } from "lucide-react";
 import { Banner, Hud, Ph } from "@/components/hud";
 import { Hero } from "@/components/home/hero";
 import { AimsDial } from "@/components/home/aims-dial";
-import { FeaturedEvent } from "@/components/home/featured-event";
+import { EventsCarousel } from "@/components/home/events-carousel";
+import CountUp from "@/components/CountUp";
 import { PeopleStrip } from "@/components/home/people-strip";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
 import { club, phases, stats } from "@/data/club";
-import { events, featured } from "@/data/events";
+import { events, openEvents } from "@/data/events";
 import { members } from "@/data/members";
 
 export default function Home() {
-  const hero = featured();
   const board = members.filter((m) => m.group !== "Leads");
 
   return (
@@ -56,7 +56,11 @@ export default function Home() {
               >
                 <dt className="hud text-ink-faint">{s.label}</dt>
                 <dd className="mt-2 font-display text-6xl leading-none">
-                  {s.value}
+                  {/^\d+$/.test(s.value) ? (
+                    <CountUp to={Number(s.value)} duration={1.4} />
+                  ) : (
+                    s.value
+                  )}
                 </dd>
                 <dd className="mt-3 max-w-[22ch] text-sm text-ink-soft">
                   {s.note}
@@ -78,9 +82,10 @@ export default function Home() {
           tone="manilla"
         />
         <section className="bg-paper-sunken py-16 md:py-24">
+          <div className="mx-auto max-w-[90rem]">
+            <EventsCarousel events={openEvents()} />
+          </div>
           <div className="mx-auto max-w-6xl px-6 md:px-12">
-            {hero && <FeaturedEvent event={hero} />}
-
             <div className="mt-20 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <Hud className="text-ink-faint">Timeline</Hud>
