@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T11:52:56.905Z",
+  "events": [
+    {
+      "slug": "placeholder-live-session",
+      "title": "Placeholder: Live Session",
+      "kind": "Workshop",
+      "phase": 1,
+      "status_override": null,
+      "date": {
+        "mode": "exact",
+        "start": "2026-10-15",
+        "end": "2026-10-30"
+      },
+      "time": {
+        "mode": "text",
+        "text": "4:00 – 6:00 pm"
+      },
+      "venue": {
+        "mode": "text",
+        "text": "Placeholder Lab 2, VIT Chennai"
+      },
+      "seats": {
+        "mode": "open"
+      },
+      "apply": {
+        "mode": "closed"
+      },
+      "summary": "Placeholder event that is happening right now, to test the Live now state.",
+      "description": [
+        "This is placeholder text.",
+        "It exists only to test how a live event looks."
+      ],
+      "highlights": [
+        "Live state",
+        "Closed registration"
+      ],
+      "art": "code-window",
+      "photo": null,
+      "hub": [
+        {
+          "kind": "link",
+          "title": "Placeholder slides",
+          "body": null,
+          "href": "https://example.com/slides",
+          "posted_at": "2026-10-17",
+          "posted_by": "haise-727"
+        },
+        {
+          "kind": "announcement",
+          "title": "Welcome to the placeholder hub",
+          "body": "Bring a laptop.",
+          "href": null,
+          "posted_at": "2026-10-16",
+          "posted_by": "haise-727"
+        }
+      ]
+    },
+    {
+      "slug": "placeholder-open-registration",
+      "title": "Placeholder: Open Registration",
+      "kind": "Hackathon",
+      "phase": 2,
+      "status_override": null,
+      "date": {
+        "mode": "exact",
+        "start": "2026-11-21",
+        "end": "2026-11-22"
+      },
+      "time": {
+        "mode": "text",
+        "text": "9:00 am onwards"
+      },
+      "venue": {
+        "mode": "text",
+        "text": "Placeholder Hall, VIT Chennai"
+      },
+      "seats": {
+        "mode": "text",
+        "text": "60 seats"
+      },
+      "apply": {
+        "mode": "form"
+      },
+      "summary": "Placeholder upcoming event with the on-site registration form.",
+      "description": [
+        "Placeholder text for an upcoming event.",
+        "Registrations go to the database."
+      ],
+      "highlights": [
+        "Team event",
+        "On-site form"
+      ],
+      "art": "network",
+      "photo": null,
+      "hub": []
+    },
+    {
+      "slug": "placeholder-month-only",
+      "title": "Placeholder: Month Only",
+      "kind": "Talk",
+      "phase": 3,
+      "status_override": null,
+      "date": {
+        "mode": "month",
+        "month": "2027-01"
+      },
+      "time": {
+        "mode": "tba"
+      },
+      "venue": {
+        "mode": "tba"
+      },
+      "seats": {
+        "mode": "tba"
+      },
+      "apply": {
+        "mode": "soon"
+      },
+      "summary": "Placeholder with only a month decided.",
+      "description": [
+        "Only the month is known. Everything else is to be announced."
+      ],
+      "highlights": [],
+      "art": "book",
+      "photo": null,
+      "hub": []
+    },
+    {
+      "slug": "placeholder-own-text-date",
+      "title": "Placeholder: Own Text Date",
+      "kind": "Workshop",
+      "phase": 3,
+      "status_override": null,
+      "date": {
+        "mode": "text",
+        "text": "Early February",
+        "month": "2027-02"
+      },
+      "time": {
+        "mode": "text",
+        "text": "Evening"
+      },
+      "venue": {
+        "mode": "online",
+        "text": "Google Meet"
+      },
+      "seats": {
+        "mode": "open"
+      },
+      "apply": {
+        "mode": "link",
+        "url": "https://example.com/form"
+      },
+      "summary": "Placeholder with a typed date and an outside form.",
+      "description": [
+        "The date is free text, placed on the timeline by month."
+      ],
+      "highlights": [],
+      "art": "writing",
+      "photo": null,
+      "hub": []
+    },
+    {
+      "slug": "placeholder-date-tba",
+      "title": "Placeholder: Date To Be Announced",
+      "kind": "Showcase",
+      "phase": 4,
+      "status_override": null,
+      "date": {
+        "mode": "tba"
+      },
+      "time": {
+        "mode": "tba"
+      },
+      "venue": {
+        "mode": "tba"
+      },
+      "seats": {
+        "mode": "tba"
+      },
+      "apply": {
+        "mode": "none"
+      },
+      "summary": "Placeholder with nothing decided yet.",
+      "description": [
+        "Nothing is decided. It is listed under Date to be announced."
+      ],
+      "highlights": [],
+      "art": "party",
+      "photo": null,
+      "hub": []
+    }
+  ],
+  "members": [
+    {
+      "slug": "placeholder-member-one",
+      "name": "Placeholder Member One",
+      "role": "Member",
+      "department": "CSE",
+      "year": {
+        "mode": "pick",
+        "text": "2nd"
+      },
+      "bio": "Placeholder member for testing.",
+      "focus": [
+        "Placeholder"
+      ],
+      "links": {
+        "email": null,
+        "linkedin": null,
+        "github": null
+      },
+      "art": "sprouts",
+      "photo": null
+    },
+    {
+      "slug": "placeholder-member-two",
+      "name": "Placeholder Member Two",
+      "role": "Design Member",
+      "department": "ECE",
+      "year": {
+        "mode": "text",
+        "text": "Final year"
+      },
+      "bio": "Placeholder member for testing.",
+      "focus": [
+        "Placeholder"
+      ],
+      "links": {
+        "email": null,
+        "linkedin": null,
+        "github": null
+      },
+      "art": "cursor",
+      "photo": null
+    },
+    {
+      "slug": "placeholder-member-three",
+      "name": "Placeholder Member Three",
+      "role": "Member",
+      "department": "IT",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder member for testing.",
+      "focus": [
+        "Placeholder"
+      ],
+      "links": {
+        "email": null,
+        "linkedin": null,
+        "github": null
+      },
+      "art": "hands-together",
+      "photo": null
+    }
+  ]
+}
