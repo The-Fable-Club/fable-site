@@ -8,6 +8,7 @@ import { Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { bySlug, dateLabel, isOpen } from "@/lib/events";
+import { RegisterForm } from "@/components/register-form";
 
 export async function generateStaticParams() {
   const { events } = await getContent();
@@ -104,7 +105,10 @@ async function EventDetail({
                   <Clock className="mt-0.5 size-5 shrink-0 text-clay-deep" aria-hidden />
                   <div>
                     <dt className="hud text-ink-faint">When</dt>
-                    <dd className="mt-1">{dateLabel(e)}</dd>
+                    <dd className="mt-1">
+                      {dateLabel(e)}
+                      {e.tentative && e.start && <span className="hud ml-2 border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
+                    </dd>
                     <dd className="text-ink-soft">{e.time}</dd>
                   </div>
                 </div>
@@ -129,7 +133,7 @@ async function EventDetail({
               <div className="space-y-3 border-t border-ink p-5">
                 {open ? (
                   <>
-                    {e.applyUrl && (
+                    {e.registration === "open" && e.applyUrl && (
                       <a
                         href={e.applyUrl}
                         target="_blank"
@@ -139,6 +143,12 @@ async function EventDetail({
                         Apply for this event
                         <ArrowUpRight className="size-4" aria-hidden />
                       </a>
+                    )}
+                    {e.registration === "soon" && (
+                      <p className="border border-dashed border-ink/50 p-3 text-sm text-ink-soft">Registration opens soon. Check back here.</p>
+                    )}
+                    {e.registration === "closed" && (
+                      <p className="border border-ink/30 p-3 text-sm text-ink-soft">Registration is closed for this event.</p>
                     )}
                     <Link
                       href={`/events/${e.slug}/hub`}
@@ -163,6 +173,11 @@ async function EventDetail({
                 )}
               </div>
             </div>
+            {e.registration === "open" && e.apply.mode === "form" && (
+              <div className="mt-6">
+                <RegisterForm slug={e.slug} title={e.title} />
+              </div>
+            )}
           </aside>
         </div>
       </div>
