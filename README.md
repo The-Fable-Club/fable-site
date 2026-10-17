@@ -1,46 +1,58 @@
-# The Fable Club — website
+# The Fable Club: website
 
-Landing site for The Fable Club, a Claude learning club at VIT Chennai.
+The public site for The Fable Club, a Claude learning club at VIT Chennai: **www.thefableclub.com**.
 Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind v4 · shadcn/ui (base-nova) · motion.
+
+The site is **static**. Events and people are managed in a separate CMS ([The-Fable-Club/fable-cms](https://github.com/The-Fable-Club/fable-cms)); when an editor presses Publish, Vercel rebuilds this site once from the newest release. Visitors never read the database while browsing. The only live database access is two small form routes (applications and event registrations).
+
+Full picture, data flows, security and status: **[fable-cms/docs/ARCHITECTURE.md](https://github.com/The-Fable-Club/fable-cms/blob/main/docs/ARCHITECTURE.md)**. The site's side: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+# .env.local needs NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (both public values)
+npm run dev                  # http://localhost:3000, follows new releases automatically
 npm run build && npm start
+npm test                     # unit tests
 ```
 
+`npm run dev` and `npm run build` first fetch the newest release (`scripts/pull-snapshot.mjs`). On Vercel a failed fetch fails the build (the old site stays up); locally it falls back to `content/seed/snapshot.json`.
+
 ## Pages
+
 | Route | What |
 |---|---|
-| `/` | Landing: hero, about + aims dial, highlighted event + timeline, board strip, join |
-| `/events` | Current/upcoming, full timeline, event history |
-| `/events/[slug]` | Event details. Apply button + hub link only for active/upcoming events |
-| `/events/[slug]/hub` | Participant hub (board → participants). 404 for past events |
-| `/members` | Everyone; click a card for the bio. Deep link: `/members?m=<slug>` |
-| `/join` | Recruitment form (no backend: produces an email draft) |
+| `/` | Landing: hero (with "Live now" / "Registrations open" announcements), about and aims, events carousel and timeline, people, join |
+| `/events` | Current and upcoming, the full timeline (undecided dates are marked or listed underneath), event history |
+| `/events/[slug]` | Event details, and the registration form, outside link or "opening soon" state |
+| `/events/[slug]/hub` | Participant hub (links and announcements from the organisers). Public to anyone with the link. |
+| `/members` | Faculty, board, leads and members; click a card for the bio. Deep link: `/members?m=<slug>` |
+| `/join` | Recruitment form: saves to the database, with an email draft as a fallback |
+| `/api/applications`, `/api/registrations` | The two form routes (validation, honeypot, origin check, insert only) |
 
-## Content
-Content lives in `content/` (JSON) and is edited at `/keystatic`; see **docs/CMS.md**. It is all **placeholder** for now. Pages show "Placeholder" markers (`<Ph />`) wherever copy is not final; remove them as content is finalised.
+## Where content comes from
 
-Event status (Live / Open / Past) is derived from the dates and decides who gets an Apply button and a hub.
+| Content | Source |
+|---|---|
+| Events, hub posts, faculty, board, leads, members | The CMS release (`.snapshot/release.json`, fetched at build time, validated against `src/lib/contract.ts`) |
+| Club text, contact, socials and the five aims | `content/club.json`, `content/aims.json` (edit and push) |
+| Offline fallback | `content/seed/snapshot.json` (refreshed by the CMS seed script) |
 
-## Not built yet (no backend)
-- Real form submission for `/join` (currently opens a `mailto:` draft).
-- Hub posting/auth: the board "post" form is a local demo; hubs are public to anyone with the link.
-- Apply links are `#placeholder-…`.
+Event status (Live / Open / Past) is derived from the dates (`src/lib/event-logic.ts`) and refreshes within the hour without a rebuild. Many details can be undecided in the CMS (date, time, venue, seats, registration); the site shows "to be announced" and the right button state.
+
+`src/lib/contract.ts` and `src/lib/event-logic.ts` are **copies** of the CMS files: change both repos together.
+
+## Still placeholder
+
+Copy and bios are placeholder text (marked with `<Ph />` on the page), board emails are placeholders, there are no member photos yet, and the 3D models in "What we're for" are procedural stand-ins. See [docs/ASKS.md](docs/ASKS.md).
 
 ## Assets
-- Fonts: Anthropic Sans / Serif / Mono in `src/fonts` (loaded with `next/font/local`). Confirm licence before public launch.
+
+- Fonts: Anthropic Sans / Serif / Mono in `src/fonts` (`next/font/local`). Confirm the licence before a wide launch.
 - Illustrations: `public/art/*.svg`. Brand images: `public/logo-*.jpg`, `public/banner-*.jpg`.
 - `_reference/` (gitignored): prototype, font archives, Endfield notes.
 
 ## Interaction notes
-- Left rail: icons only until hovered/focused, then expands with labels; on `/` it follows the section being scrolled, elsewhere it marks the current page. The right-edge section index is kept.
-- "What we're for": canvas point-cloud viewer (`components/home/point-cloud.tsx`), procedural models per aim; drag to orbit. Swap generators for real models later.
-- Events: path-style carousel (`components/home/events-carousel.tsx`) + two-month timeline. Motion across the site uses one easing, `ease-flow` (soft start, quick middle, soft landing).
-- Snapshots of earlier versions of reworked sections are in `_backups/` (see its README).
-- Open asks for the club: `docs/ASKS.md`.
-- ReactBits components live in `src/components/` (installed via `npx shadcn@latest add https://reactbits.dev/r/<Name>-TS-TW.json`). `CountUp` is used for the stats.
 
-## Claude skills
-`.claude/skills/frontend-design` (from anthropics/skills).
+- Left rail: icons until hovered or focused, then labels; on `/` it follows the section being scrolled. Right-edge section index.
+- "What we're for": canvas point-cloud viewer (`components/home/point-cloud.tsx`); drag to orbit. Swap the generators for real models later.
+- Events: path-style carousel and a continuous, draggable timeline. All motion uses one easing, `ease-flow` (`cubic-bezier(.65,0,.35,1)`), at full strength (reduced motion is deliberately not honoured).

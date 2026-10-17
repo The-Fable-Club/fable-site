@@ -9,16 +9,16 @@ The point-cloud models are procedural stand-ins. For real ones, any of:
 - The **final text for the five aims** (title + 2 lines each).
 
 ## Content
-- First events' details ("deets"): dates, venues, apply links, seats.
-- Real member bios, departments, years, photos, contact links.
+- Real events: dates, venues, registration choice, seats (enter them in the CMS).
+- Real member bios, departments, years, photos, contact links (CMS).
 - Media (photos / clips) for events and the gallery.
 
-## Setup the club needs to do
-- GitHub org under the club Gmail, then push this repo there.
-- Vercel project linked to that repo.
-- CMS login (see `docs/CMS.md`): GitHub App + env vars on Vercel.
-- Backend (in progress, owned by the club): applications, participant hubs, auth.
+## Member backgrounds (People section)
+Each group (web dev, agentic AI, operations, finance, creative, technical, leadership) needs a background. Recommended: generated SVG motifs in the club palette (no licensing). Options are in the CMS repo's `docs/ROADMAP.md`.
+
+## Done since this was written
+GitHub org, Vercel, the CMS, the database, applications and event registrations are all live. Hub posts are published from the CMS (they are public to anyone with the link).
 
 ## Fix later
-- Hub posts and application submissions are demo-only until the backend exists.
 - Font licensing: deliberately deferred.
+- Photos: the upload control exists in the CMS but has not been tested end to end.
