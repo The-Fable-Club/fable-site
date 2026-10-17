@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local design references / source archives (large, not deployed)
 /_reference/
+
+# local Claude Code settings and skills (not part of the site)
+.claude/
