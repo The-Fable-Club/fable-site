@@ -21,7 +21,7 @@ const groupTone = {
 
 export default async function Home() {
   const { club, aims, events, members } = await getContent();
-  const board = members.filter((m) => m.group !== "Leads");
+  const board = members.filter((m) => m.order < 100); // faculty + office bearers; the full list lives on /members
   const faculty = members.filter((m) => m.group === "Faculty");
   const open = openEvents(events);
 
@@ -95,7 +95,7 @@ export default async function Home() {
               </Link>
             </div>
             <div className="mt-24">
-              <Timeline events={events} />
+              <Timeline events={events} bleed />
             </div>
           </div>
         </section>

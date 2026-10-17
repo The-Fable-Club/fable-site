@@ -25,7 +25,30 @@ const todayUtc = () => {
 
 // Horizontal "version calendar": a date ruler with each event pinned to its
 // start date. Drag, scroll or use the arrows to move along it.
-export function Timeline({ events, className }: { events: ClubEvent[]; className?: string }) {
+export function Timeline({
+  events,
+  className,
+  bleed = false,
+}: {
+  events: ClubEvent[];
+  className?: string;
+  /** Run to the right edge of the page instead of stopping at the content column. */
+  bleed?: boolean;
+}) {
+  const outer = useRef<HTMLDivElement>(null);
+  const [bleedW, setBleedW] = useState<number | null>(null);
+  useEffect(() => {
+    if (!bleed) return;
+    const fit = () => {
+      const el = outer.current;
+      if (!el) return;
+      const left = el.getBoundingClientRect().left;
+      setBleedW(Math.max(0, document.documentElement.clientWidth - left));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [bleed]);
   const scroller = useRef<HTMLDivElement>(null);
   const drag = useRef({ down: false, x: 0, left: 0, moved: false });
   // Read on the client only so the server render stays static.
@@ -101,8 +124,12 @@ export function Timeline({ events, className }: { events: ClubEvent[]; className
   };
 
   return (
-    <div className={cn("relative", className)}>
-      <div className="absolute right-0 top-0 z-20 flex gap-2 md:-top-14">
+    <div
+      ref={outer}
+      className={cn("relative", className)}
+      style={bleed && bleedW !== null ? { width: bleedW } : undefined}
+    >
+      <div className={cn("absolute top-0 z-20 flex gap-2 md:-top-14", bleed ? "right-6 md:right-12" : "right-0")}>
         <ArrowBtn onClick={() => nudge(-1)} aria-label="Scroll timeline back">
           <ChevronLeft className="size-5" aria-hidden />
         </ArrowBtn>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import {
   CalendarDays,
   House,
@@ -88,21 +89,26 @@ export function Rail({ name }: { name: string }) {
                 aria-current={on ? "page" : undefined}
                 className={cn(
                   "relative flex h-full w-full flex-col items-center justify-center gap-1 transition-colors duration-300 ease-[ease] md:h-12 md:flex-row md:justify-start md:gap-0",
-                  on ? "bg-ink text-paper" : "text-ink-faint hover:bg-paper-raised hover:text-ink",
+                  on ? "text-paper" : "text-ink-faint hover:bg-paper-raised hover:text-ink",
                 )}
               >
-                <span className="grid place-items-center md:w-[var(--rail-w)] md:shrink-0">
+                {/* The black plate is a single shared element: it slides from the
+                    old section to the new one instead of fading out and in. */}
+                {on && (
+                  <motion.span
+                    layoutId="rail-active"
+                    aria-hidden
+                    className="absolute inset-0 bg-ink"
+                    transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                  >
+                    <span className="absolute left-0 top-0 hidden h-full w-[3px] bg-clay md:block" />
+                  </motion.span>
+                )}
+                <span className="relative grid place-items-center md:w-[var(--rail-w)] md:shrink-0">
                   <Icon className="size-[1.2rem]" strokeWidth={1.6} aria-hidden />
                 </span>
-                <span className="hud text-[0.6rem] leading-none md:hidden">{i.label}</span>
-                <span className={cn("hidden whitespace-nowrap text-sm md:inline", label)}>{i.label}</span>
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute left-0 top-0 hidden h-full w-[3px] origin-top bg-clay transition-transform duration-300 ease-[ease] md:block",
-                    on ? "scale-y-100" : "scale-y-0",
-                  )}
-                />
+                <span className="relative hud text-[0.6rem] leading-none md:hidden">{i.label}</span>
+                <span className={cn("relative hidden whitespace-nowrap text-sm md:inline", label)}>{i.label}</span>
               </Link>
             </li>
           );
@@ -128,29 +134,41 @@ export function Rail({ name }: { name: string }) {
         ))}
       </ul>
 
-      {/* call to action: vertical tab when slim, button when open */}
+      {/* Call to action. One element: a vertical tab when the rail is slim that
+          widens, shortens, turns its label upright and changes colour when it opens. */}
       <div className="relative mx-2 mb-5 hidden h-[8.5rem] md:block">
         <Link
           href="/join"
+          aria-label="Join the club"
           className={cn(
-            "absolute left-1/2 top-0 flex w-11 -translate-x-1/2 flex-col items-center gap-3 bg-ink py-4 text-paper transition-opacity duration-200 ease-[ease]",
-            "group-hover/rail:pointer-events-none group-hover/rail:opacity-0 group-focus-within/rail:pointer-events-none group-focus-within/rail:opacity-0",
+            "absolute left-1/2 top-0 h-[8.5rem] w-11 -translate-x-1/2 overflow-hidden bg-ink text-paper",
+            "transition-[width,height,background-color,color] duration-300 ease-[ease]",
+            "group-hover/rail:h-14 group-hover/rail:w-full group-hover/rail:bg-clay group-hover/rail:text-ink",
+            "group-focus-within/rail:h-14 group-focus-within/rail:w-full group-focus-within/rail:bg-clay group-focus-within/rail:text-ink",
+            "hover:!bg-ink hover:!text-paper",
           )}
         >
-          <span className="text-[0.8rem] font-medium tracking-wide [writing-mode:vertical-rl]">
+          <span
+            className={cn(
+              "absolute left-1/2 top-1/2 whitespace-nowrap text-[0.8rem] font-medium tracking-wide",
+              "[transform:translate(-50%,-50%)_rotate(90deg)] [transition:transform_.3s_ease,font-size_.3s_ease]",
+              "group-hover/rail:[transform:translate(-50%,-50%)_rotate(0deg)] group-hover/rail:text-sm",
+              "group-focus-within/rail:[transform:translate(-50%,-50%)_rotate(0deg)] group-focus-within/rail:text-sm",
+            )}
+          >
             Join the club
           </span>
-          <span aria-hidden className="size-1.5 bg-clay" />
-        </Link>
-        <Link
-          href="/join"
-          className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 flex h-14 items-center justify-between bg-clay px-4 font-medium text-ink opacity-0 transition-[opacity,background-color] duration-200 ease-[ease] hover:bg-ink hover:text-paper",
-            "group-hover/rail:pointer-events-auto group-hover/rail:opacity-100 group-focus-within/rail:pointer-events-auto group-focus-within/rail:opacity-100",
-          )}
-        >
-          Join the club
-          <UserPlus className="size-4" aria-hidden />
+          <UserPlus
+            aria-hidden
+            className={cn(
+              "absolute right-4 top-1/2 size-4 -translate-y-1/2 opacity-0 [transition:opacity_.2s_ease]",
+              "group-hover/rail:opacity-100 group-focus-within/rail:opacity-100",
+            )}
+          />
+          <span
+            aria-hidden
+            className="absolute bottom-3 left-1/2 size-1.5 -translate-x-1/2 bg-clay transition-opacity duration-200 group-hover/rail:opacity-0 group-focus-within/rail:opacity-0"
+          />
         </Link>
       </div>
     </nav>

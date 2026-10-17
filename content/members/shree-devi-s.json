@@ -4,14 +4,14 @@
   "group": "Board",
   "order": 60,
   "department": "Placeholder department",
-  "year": "Placeholder year",
-  "bio": "Placeholder bio. Supports the secretary with communications and keeps participants updated before and after events.",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Shree and what they do for the club goes here.",
   "focus": [
     "Communications",
     "Participants"
   ],
-  "email": "cosecretary@thefableclub.example",
-  "linkedin": "#",
+  "email": "shree-devi-s@placeholder.example",
+  "linkedin": "",
   "github": "",
   "art": "pointer",
   "photo": null

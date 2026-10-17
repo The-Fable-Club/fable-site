@@ -9,3 +9,4 @@ Snapshots of sections before big changes, so we can roll back. Not part of the b
 
 To roll back one file: copy it from the snapshot back to its original path (home/* → `src/components/home/`, others → `src/components/`, `page.tsx` → `src/app/`, `globals.css` → `src/app/`).
 Add a new dated folder whenever a section gets a big rework.
+| `2026-10-17_before-dial-rail-battery-pass` | hero, aims dial, point cloud, events carousel, people strip, section index, rail, timeline, home page (`home-page.tsx`), events page (`events-page.tsx`) | Before the synced dial, sliding rail highlight, battery optimisations, full-bleed timeline |

@@ -1,0 +1,18 @@
+{
+  "name": "Bavana A",
+  "role": "Creative & Communications",
+  "group": "Board",
+  "order": 270,
+  "department": "Placeholder department",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Bavana and what they do for the club goes here.",
+  "focus": [
+    "Design",
+    "Social media"
+  ],
+  "email": "bavana-a@placeholder.example",
+  "linkedin": "",
+  "github": "",
+  "art": "party",
+  "photo": null
+}

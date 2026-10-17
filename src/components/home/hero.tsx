@@ -4,46 +4,36 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { Hud, Ph } from "@/components/hud";
-import { prefersReducedMotion } from "@/lib/motion";
 import { dateLabel, type ClubEvent } from "@/lib/events";
 import type { Club } from "@/lib/content";
 
 const STROKE = "var(--color-paper)";
 
-// Critically-damped spring ("smooth damp"): the value glides to its target
-// with no overshoot, and its velocity is continuous, so it always starts and
-// ends gently no matter how far away the target jumps.
-function smoothDamp(cur: number, target: number, vel: { v: number }, smoothTime: number, dt: number) {
-  const omega = 2 / smoothTime;
-  const x = omega * dt;
-  const e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
-  const change = cur - target;
-  const temp = (vel.v + omega * change) * dt;
-  vel.v = (vel.v - omega * temp) * e;
-  return target + (change + temp) * e;
-}
-
 // Hero stage. The sprout mark is split into depth layers that follow the
-// cursor with a delay, so the mark reads as floating parts rather than a flat
+// cursor immediately, so the mark reads as floating parts rather than a flat
 // logo.
 //
-// The cursor is tracked across the whole window (clamped to the stage), and
-// the mark always glides toward it with a spring. There is no "inside /
-// outside" logic and nothing is predicted: wherever the pointer leaves or
-// re-enters, the mark just accelerates smoothly from where it is.
+// The cursor is tracked across the whole window (clamped to the stage), so
+// leaving the section towards the rail or the next section just parks the
+// mark at the edge; it never snaps back to the centre.
 export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
   const stage = useRef<HTMLElement>(null);
   const readout = useRef<HTMLSpanElement>(null);
-
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const reduce = prefersReducedMotion();
+    // Depth layers of the mark (tagged data-depth). Their transforms are written
+    // directly each frame, instead of via a CSS variable on the section, which
+    // forced the browser to restyle the whole hero subtree 60 times a second.
+    const layers = Array.from(el.querySelectorAll<SVGGElement>("g[data-depth]")).map((g) => ({
+      el: g,
+      d: Number(g.dataset.depth),
+    }));
     const target = { x: 0, y: 0 };
     const cur = { x: 0, y: 0 };
-    const vx = { v: 0 };
-    const vy = { v: 0 };
-    let last = performance.now();
+    let lastX = NaN;
+    let lastY = NaN;
+    let lastReadout = 0;
     let raf = 0;
     let visible = true;
 
@@ -57,19 +47,20 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
 
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
       if (!visible) return;
-      if (reduce) {
-        cur.x = target.x;
-        cur.y = target.y;
-      } else {
-        cur.x = smoothDamp(cur.x, target.x, vx, 0.6, dt);
-        cur.y = smoothDamp(cur.y, target.y, vy, 0.6, dt);
+      // Immediate follow: the mark sits exactly where the cursor puts it.
+      cur.x = target.x;
+      cur.y = target.y;
+      // Unchanged since the last frame: nothing to write, so idle frames are free.
+      if (cur.x === lastX && cur.y === lastY) return;
+      lastX = cur.x;
+      lastY = cur.y;
+      for (const l of layers) {
+        l.el.setAttribute("transform", `translate(${(cur.x * l.d).toFixed(2)} ${(cur.y * l.d).toFixed(2)})`);
       }
-      el.style.setProperty("--px", cur.x.toFixed(4));
-      el.style.setProperty("--py", cur.y.toFixed(4));
-      if (readout.current) {
+      el.dataset.px = cur.x.toFixed(4); // exposed for tests / debugging
+      if (readout.current && now - lastReadout > 120) {
+        lastReadout = now;
         readout.current.textContent = `X ${(cur.x * 100).toFixed(0).padStart(4, " ")}  Y ${(cur.y * 100).toFixed(0).padStart(4, " ")}`;
       }
     };
@@ -86,11 +77,6 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
       window.removeEventListener("pointermove", onMove);
     };
   }, []);
-
-  const layer = (d: number) =>
-    ({
-      transform: `translate(calc(var(--px, 0) * ${d}px), calc(var(--py, 0) * ${d}px))`,
-    }) as React.CSSProperties;
 
   return (
     <section
@@ -161,7 +147,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
             strokeLinejoin="round"
           >
             {/* stem + branches */}
-            <g style={layer(4)}>
+            <g data-depth={4}>
               {[
                 "M512 800 V372",
                 "M512 800 L364 706",
@@ -179,7 +165,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
               ))}
             </g>
             {/* halo */}
-            <g style={layer(22)}>
+            <g data-depth={22}>
               <circle
                 cx="512"
                 cy="326"
@@ -199,7 +185,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
                 [696, 682, 18, 1.45],
               ] as const
             ).map(([cx, cy, depth, delay], i) => (
-              <g key={i} style={layer(depth)}>
+              <g key={i} data-depth={depth}>
                 <circle
                   cx={cx}
                   cy={cy}
@@ -222,7 +208,7 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
       {event && (
         <Link
           href={`/events/${event.slug}`}
-          className="group relative z-10 mx-6 mb-6 flex flex-wrap items-center gap-x-6 gap-y-1 border border-paper/25 bg-night/70 px-4 py-3 backdrop-blur transition-colors duration-500 ease-flow hover:border-clay md:mx-12 md:mb-10"
+          className="group relative z-10 mx-6 mb-6 flex flex-wrap items-center gap-x-6 gap-y-1 border border-paper/25 bg-night/90 px-4 py-3 transition-colors duration-500 ease-flow hover:border-clay md:mx-12 md:mb-10"
         >
           <span className="hud flex items-center gap-2 text-clay">
             <span className="size-2 animate-pulse bg-clay" aria-hidden />

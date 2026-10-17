@@ -3,9 +3,9 @@
   "role": "Faculty Coordinator",
   "group": "Faculty",
   "order": 10,
-  "department": "VIT Chennai",
+  "department": "Placeholder department",
   "year": "",
-  "bio": "Placeholder bio. Guides the club on behalf of the Office of Students’ Welfare and is the first point of contact for membership and approvals.",
+  "bio": "Placeholder bio. A short paragraph about Dr. and what they do for the club goes here.",
   "focus": [
     "Mentorship",
     "Approvals"

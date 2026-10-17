@@ -77,7 +77,7 @@ export function PeopleStrip({ people }: { people: Member[] }) {
             onFocus={() => choose(i, 0)}
             aria-label={`${m.name}, ${m.role}`}
             className={cn(
-              "group relative flex min-h-48 flex-col justify-between overflow-hidden p-5 transition-colors duration-[900ms] ease-flow",
+              "group relative flex min-h-48 flex-col justify-between overflow-hidden p-5 transition-colors duration-[900ms] ease-flow [contain:layout_paint_style]",
               open ? "bg-paper" : "bg-paper-raised hover:bg-paper-sunken",
             )}
           >

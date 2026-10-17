@@ -4,14 +4,14 @@
   "group": "Board",
   "order": 50,
   "department": "Placeholder department",
-  "year": "Placeholder year",
-  "bio": "Placeholder bio. Keeps schedules, records and the member list. Write to the secretary for attendance questions or event logistics.",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Dhriti and what they do for the club goes here.",
   "focus": [
     "Schedules",
     "Records"
   ],
-  "email": "secretary@thefableclub.example",
-  "linkedin": "#",
+  "email": "dhriti-vaz@placeholder.example",
+  "linkedin": "",
   "github": "",
   "art": "writing",
   "photo": null

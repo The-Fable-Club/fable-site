@@ -1,3 +1,5 @@
+> **Interim.** Keystatic is the stopgap editor. The planned replacement (Supabase + a Publish button, no repo access) is in [CMS-PLAN.md](CMS-PLAN.md).
+
 # Editing the site (CMS)
 
 The site's content lives as plain files in `content/` and is edited through an admin screen at **`/keystatic`** (Keystatic). There is no database: saving in the admin changes the files, and the site shows the change.

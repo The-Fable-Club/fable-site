@@ -1,0 +1,18 @@
+{
+  "name": "Harsha Vardan M Sakamuri",
+  "role": "Web Development",
+  "group": "Board",
+  "order": 180,
+  "department": "Placeholder department",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Harsha and what they do for the club goes here.",
+  "focus": [
+    "Website",
+    "Frontend"
+  ],
+  "email": "harsha-vardan-m-sakamuri@placeholder.example",
+  "linkedin": "",
+  "github": "",
+  "art": "cursor",
+  "photo": null
+}

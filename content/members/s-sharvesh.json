@@ -1,0 +1,18 @@
+{
+  "name": "S Sharvesh",
+  "role": "Finance",
+  "group": "Board",
+  "order": 250,
+  "department": "Placeholder department",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about S and what they do for the club goes here.",
+  "focus": [
+    "Budget",
+    "Sponsorship"
+  ],
+  "email": "s-sharvesh@placeholder.example",
+  "linkedin": "",
+  "github": "",
+  "art": "search",
+  "photo": null
+}

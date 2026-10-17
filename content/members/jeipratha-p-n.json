@@ -3,16 +3,16 @@
   "role": "Faculty Coordinator",
   "group": "Faculty",
   "order": 20,
-  "department": "VIT Chennai",
+  "department": "Placeholder department",
   "year": "",
-  "bio": "Placeholder bio. Supports the club’s programme and works with the board on events that involve the wider campus.",
+  "bio": "Placeholder bio. A short paragraph about Dr. and what they do for the club goes here.",
   "focus": [
     "Mentorship",
-    "Campus events"
+    "Approvals"
   ],
   "email": "jeiprathap.n@vit.ac.in",
   "linkedin": "",
   "github": "",
-  "art": "hands-together",
+  "art": "book",
   "photo": null
 }

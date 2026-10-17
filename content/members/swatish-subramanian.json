@@ -4,16 +4,15 @@
   "group": "Board",
   "order": 30,
   "department": "Placeholder department",
-  "year": "Placeholder year",
-  "bio": "Placeholder bio. Sets the club’s direction for the year and chairs the board. Ask about partnerships, the flagship hackathon or starting something new.",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Swatish and what they do for the club goes here.",
   "focus": [
     "Direction",
-    "Partnerships",
-    "Hackathon"
+    "Partnerships"
   ],
-  "email": "chair@thefableclub.example",
-  "linkedin": "#",
-  "github": "#",
+  "email": "swatish-subramanian@placeholder.example",
+  "linkedin": "",
+  "github": "",
   "art": "steps",
   "photo": null
 }

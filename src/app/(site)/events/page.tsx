@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hud, PageHead, Ph } from "@/components/hud";
 import { EventRow } from "@/components/event-row";
+import { EventsCarousel } from "@/components/home/events-carousel";
 import { Timeline } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { openEvents, pastEvents } from "@/lib/events";
@@ -26,6 +27,12 @@ export default async function EventsPage() {
         <Ph className="mt-6">Dates, venues and links are placeholders</Ph>
       </PageHead>
 
+      <section id="highlights" className="bg-paper-sunken py-16 md:py-24">
+        <div className="mx-auto max-w-[90rem]">
+          <EventsCarousel events={current} />
+        </div>
+      </section>
+
       <section id="current" className="bg-paper">
         <div className="mx-auto max-w-6xl px-6 py-16 md:px-12 md:py-20">
           <div className="flex items-baseline justify-between gap-4">
@@ -48,8 +55,8 @@ export default async function EventsPage() {
             Drag or scroll sideways. Each card opens that event.
           </p>
         </div>
-        <div className="mx-auto max-w-[90rem] px-6 pb-16 pt-24 md:px-12 md:pb-24">
-          <Timeline events={events} />
+        <div className="mx-auto max-w-6xl px-6 pb-16 pt-24 md:px-12 md:pb-24">
+          <Timeline events={events} bleed />
         </div>
       </section>
 

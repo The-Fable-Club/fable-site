@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { motion, type Variants } from "motion/react";
+import { motion, useInView, type Variants } from "motion/react";
 import { useReducedMotion } from "@/lib/motion";
 import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 import { dateLabel, type ClubEvent } from "@/lib/events";
@@ -83,6 +83,8 @@ function Connector({ reached }: { reached: boolean }) {
 // centred card is full size, neighbours stay visible so you can see there
 // is more, and the path between cards fills in as you travel along it.
 export function EventsCarousel({ events }: { events: ClubEvent[] }) {
+  const root = useRef<HTMLDivElement>(null);
+  const onScreen = useInView(root); // endless motion only runs while the carousel is visible
   const scroller = useRef<HTMLDivElement>(null);
   const items = useRef<(HTMLDivElement | null)[]>([]);
   const anim = useRef(0);
@@ -237,7 +239,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
   const shown = Math.min(active, events.length - 1);
 
   return (
-    <div>
+    <div ref={root}>
       <div className="mb-4 flex items-center justify-between gap-4 px-6 md:px-12">
         <div className="flex items-center gap-4">
           <span className="font-display text-3xl tabular-nums">
@@ -413,7 +415,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                         <Image src={e.photo} alt="" fill sizes="272px" className="object-cover" />
                       ) : (
                         <motion.div
-                          animate={on && !reduce ? { y: [0, -9, 0], rotate: [0, 1.5, 0] } : { y: 0, rotate: 0 }}
+                          animate={on && onScreen && !reduce ? { y: [0, -9, 0], rotate: [0, 1.5, 0] } : { y: 0, rotate: 0 }}
                           transition={{ duration: 6, repeat: Infinity, ease: FLOW }}
                           className="size-[78%]"
                         >

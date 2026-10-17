@@ -1,18 +1,18 @@
 {
   "name": "Sharann M",
-  "role": "Vice Chairperson",
+  "role": "Vice-Chairperson",
   "group": "Board",
   "order": 40,
   "department": "Placeholder department",
-  "year": "Placeholder year",
-  "bio": "Placeholder bio. Works across every programme track and steps in wherever the chairperson cannot. Ask about the build sessions.",
+  "year": "",
+  "bio": "Placeholder bio. A short paragraph about Sharann and what they do for the club goes here.",
   "focus": [
     "Build sessions",
     "Operations"
   ],
-  "email": "vice@thefableclub.example",
-  "linkedin": "#",
-  "github": "#",
+  "email": "sharann-m@placeholder.example",
+  "linkedin": "",
+  "github": "",
   "art": "code-window",
   "photo": null
 }

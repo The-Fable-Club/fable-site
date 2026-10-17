@@ -25,7 +25,7 @@ export function SectionIndex() {
       aria-label="Sections on this page"
       className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
     >
-      <ul className="flex flex-col items-end gap-3">
+      <ul className="flex flex-col items-end gap-3 bg-paper/90 px-2.5 py-3">
         {sections.map((s) => {
           const on = current === s.id;
           return (
@@ -47,8 +47,8 @@ export function SectionIndex() {
                 </span>
                 <span
                   className={cn(
-                    "block h-[3px] transition-all duration-700 ease-flow mix-blend-difference",
-                    on ? "w-8 bg-white" : "w-3 bg-white/70 group-hover:w-6",
+                    "block h-[3px] transition-all duration-700 ease-flow",
+                    on ? "w-8 bg-clay-deep" : "w-3 bg-ink/40 group-hover:w-6 group-hover:bg-ink",
                   )}
                 />
               </a>
