@@ -70,8 +70,13 @@ export function Timeline({
   }, []);
   const PX = Math.max(viewW / VISIBLE_DAYS, MIN_PX);
 
+  // Events with no known day or month cannot sit on a calendar: they are listed underneath.
+  const dated = useMemo(() => events.filter((e): e is ClubEvent & { start: string } => !!e.start), [events]);
+  const undated = useMemo(() => events.filter((e) => !e.start), [events]);
+
   const layout = useMemo(() => {
-    const sorted = [...events].sort((a, b) => a.start.localeCompare(b.start));
+    const sorted = [...dated].sort((a, b) => a.start.localeCompare(b.start));
+    if (sorted.length === 0) return { items: [], months: [], min: 0, width: 0, lanes: 1 };
     const min = t(sorted[0].start) - 12 * DAY;
     const max = Math.max(...sorted.map((e) => t(e.end ?? e.start))) + 30 * DAY;
     const days = Math.ceil((max - min) / DAY);
@@ -97,7 +102,7 @@ export function Timeline({
       cur.setUTCMonth(cur.getUTCMonth() + 1);
     }
     return { items, months, min, width: days * PX, lanes: Math.max(laneRight.length, 1) };
-  }, [events, PX]);
+  }, [dated, PX]);
 
   const todayLeft = today === null ? null : ((today - layout.min) / DAY) * PX;
 
@@ -180,6 +185,8 @@ export function Timeline({
     el.scrollTo({ left: ratio * el.scrollWidth - el.clientWidth / 2, behavior: "smooth" });
     setTouched(true);
   };
+
+  if (dated.length === 0) return <UndatedList events={undated} bleed={bleed} className={className} />;
 
   return (
     <div
@@ -328,7 +335,14 @@ export function Timeline({
                   aria-hidden
                   className={cn(
                     "absolute h-2.5",
-                    past ? "bg-ink-faint" : e.status === "active" ? "bg-clay-deep" : "bg-ink",
+                    e.tentative
+                      ? "bg-[repeating-linear-gradient(90deg,currentColor_0_8px,transparent_8px_14px)]"
+                      : past
+                        ? "bg-ink-faint"
+                        : e.status === "active"
+                          ? "bg-clay-deep"
+                          : "bg-ink",
+                    e.tentative && (past ? "text-ink-faint" : e.status === "active" ? "text-clay-deep" : "text-ink"),
                   )}
                   style={{ left, width, top: RULER_H - 10 }}
                 />
@@ -358,7 +372,10 @@ export function Timeline({
                 >
                   <span className="flex items-center justify-between gap-2">
                     <Hud className={past ? "" : "text-ink-faint"}>{dateLabel(e)}</Hud>
-                    <StatusDot status={e.status} />
+                    <span className="flex items-center gap-1">
+                      {e.tentative && <span className="hud border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
+                      <StatusDot status={e.status} />
+                    </span>
                   </span>
                   <span
                     className={cn(
@@ -376,6 +393,33 @@ export function Timeline({
         </div>
       </div>
 
+      <UndatedList events={undated} bleed={bleed} />
+    </div>
+  );
+}
+
+/** Events whose date is not decided yet: shown under the timeline instead of on it. */
+function UndatedList({ events, bleed, className }: { events: ClubEvent[]; bleed?: boolean; className?: string }) {
+  if (events.length === 0) return null;
+  return (
+    <div className={cn("mt-8", bleed ? "px-6 md:px-12" : "", className)}>
+      <Hud className="text-ink-faint">Date to be announced</Hud>
+      <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {events.map((e) => (
+          <li key={e.slug}>
+            <Link
+              href={`/events/${e.slug}`}
+              className="block border-l-[3px] border-dashed border-ink bg-paper p-3 shadow-[0_0_0_1px_var(--color-border)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_var(--color-ink)]"
+            >
+              <span className="flex items-center justify-between gap-2">
+                <Hud className="text-ink-faint">{e.kind}</Hud>
+                <StatusDot status={e.status} />
+              </span>
+              <span className="mt-1.5 line-clamp-2 block font-display text-[1.15rem] leading-tight">{e.title}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
