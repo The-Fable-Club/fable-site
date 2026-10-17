@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Check, Copy, Mail } from "lucide-react";
-import { Hud, Ph } from "@/components/hud";
+import { Hud } from "@/components/hud";
 import { cn } from "@/lib/utils";
 
 const levels = [
@@ -50,8 +50,11 @@ export function JoinForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
 
-  function onSubmit(ev: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const f = new FormData(ev.currentTarget);
     const err = validate(f);
@@ -75,7 +78,35 @@ export function JoinForm() {
       `Why I want to join:`,
       g("why"),
     ].join("\n");
-    setDone(summary);
+    setProblem(null);
+    setSending(true);
+    let ok = false;
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: g("name"),
+          reg_no: g("reg"),
+          email: g("email"),
+          department: g("dept"),
+          year: g("year"),
+          level: g("level"),
+          tracks: picked,
+          why: g("why"),
+          consent: f.get("consent") === "on",
+          website: g("website"),
+        }),
+      });
+      const data = (await res.json()) as { ok: boolean; message?: string };
+      ok = data.ok;
+      if (!ok) setProblem(data.message ?? "We could not save your application.");
+    } catch {
+      setProblem("We could not reach the server.");
+    }
+    setSending(false);
+    setSent(ok);
+    setDone(summary); // kept so people can still email it if saving failed
   }
 
   if (done) {
@@ -85,15 +116,19 @@ export function JoinForm() {
         <span className="grid size-12 place-items-center bg-clay text-ink">
           <Check className="size-6" aria-hidden />
         </span>
-        <h2 className="mt-5 font-display text-4xl leading-tight">Your application is ready.</h2>
+        <h2 className="mt-5 font-display text-4xl leading-tight">
+          {sent ? "Your application is in." : "Your application is ready."}
+        </h2>
         <p className="mt-3 max-w-[52ch] font-serif text-lg text-ink-soft">
-          The form doesn’t submit anywhere yet. Send it by email so the coordinators receive it.
+          {sent
+            ? "The coordinators have received it. Here is a copy of what you sent."
+            : `${problem ?? "We could not save it."} You can email it to the coordinators instead.`}
         </p>
-        <Ph className="mt-4">Placeholder: submission backend not built</Ph>
         <pre className="mt-6 max-h-64 overflow-auto whitespace-pre-wrap border border-ink/20 bg-paper p-4 text-sm leading-relaxed">
           {done}
         </pre>
         <div className="mt-6 flex flex-wrap gap-3">
+          {!sent && (
           <a
             href={mail}
             className="inline-flex h-12 items-center gap-2 bg-ink px-6 font-medium text-paper transition-colors hover:bg-clay-deep"
@@ -101,6 +136,7 @@ export function JoinForm() {
             <Mail className="size-4" aria-hidden />
             Email the coordinator
           </a>
+          )}
           <button
             onClick={async () => {
               try {
@@ -116,12 +152,14 @@ export function JoinForm() {
             <Copy className="size-4" aria-hidden />
             {copied ? "Copied" : "Copy answers"}
           </button>
+          {!sent && (
           <button
             onClick={() => setDone(null)}
             className="h-12 px-4 font-medium underline underline-offset-4 hover:text-clay-deep"
           >
             Edit answers
           </button>
+          )}
         </div>
       </div>
     );
@@ -135,7 +173,12 @@ export function JoinForm() {
     "h-12 w-full border bg-paper px-3 text-base outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-clay/40 aria-[invalid=true]:border-destructive";
   return (
     <form ref={form} onSubmit={onSubmit} noValidate className="grid gap-8">
-      <Ph className="w-fit">Placeholder form: questions can change</Ph>
+      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Website
+          <input name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <label className="block">
@@ -245,11 +288,12 @@ export function JoinForm() {
       <div className="flex flex-wrap items-center gap-4">
         <button
           type="submit"
-          className="h-14 bg-ink px-10 text-lg font-medium text-paper transition-colors hover:bg-clay-deep"
+          disabled={sending}
+          className="h-14 bg-ink px-10 text-lg font-medium text-paper transition-colors hover:bg-clay-deep disabled:opacity-60"
         >
-          Review my application
+          {sending ? "Sending…" : "Send my application"}
         </button>
-        <Hud className="text-ink-faint">Nothing is sent until you email it.</Hud>
+        <Hud className="text-ink-faint">We’ll contact you by email.</Hud>
       </div>
     </form>
   );
