@@ -21,7 +21,11 @@ export default async function EventsPage() {
       <PageHead
         crumb="Events"
         title="What’s on, and what already happened."
-        lede="Ten events across four phases, from October 2026 to April 2027. Open an event to see the details and apply."
+        lede={
+          events.length === 0
+            ? "No events are published yet. Check back soon."
+            : `${events.length} event${events.length === 1 ? "" : "s"} so far. Open one to see the details and register.`
+        }
         art="/art/party.svg"
       >
         <Ph className="mt-6">Dates, venues and links are placeholders</Ph>
