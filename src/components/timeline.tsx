@@ -36,14 +36,18 @@ export function Timeline({
   bleed?: boolean;
 }) {
   const outer = useRef<HTMLDivElement>(null);
-  const [bleedW, setBleedW] = useState<number | null>(null);
+  // Bleed: stretch to both edges of the page area (right up to the rail on the
+  // left, to the window edge on the right), not just the content column.
+  const [bleedBox, setBleedBox] = useState<{ ml: number; w: number } | null>(null);
   useEffect(() => {
     if (!bleed) return;
     const fit = () => {
       const el = outer.current;
       if (!el) return;
-      const left = el.getBoundingClientRect().left;
-      setBleedW(Math.max(0, document.documentElement.clientWidth - left));
+      const page = (el.closest("main") ?? document.body).getBoundingClientRect();
+      // `el` may already be shifted by a previous fit; undo that to find its natural left.
+      const natural = el.getBoundingClientRect().left - (parseFloat(el.style.marginLeft) || 0);
+      setBleedBox({ ml: page.left - natural, w: page.width });
     };
     fit();
     window.addEventListener("resize", fit);
@@ -127,7 +131,7 @@ export function Timeline({
     <div
       ref={outer}
       className={cn("relative", className)}
-      style={bleed && bleedW !== null ? { width: bleedW } : undefined}
+      style={bleed && bleedBox ? { width: bleedBox.w, marginLeft: bleedBox.ml } : undefined}
     >
       <div className={cn("absolute top-0 z-20 flex gap-2 md:-top-14", bleed ? "right-6 md:right-12" : "right-0")}>
         <ArrowBtn onClick={() => nudge(-1)} aria-label="Scroll timeline back">
