@@ -89,7 +89,7 @@ export default async function Home() {
               </div>
               <Link
                 href="/events"
-                className="inline-flex items-center gap-2 border-b border-ink pb-0.5 font-medium transition-colors duration-500 ease-flow hover:text-clay-deep"
+                className="inline-flex h-12 items-center gap-2 bg-ink px-6 font-medium text-paper transition-colors duration-500 ease-flow hover:bg-clay-deep"
               >
                 All events and history
                 <ArrowRight className="size-4" aria-hidden />

@@ -117,18 +117,19 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
             {club.tagline}
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
+            {/* Events is what most visitors want: it leads, in the strong colour. Joining is the quieter second action. */}
             <Link
-              href="/join"
+              href="/events"
               className="inline-flex h-12 items-center gap-2 bg-clay px-6 font-medium text-ink transition-colors duration-500 ease-flow hover:bg-paper"
             >
-              Join the club
+              See the events
               <ArrowRight className="size-4" aria-hidden />
             </Link>
             <Link
-              href="/events"
+              href="/join"
               className="inline-flex h-12 items-center border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
             >
-              See the events
+              Join the club
             </Link>
           </div>
         </div>

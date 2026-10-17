@@ -45,9 +45,9 @@ async function EventDetail({
         <div className="mx-auto max-w-6xl px-6 pb-14 pt-8 md:px-12 md:pb-20">
           <Link
             href="/events"
-            className="hud inline-flex items-center gap-1.5 text-ink-faint transition-colors hover:text-ink"
+            className="inline-flex h-11 items-center gap-2 bg-ink px-5 font-medium text-paper transition-colors duration-500 ease-flow hover:bg-clay-deep"
           >
-            <ArrowLeft className="size-3.5" aria-hidden /> All events
+            <ArrowLeft className="size-4" aria-hidden /> All events
           </Link>
           <div className="mt-10 grid items-end gap-10 md:grid-cols-[1fr_auto]">
             <div>
