@@ -1,6 +1,12 @@
 # People section plan (Endfield "Operators" style)
 
-Status: **plan only, nothing built** (the real board list is already loaded into the CMS content, without registration numbers). Needs your confirmation on section 6.
+Status: **built (v1 prototype)** on the home page: `people-stage.tsx` + `people-backdrops.tsx`.
+
+Decisions from the club:
+- No Faculty in the category strip (faculty stay on `/members` and in the Contact section).
+- Two people in one category = overlapping cards you can click, drag or step through; the text updates with the front card.
+- Backdrops: geometric (logo + wordmark) mixed with the hand-drawn illustrations. If the SVG route isn't good enough, the club will say where to source better art.
+- Defaults I assumed (not yet answered): all board members are marked "Board"; `/members` stays behind "Full profile" and the section's "Everyone, with bios" button; card tags are department, year and focus areas.
 
 ## 1. What the reference does
 In the Endfield screenshot: a vertical strip of **round portraits** on the left (up/down arrows to scroll), a big character cut-out in the middle-right over a **unique backdrop** with giant background lettering, a **"rarity" row** top-left, then the **name**, a few tags and a **bio** underneath, plus an "All Operators" button.
