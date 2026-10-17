@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { dateLabel, type ClubEvent } from "@/lib/events";
 import { ArrowBtn, Hud } from "@/components/hud";
@@ -54,6 +54,7 @@ export function Timeline({
     return () => window.removeEventListener("resize", fit);
   }, [bleed]);
   const scroller = useRef<HTMLDivElement>(null);
+  const scrollerId = useId();
   const drag = useRef({ down: false, x: 0, left: 0, moved: false });
   // Read on the client only so the server render stays static.
   const today = useSyncExternalStore(subscribeNever, todayUtc, () => null);
@@ -127,6 +128,59 @@ export function Timeline({
     drag.current.down = false;
   };
 
+  // ---- scroll track: a minimap with a draggable window, so it is obvious the
+  // timeline can be dragged. Pins show where the events are.
+  const track = useRef<HTMLDivElement>(null);
+  const [metrics, setMetrics] = useState({ pos: 0, view: 1 });
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    let raf = 0;
+    const sync = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setMetrics({ pos: el.scrollLeft / el.scrollWidth, view: Math.min(1, el.clientWidth / el.scrollWidth) });
+      });
+    };
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, [layout.width, viewW]);
+
+  const thumbDrag = useRef({ down: false, x: 0, scroll: 0 });
+  const onThumbDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!scroller.current) return;
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    thumbDrag.current = { down: true, x: e.clientX, scroll: scroller.current.scrollLeft };
+    setTouched(true);
+  };
+  const onThumbMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = thumbDrag.current;
+    const el = scroller.current;
+    const tr = track.current;
+    if (!d.down || !el || !tr) return;
+    el.scrollLeft = d.scroll + ((e.clientX - d.x) / tr.clientWidth) * el.scrollWidth;
+  };
+  const onThumbUp = () => {
+    thumbDrag.current.down = false;
+  };
+  const onTrackDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = scroller.current;
+    const tr = track.current;
+    if (!el || !tr) return;
+    const r = tr.getBoundingClientRect();
+    const ratio = (e.clientX - r.left) / r.width;
+    el.scrollTo({ left: ratio * el.scrollWidth - el.clientWidth / 2, behavior: "smooth" });
+    setTouched(true);
+  };
+
   return (
     <div
       ref={outer}
@@ -142,8 +196,70 @@ export function Timeline({
         </ArrowBtn>
       </div>
 
+      {layout.width > viewW + 2 && (
+        <div className={cn("relative mb-4 flex items-center gap-4", bleed ? "px-6 md:px-12" : "")}>
+          <div
+            ref={track}
+            onPointerDown={onTrackDown}
+            role="scrollbar"
+            aria-orientation="horizontal"
+            aria-controls={scrollerId}
+            aria-label="Timeline position: drag to scroll"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(metrics.pos * 100)}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight") nudge(1);
+              if (e.key === "ArrowLeft") nudge(-1);
+            }}
+            className="group relative h-9 flex-1 cursor-pointer touch-none select-none"
+          >
+            {/* rail */}
+            <span aria-hidden className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 bg-ink/15" />
+            {/* event pins */}
+            {layout.items.map(({ e, left }) => (
+              <span
+                key={e.slug}
+                aria-hidden
+                title={e.title}
+                className={cn(
+                  "absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rotate-45",
+                  e.status === "past" ? "bg-ink/35" : e.status === "active" ? "bg-clay-deep" : "bg-ink",
+                )}
+                style={{ left: `${(left / layout.width) * 100}%` }}
+              />
+            ))}
+            {/* today */}
+            {todayLeft !== null && todayLeft > 0 && todayLeft < layout.width && (
+              <span
+                aria-hidden
+                className="absolute top-1/2 h-5 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-clay-deep"
+                style={{ left: `${(todayLeft / layout.width) * 100}%` }}
+              />
+            )}
+            {/* the window: what is on screen right now. Drag it. */}
+            <div
+              onPointerDown={onThumbDown}
+              onPointerMove={onThumbMove}
+              onPointerUp={onThumbUp}
+              onPointerCancel={onThumbUp}
+              className="absolute top-0 flex h-full min-w-12 cursor-grab items-center justify-between border-2 border-ink bg-ink/10 px-1.5 transition-colors duration-300 ease-flow hover:bg-clay/25 active:cursor-grabbing active:bg-clay/30"
+              style={{ left: `${metrics.pos * 100}%`, width: `${metrics.view * 100}%` }}
+            >
+              <span aria-hidden className="h-4 w-[3px] bg-ink" />
+              <span aria-hidden className="h-4 w-[3px] bg-ink" />
+            </div>
+          </div>
+          {!touched && (
+            <span className="hud hidden shrink-0 text-ink-faint md:inline">Drag the bar or the timeline</span>
+          )}
+        </div>
+      )}
+
       <div
         ref={scroller}
+        id={scrollerId}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={end}
@@ -259,6 +375,7 @@ export function Timeline({
           })}
         </div>
       </div>
+
     </div>
   );
 }
