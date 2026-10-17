@@ -35,7 +35,7 @@ export type Content = {
 const root = process.cwd();
 const art = (key: string) => `/art/${key || "sprouts"}.svg`;
 const ymd = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(d); // YYYY-MM-DD in IST
-const readJson = <T>(...p: string[]) => JSON.parse(readFileSync(path.join(root, ...p), "utf8")) as T;
+const readJson = <T>(...p: string[]) => JSON.parse(readFileSync(path.join(/*turbopackIgnore: true*/ root, ...p), "utf8")) as T;
 
 /** The release fetched at build time (scripts/pull-snapshot.mjs), else the committed seed. Checked against the contract. */
 export function loadSnapshot(): Snapshot {
@@ -125,7 +125,7 @@ type RawBoardMember = Omit<Member, "slug" | "year" | "linkedin" | "github" | "ph
 };
 
 function boardAndFaculty(): Member[] {
-  const dir = path.join(root, "content", "members");
+  const dir = path.join(/*turbopackIgnore: true*/ root, "content", "members");
   return readdirSync(dir)
     .filter((f) => f.endsWith(".json"))
     .map((f): Member => {
