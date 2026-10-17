@@ -44,7 +44,19 @@ const ICONS: Record<string, LucideIcon> = {
   "Creative & Communications": Megaphone,
 };
 
-type Category = { label: string; icon: LucideIcon; people: Member[] };
+type Category = { label: string; icon: LucideIcon; backdrop: string; people: Member[] };
+
+// How roles are grouped into the round portraits, in display order. The
+// office bearers are merged into two circles; everything after that follows
+// the order the club asked for. Roles not listed here still appear, after
+// these, in the order they first show up.
+const GROUPS: { label: string; roles: string[]; icon: LucideIcon; backdrop?: string }[] = [
+  { label: "Chairperson & Vice-Chairperson", roles: ["Chairperson", "Vice-Chairperson"], icon: Crown, backdrop: "Chairperson" },
+  { label: "Secretary & Co-Secretary", roles: ["Secretary", "Co-Secretary"], icon: PenLine, backdrop: "Secretary" },
+  { label: "Web Development", roles: ["Web Development"], icon: Monitor },
+  { label: "Agentic AI", roles: ["Agentic AI"], icon: Bot },
+  { label: "Technical", roles: ["Technical"], icon: Code },
+];
 
 const rise: Variants = {
   hidden: { opacity: 0, y: 22 },
@@ -66,16 +78,25 @@ const stagger: Variants = {
 //    or step through; the text on the left updates with the front card
 export function PeopleStage({ people }: { people: Member[] }) {
   const cats = useMemo<Category[]>(() => {
-    const order: string[] = [];
-    const map = new Map<string, Member[]>();
-    [...people].sort((a, b) => a.order - b.order).forEach((m) => {
-      if (!map.has(m.role)) {
-        map.set(m.role, []);
-        order.push(m.role);
-      }
-      map.get(m.role)!.push(m);
+    const sorted = [...people].sort((a, b) => a.order - b.order);
+    const used = new Set<string>();
+    const out: Category[] = [];
+    for (const g of GROUPS) {
+      // within a group, roles keep the listed order (Chairperson before Vice-Chairperson)
+      const ppl = g.roles.flatMap((r) => sorted.filter((m) => m.role === r));
+      if (!ppl.length) continue;
+      g.roles.forEach((r) => used.add(r));
+      out.push({ label: g.label, icon: g.icon, backdrop: g.backdrop ?? g.label, people: ppl });
+    }
+    // everything else (Operations, Finance, ...) in first-appearance order
+    const rest: string[] = [];
+    sorted.forEach((m) => {
+      if (!used.has(m.role) && !rest.includes(m.role)) rest.push(m.role);
     });
-    return order.map((label) => ({ label, icon: ICONS[label] ?? User, people: map.get(label)! }));
+    rest.forEach((r) =>
+      out.push({ label: r, icon: ICONS[r] ?? User, backdrop: r, people: sorted.filter((m) => m.role === r) }),
+    );
+    return out;
   }, [people]);
 
   const [c, setC] = useState(0);
@@ -86,7 +107,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const cat = cats[c];
   const n = cat.people.length;
   const person = cat.people[p];
-  const bd = backdropFor(cat.label);
+  const bd = backdropFor(cat.backdrop);
 
   const goCat = (i: number) => {
     const next = (i + cats.length) % cats.length;
@@ -172,7 +193,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
             transition={{ duration: 0.9, ease: FLOW }}
             className="absolute inset-0"
           >
-            <BackdropSvg role={cat.label} />
+            <BackdropSvg role={cat.backdrop} />
           </motion.div>
         </AnimatePresence>
 
@@ -185,7 +206,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
           {/* text */}
           <div className={cn("flex flex-col transition-colors duration-700 ease-flow", bd.dark ? "text-paper" : "text-ink")}>
             <div className="flex items-center gap-4">
-              <span className="hud tracking-wider">[ {cat.label} ]</span>
+              <span className="hud tracking-wider">[ {person.role} ]</span>
               {n > 1 && (
                 <span className="hud opacity-70">
                   {p + 1} / {n}
