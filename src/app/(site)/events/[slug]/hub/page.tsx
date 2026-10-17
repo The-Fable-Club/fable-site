@@ -12,7 +12,9 @@ import { bySlug, dateLabel, isOpen } from "@/lib/events";
 // Hubs only exist for active and upcoming events.
 export async function generateStaticParams() {
   const { events } = await getContent();
-  return events.filter(isOpen).map((e) => ({ slug: e.slug }));
+  const slugs = events.filter(isOpen).map((e) => ({ slug: e.slug }));
+  // Cache Components needs at least one param; with no events this one just 404s.
+  return slugs.length ? slugs : [{ slug: "_none" }];
 }
 
 export async function generateMetadata({

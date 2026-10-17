@@ -12,7 +12,9 @@ import { RegisterForm } from "@/components/register-form";
 
 export async function generateStaticParams() {
   const { events } = await getContent();
-  return events.map((e) => ({ slug: e.slug }));
+  const slugs = events.map((e) => ({ slug: e.slug }));
+  // Cache Components needs at least one param; with no events this one just 404s.
+  return slugs.length ? slugs : [{ slug: "_none" }];
 }
 
 export async function generateMetadata({
