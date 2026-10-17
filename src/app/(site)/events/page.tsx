@@ -31,11 +31,13 @@ export default async function EventsPage() {
         <Ph className="mt-6">Dates, venues and links are placeholders</Ph>
       </PageHead>
 
-      <section id="highlights" className="bg-paper-sunken py-16 md:py-24">
-        <div className="mx-auto max-w-[90rem]">
-          <EventsCarousel events={current} />
-        </div>
-      </section>
+      {current.length > 0 && (
+        <section id="highlights" className="bg-paper-sunken py-16 md:py-24">
+          <div className="mx-auto max-w-[90rem]">
+            <EventsCarousel events={current} />
+          </div>
+        </section>
+      )}
 
       <section id="current" className="bg-paper">
         <div className="mx-auto max-w-6xl px-6 py-16 md:px-12 md:py-20">
@@ -47,10 +49,12 @@ export default async function EventsPage() {
             {current.map((e) => (
               <EventRow key={e.slug} event={e} />
             ))}
+            {current.length === 0 && <p className="py-8 font-serif text-ink-soft">Nothing is open right now. New events appear here as soon as they are published.</p>}
           </div>
         </div>
       </section>
 
+      {events.length > 0 && (
       <section id="timeline" className="bg-paper-sunken">
         <div className="mx-auto max-w-6xl px-6 pt-16 md:px-12 md:pt-24">
           <Hud className="text-ink-faint">Timeline</Hud>
@@ -63,6 +67,7 @@ export default async function EventsPage() {
           <Timeline events={events} bleed />
         </div>
       </section>
+      )}
 
       <section id="history" className="bg-paper">
         <div className="mx-auto max-w-6xl px-6 py-16 md:px-12 md:py-20">
@@ -74,6 +79,7 @@ export default async function EventsPage() {
             {past.map((e) => (
               <EventRow key={e.slug} event={e} />
             ))}
+            {past.length === 0 && <p className="py-8 font-serif text-ink-soft">No past events yet.</p>}
           </div>
         </div>
       </section>
