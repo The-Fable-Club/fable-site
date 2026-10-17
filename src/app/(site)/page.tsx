@@ -183,7 +183,6 @@ export default async function Home() {
             <p className="mt-5 max-w-[40ch] font-serif text-lg text-ink-soft">
               Questions about joining, events or working with the club. We read everything.
             </p>
-            <Ph className="mt-5">Email and links are placeholders</Ph>
           </div>
           <div className="space-y-10">
             <div>
@@ -193,6 +192,8 @@ export default async function Home() {
                   <li key={s.label} className="border-b border-ink/20">
                     <a
                       href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="group flex items-center justify-between py-4 font-display text-2xl transition-colors duration-500 ease-flow hover:text-clay-deep"
                     >
                       {s.label}

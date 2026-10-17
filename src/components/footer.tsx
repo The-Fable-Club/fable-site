@@ -59,7 +59,7 @@ export function Footer({ club }: { club: Club }) {
             </li>
             {club.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} className="transition-colors duration-500 ease-flow hover:text-paper">
+                <a href={s.href} target="_blank" rel="noopener noreferrer" className="transition-colors duration-500 ease-flow hover:text-paper">
                   {s.label}
                 </a>
               </li>

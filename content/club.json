@@ -3,20 +3,16 @@
   "description": "The Fable Club is a student-led AI learning and building community at VIT Chennai. We help students from every department get reliably good work out of Claude, from writing, research and studying to Claude Code and building agents.",
   "institution": "VIT Chennai",
   "office": "Office of Students’ Welfare",
-  "contactEmail": "hello@thefableclub.example",
+  "contactEmail": "contact@thefableclub.com",
   "disclaimer": "An independent student club. Not affiliated with or endorsed by Anthropic.",
   "socials": [
     {
       "label": "Instagram",
-      "href": "#"
+      "href": "https://www.instagram.com/thefableclub.vitc"
     },
     {
       "label": "LinkedIn",
-      "href": "#"
-    },
-    {
-      "label": "GitHub",
-      "href": "#"
+      "href": "https://www.linkedin.com/company/the-fable-club"
     }
   ],
   "stats": [
