@@ -4,7 +4,7 @@ import { Banner, Hud, Ph } from "@/components/hud";
 import { Hero } from "@/components/home/hero";
 import { AimsDial } from "@/components/home/aims-dial";
 import { EventsCarousel } from "@/components/home/events-carousel";
-import { PeopleStrip } from "@/components/home/people-strip";
+import { PeopleStage } from "@/components/home/people-stage";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
 import CountUp from "@/components/CountUp";
@@ -21,7 +21,7 @@ const groupTone = {
 
 export default async function Home() {
   const { club, aims, events, members } = await getContent();
-  const board = members.filter((m) => m.order < 100); // faculty + office bearers; the full list lives on /members
+  const people = members.filter((m) => m.group !== "Faculty"); // faculty stay on /members and in Contact
   const faculty = members.filter((m) => m.group === "Faculty");
   const open = openEvents(events);
 
@@ -133,7 +133,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="mx-auto max-w-[90rem] px-6 md:px-12">
-            <PeopleStrip people={board} />
+            <PeopleStage people={people} />
           </div>
           <p className="mx-auto mt-4 max-w-6xl px-6 md:px-12">
             <Ph>Names, bios and contacts are placeholders</Ph>
