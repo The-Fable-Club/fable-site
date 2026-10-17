@@ -75,6 +75,7 @@ export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
     start: win?.start,
     end: win?.end ?? undefined,
     tentative: win?.tentative ?? e.date.mode !== "exact",
+    dateMode: e.date.mode,
     dateText: dateLabel(e.date),
     time: e.time.mode === "text" ? e.time.text : "Time to be announced",
     venue:

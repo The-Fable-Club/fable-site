@@ -24,6 +24,19 @@ describe("toClubEvent", () => {
   it("exact range around today is live", () => {
     expect(ev({ date: { mode: "exact", start: "2026-10-15", end: "2026-10-30" } }).status).toBe("active");
   });
+  it("a placed TBA is positioned on the timeline but never shows its placeholder date", () => {
+    const e = ev({ date: { mode: "tba", place: "2027-02-10" } });
+    expect(e.start).toBe("2027-02-10");
+    expect(e.dateMode).toBe("tba");
+    expect(e.tentative).toBe(true);
+    expect(e.dateText).toBe("Date to be announced");
+    expect(e.dateText).not.toMatch(/2027|Feb/);
+    expect(e.status).toBe("upcoming");
+  });
+  it("own text with a place keeps its words and is positioned by the place", () => {
+    const e = ev({ date: { mode: "text", text: "Early February", place: "2027-02-05" } });
+    expect(e).toMatchObject({ dateText: "Early February", start: "2027-02-05", dateMode: "text" });
+  });
   it("month only is tentative and never live, even in its own month", () => {
     const e = ev({ date: { mode: "month", month: "2026-10" } });
     expect(e.tentative).toBe(true);

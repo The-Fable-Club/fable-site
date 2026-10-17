@@ -22,9 +22,9 @@ const tones = [
 ] as const;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-// The calendar-leaf: a real day when the date is exact, otherwise the month with "TBC" or "TBA".
+// The calendar-leaf: a real day when the date is exact, otherwise "TBA" (or the month with "TBC").
 const leaf = (e: ClubEvent) =>
-  !e.start
+  !e.start || e.dateMode === "tba" // a placed TBA must not reveal its placeholder date
     ? { mon: "Date", day: "TBA", small: true }
     : e.tentative
       ? { mon: MONTHS[Number(e.start.slice(5, 7)) - 1], day: "TBC", small: true }

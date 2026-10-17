@@ -373,7 +373,7 @@ export function Timeline({
                   <span className="flex items-center justify-between gap-2">
                     <Hud className={past ? "" : "text-ink-faint"}>{dateLabel(e)}</Hud>
                     <span className="flex items-center gap-1">
-                      {e.tentative && <span className="hud border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
+                      {e.tentative && e.dateMode !== "tba" && <span className="hud border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
                       <StatusDot status={e.status} />
                     </span>
                   </span>

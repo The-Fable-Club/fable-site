@@ -109,7 +109,7 @@ async function EventDetail({
                     <dt className="hud text-ink-faint">When</dt>
                     <dd className="mt-1">
                       {dateLabel(e)}
-                      {e.tentative && e.start && <span className="hud ml-2 border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
+                      {e.tentative && e.start && e.dateMode !== "tba" && <span className="hud ml-2 border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
                     </dd>
                     <dd className="text-ink-soft">{e.time}</dd>
                   </div>

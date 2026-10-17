@@ -24,8 +24,10 @@ export type ClubEvent = {
   /** First/last day the event covers; absent when the date is "to be announced" or free text without a month. */
   start?: string;
   end?: string;
-  /** Only a month (or typed text) is known, so the exact day is not decided. */
+  /** The exact day is not decided (typed text, a legacy month, or "to be announced" with a hidden placeholder place). */
   tentative: boolean;
+  /** How the date was entered. A "tba" event may still have a start: a hidden placeholder that only positions it on the timeline. */
+  dateMode: "exact" | "month" | "text" | "tba";
   /** The date as shown to people ("20 Nov 2026", "January 2027", "Early February", "Date to be announced"). */
   dateText: string;
   /** Display strings: always something to show, "to be announced" when undecided. */
