@@ -2,7 +2,7 @@ export type Member = {
   slug: string;
   name: string;
   role: string;
-  group: "Faculty" | "Board" | "Leads";
+  group: "Faculty" | "Board" | "Leads" | "Member";
   order: number;
   department: string;
   year?: string;
