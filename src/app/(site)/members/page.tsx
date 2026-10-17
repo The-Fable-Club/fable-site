@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MembersPage() {
-  const { members } = await getContent();
+  const { members, community } = await getContent();
   return (
     <>
       <PageHead
@@ -24,7 +24,7 @@ export default async function MembersPage() {
       <section className="bg-paper">
         <div className="mx-auto max-w-6xl px-6 py-16 md:px-12 md:py-24">
           <Suspense fallback={null}>
-            <MembersGrid members={members} />
+            <MembersGrid members={[...members, ...community]} />
           </Suspense>
         </div>
       </section>

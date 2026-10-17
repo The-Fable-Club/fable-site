@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Compass, ExternalLink, GraduationCap, Landmark, LayoutGrid, Mail } from "lucide-react";
+import { Compass, ExternalLink, GraduationCap, Landmark, LayoutGrid, Mail, Users } from "lucide-react";
 import { initials, type Member } from "@/lib/members";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Hud, Ph } from "@/components/hud";
@@ -12,11 +12,12 @@ import { cn } from "@/lib/utils";
 
 const FLOW = [0.65, 0, 0.35, 1] as const;
 
-const groups = ["Faculty", "Board", "Leads"] as const;
+const groups = ["Faculty", "Board", "Leads", "Member"] as const;
 const groupTitle = {
   Faculty: "Faculty coordinators",
   Board: "The board",
   Leads: "Leads",
+  Member: "Members",
 } as const;
 
 // Member types as circle icons, like Endfield's operator class filters.
@@ -25,6 +26,7 @@ const filters = [
   { key: "Faculty", label: "Faculty", icon: GraduationCap },
   { key: "Board", label: "Board", icon: Landmark },
   { key: "Leads", label: "Leads", icon: Compass },
+  { key: "Member", label: "Members", icon: Users },
 ] as const;
 type Filter = (typeof filters)[number]["key"];
 
