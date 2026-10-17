@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T11:52:56.905Z",
+  "generated_at": "2026-10-17T12:47:38.970Z",
   "events": [
     {
       "slug": "placeholder-live-session",
@@ -198,6 +198,8 @@
       "slug": "placeholder-member-one",
       "name": "Placeholder Member One",
       "role": "Member",
+      "group": "Member",
+      "order": 1,
       "department": "CSE",
       "year": {
         "mode": "pick",
@@ -219,6 +221,8 @@
       "slug": "placeholder-member-two",
       "name": "Placeholder Member Two",
       "role": "Design Member",
+      "group": "Member",
+      "order": 2,
       "department": "ECE",
       "year": {
         "mode": "text",
@@ -240,6 +244,8 @@
       "slug": "placeholder-member-three",
       "name": "Placeholder Member Three",
       "role": "Member",
+      "group": "Member",
+      "order": 3,
       "department": "IT",
       "year": {
         "mode": "none"
@@ -254,6 +260,420 @@
         "github": null
       },
       "art": "hands-together",
+      "photo": null
+    },
+    {
+      "slug": "omana-j",
+      "name": "Dr. Omana J",
+      "role": "Faculty Coordinator",
+      "group": "Faculty",
+      "order": 10,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Dr. and what they do for the club goes here.",
+      "focus": [
+        "Mentorship",
+        "Approvals"
+      ],
+      "links": {
+        "email": "omana.j@vit.ac.in",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "book",
+      "photo": null
+    },
+    {
+      "slug": "jeipratha-p-n",
+      "name": "Dr. Jeipratha P N",
+      "role": "Faculty Coordinator",
+      "group": "Faculty",
+      "order": 20,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Dr. and what they do for the club goes here.",
+      "focus": [
+        "Mentorship",
+        "Approvals"
+      ],
+      "links": {
+        "email": "jeiprathap.n@vit.ac.in",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "book",
+      "photo": null
+    },
+    {
+      "slug": "swatish-subramanian",
+      "name": "Swatish Subramanian",
+      "role": "Chairperson",
+      "group": "Board",
+      "order": 30,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Swatish and what they do for the club goes here.",
+      "focus": [
+        "Direction",
+        "Partnerships"
+      ],
+      "links": {
+        "email": "swatish-subramanian@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "steps",
+      "photo": null
+    },
+    {
+      "slug": "sharann-m",
+      "name": "Sharann M",
+      "role": "Vice-Chairperson",
+      "group": "Board",
+      "order": 40,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Sharann and what they do for the club goes here.",
+      "focus": [
+        "Build sessions",
+        "Operations"
+      ],
+      "links": {
+        "email": "sharann-m@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "code-window",
+      "photo": null
+    },
+    {
+      "slug": "dhriti-vaz",
+      "name": "Dhriti Vaz",
+      "role": "Secretary",
+      "group": "Board",
+      "order": 50,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Dhriti and what they do for the club goes here.",
+      "focus": [
+        "Schedules",
+        "Records"
+      ],
+      "links": {
+        "email": "dhriti-vaz@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "writing",
+      "photo": null
+    },
+    {
+      "slug": "shree-devi-s",
+      "name": "Shree Devi S",
+      "role": "Co-Secretary",
+      "group": "Board",
+      "order": 60,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Shree and what they do for the club goes here.",
+      "focus": [
+        "Communications",
+        "Participants"
+      ],
+      "links": {
+        "email": "shree-devi-s@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "pointer",
+      "photo": null
+    },
+    {
+      "slug": "sanjani-subramani",
+      "name": "Sanjani Subramani",
+      "role": "Technical",
+      "group": "Board",
+      "order": 160,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Sanjani and what they do for the club goes here.",
+      "focus": [
+        "Claude Code",
+        "Engineering"
+      ],
+      "links": {
+        "email": "sanjani-subramani@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "code-window",
+      "photo": null
+    },
+    {
+      "slug": "hara-sameeraj-kuppili",
+      "name": "Hara Sameeraj Kuppili",
+      "role": "Technical",
+      "group": "Board",
+      "order": 170,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Hara and what they do for the club goes here.",
+      "focus": [
+        "Claude Code",
+        "Engineering"
+      ],
+      "links": {
+        "email": "hara-sameeraj-kuppili@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "code-window",
+      "photo": null
+    },
+    {
+      "slug": "harsha-vardan-m-sakamuri",
+      "name": "Harsha Vardan M Sakamuri",
+      "role": "Web Development",
+      "group": "Board",
+      "order": 180,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Harsha and what they do for the club goes here.",
+      "focus": [
+        "Website",
+        "Frontend"
+      ],
+      "links": {
+        "email": "harsha-vardan-m-sakamuri@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "cursor",
+      "photo": null
+    },
+    {
+      "slug": "skandan-suresh",
+      "name": "Skandan Suresh",
+      "role": "Web Development",
+      "group": "Board",
+      "order": 190,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Skandan and what they do for the club goes here.",
+      "focus": [
+        "Website",
+        "Frontend"
+      ],
+      "links": {
+        "email": "skandan-suresh@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "cursor",
+      "photo": null
+    },
+    {
+      "slug": "ragav-hariharan",
+      "name": "Ragav Hariharan",
+      "role": "Agentic AI",
+      "group": "Board",
+      "order": 200,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Ragav and what they do for the club goes here.",
+      "focus": [
+        "Agents",
+        "MCP"
+      ],
+      "links": {
+        "email": "ragav-hariharan@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "network",
+      "photo": null
+    },
+    {
+      "slug": "tharun-parykshyt",
+      "name": "Tharun Parykshyt",
+      "role": "Agentic AI",
+      "group": "Board",
+      "order": 210,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Tharun and what they do for the club goes here.",
+      "focus": [
+        "Agents",
+        "MCP"
+      ],
+      "links": {
+        "email": "tharun-parykshyt@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "network",
+      "photo": null
+    },
+    {
+      "slug": "rakshith-s",
+      "name": "Rakshith S",
+      "role": "Operations",
+      "group": "Board",
+      "order": 220,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Rakshith and what they do for the club goes here.",
+      "focus": [
+        "Logistics",
+        "Sessions"
+      ],
+      "links": {
+        "email": "rakshith-s@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "steps",
+      "photo": null
+    },
+    {
+      "slug": "s-samyuktha",
+      "name": "S Samyuktha",
+      "role": "Operations",
+      "group": "Board",
+      "order": 230,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about S and what they do for the club goes here.",
+      "focus": [
+        "Logistics",
+        "Sessions"
+      ],
+      "links": {
+        "email": "s-samyuktha@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "steps",
+      "photo": null
+    },
+    {
+      "slug": "yuvaraj-r",
+      "name": "Yuvaraj R",
+      "role": "Finance",
+      "group": "Board",
+      "order": 240,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Yuvaraj and what they do for the club goes here.",
+      "focus": [
+        "Budget",
+        "Sponsorship"
+      ],
+      "links": {
+        "email": "yuvaraj-r@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "search",
+      "photo": null
+    },
+    {
+      "slug": "s-sharvesh",
+      "name": "S Sharvesh",
+      "role": "Finance",
+      "group": "Board",
+      "order": 250,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about S and what they do for the club goes here.",
+      "focus": [
+        "Budget",
+        "Sponsorship"
+      ],
+      "links": {
+        "email": "s-sharvesh@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "search",
+      "photo": null
+    },
+    {
+      "slug": "indhra-gopi-kannan",
+      "name": "Indhra Gopi Kannan",
+      "role": "Creative & Communications",
+      "group": "Board",
+      "order": 260,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Indhra and what they do for the club goes here.",
+      "focus": [
+        "Design",
+        "Social media"
+      ],
+      "links": {
+        "email": "indhra-gopi-kannan@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "party",
+      "photo": null
+    },
+    {
+      "slug": "bavana-a",
+      "name": "Bavana A",
+      "role": "Creative & Communications",
+      "group": "Board",
+      "order": 270,
+      "department": "Placeholder department",
+      "year": {
+        "mode": "none"
+      },
+      "bio": "Placeholder bio. A short paragraph about Bavana and what they do for the club goes here.",
+      "focus": [
+        "Design",
+        "Social media"
+      ],
+      "links": {
+        "email": "bavana-a@placeholder.example",
+        "linkedin": null,
+        "github": null
+      },
+      "art": "party",
       "photo": null
     }
   ]
