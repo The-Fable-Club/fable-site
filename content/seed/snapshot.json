@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T12:47:38.970Z",
+  "generated_at": "2026-10-17T14:21:58.219Z",
   "events": [
     {
       "slug": "placeholder-live-session",
@@ -97,14 +97,14 @@
       "hub": []
     },
     {
-      "slug": "placeholder-month-only",
-      "title": "Placeholder: Month Only",
+      "slug": "placeholder-placed-tba",
+      "title": "Placeholder: Placed TBA",
       "kind": "Talk",
       "phase": 3,
       "status_override": null,
       "date": {
-        "mode": "month",
-        "month": "2027-01"
+        "mode": "tba",
+        "place": "2027-01-15"
       },
       "time": {
         "mode": "tba"
@@ -118,9 +118,9 @@
       "apply": {
         "mode": "soon"
       },
-      "summary": "Placeholder with only a month decided.",
+      "summary": "Placeholder with no date yet, positioned on the timeline.",
       "description": [
-        "Only the month is known. Everything else is to be announced."
+        "The date is to be announced, but it sits in January on the timeline."
       ],
       "highlights": [],
       "art": "book",
@@ -136,7 +136,8 @@
       "date": {
         "mode": "text",
         "text": "Early February",
-        "month": "2027-02"
+        "month": null,
+        "place": "2027-02-05"
       },
       "time": {
         "mode": "text",
@@ -155,7 +156,7 @@
       },
       "summary": "Placeholder with a typed date and an outside form.",
       "description": [
-        "The date is free text, placed on the timeline by month."
+        "The date is free text, placed on the timeline by a hidden placeholder date."
       ],
       "highlights": [],
       "art": "writing",
@@ -169,7 +170,8 @@
       "phase": 4,
       "status_override": null,
       "date": {
-        "mode": "tba"
+        "mode": "tba",
+        "place": null
       },
       "time": {
         "mode": "tba"
