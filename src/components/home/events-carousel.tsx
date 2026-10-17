@@ -22,7 +22,13 @@ const tones = [
 ] as const;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const parts = (d: string) => ({ day: Number(d.slice(8, 10)), mon: MONTHS[Number(d.slice(5, 7)) - 1] });
+// The calendar-leaf: a real day when the date is exact, otherwise the month with "TBC" or "TBA".
+const leaf = (e: ClubEvent) =>
+  !e.start
+    ? { mon: "Date", day: "TBA", small: true }
+    : e.tentative
+      ? { mon: MONTHS[Number(e.start.slice(5, 7)) - 1], day: "TBC", small: true }
+      : { mon: MONTHS[Number(e.start.slice(5, 7)) - 1], day: String(Number(e.start.slice(8, 10))), small: false };
 
 const group: Variants = {
   out: {},
@@ -302,7 +308,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
         {events.map((e, i) => {
           const t = tones[i % tones.length];
           const on = i === active;
-          const { day, mon } = parts(e.start);
+          const { day, mon, small } = leaf(e);
           const tag = i === active - 1 ? "Last" : i === active + 1 ? "Next" : null;
           return (
             <Fragment key={e.slug}>
@@ -370,7 +376,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       </div>
                     </motion.dl>
                     <motion.div variants={rise} className="mt-auto flex flex-wrap gap-3 pt-7">
-                      {e.applyUrl && e.status !== "past" && (
+                      {e.registration === "open" && e.applyUrl && (
                         <a
                           href={e.applyUrl}
                           target="_blank"
@@ -380,6 +386,20 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                           Apply
                           <ArrowUpRight className="size-4" aria-hidden />
                         </a>
+                      )}
+                      {e.registration === "open" && !e.applyUrl && (
+                        <Link
+                          href={`/events/${e.slug}#register`}
+                          className={cn("inline-flex h-12 items-center gap-2 px-6 font-medium transition-colors duration-500 ease-flow", t.btn)}
+                        >
+                          Register
+                          <ArrowRight className="size-4" aria-hidden />
+                        </Link>
+                      )}
+                      {e.registration === "soon" && (
+                        <span className={cn("inline-flex h-12 items-center border border-dashed px-6 font-medium opacity-80", t.rule)}>
+                          Registration opening soon
+                        </span>
                       )}
                       <Link
                         href={`/events/${e.slug}`}
@@ -403,7 +423,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       <div className="bg-ink py-1 text-[0.7rem] font-medium tracking-widest text-paper">
                         {mon.toUpperCase()}
                       </div>
-                      <div className="py-1 font-display text-5xl leading-none tabular-nums">{day}</div>
+                      <div className={cn("py-1 font-display leading-none tabular-nums", small ? "py-3 text-3xl" : "text-5xl")}>{day}</div>
                     </div>
                     <div
                       className="relative grid size-[17rem] place-items-center overflow-hidden bg-paper"
