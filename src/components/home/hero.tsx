@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { Hud, Ph } from "@/components/hud";
-import { dateLabel, type ClubEvent } from "@/lib/events";
+import { dateLabel, type HeroStrip } from "@/lib/events";
 import type { Club } from "@/lib/content";
 
 const STROKE = "var(--color-paper)";
@@ -16,7 +16,7 @@ const STROKE = "var(--color-paper)";
 // The cursor is tracked across the whole window (clamped to the stage), so
 // leaving the section towards the rail or the next section just parks the
 // mark at the edge; it never snaps back to the centre.
-export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
+export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
   const stage = useRef<HTMLElement>(null);
   const readout = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -205,22 +205,27 @@ export function Hero({ club, event }: { club: Club; event?: ClubEvent }) {
       </div>
 
       {/* now-live strip */}
-      {event && (
-        <Link
-          href={`/events/${event.slug}`}
-          className="group relative z-10 mx-6 mb-6 flex flex-wrap items-center gap-x-6 gap-y-1 border border-paper/25 bg-night/90 px-4 py-3 transition-colors duration-500 ease-flow hover:border-clay md:mx-12 md:mb-10"
-        >
-          <span className="hud flex items-center gap-2 text-clay">
-            <span className="size-2 animate-pulse bg-clay" aria-hidden />
-            {event.status === "active" ? "Live now" : "Next up"}
-          </span>
-          <span className="font-medium">{event.title}</span>
-          <Hud className="text-night-faint">{dateLabel(event)}</Hud>
-          <ArrowRight
-            className="ml-auto size-4 transition-transform duration-500 ease-flow group-hover:translate-x-1"
-            aria-hidden
-          />
-        </Link>
+      {strips.length > 0 && (
+        <div className="relative z-10 mx-6 mb-6 grid gap-2 md:mx-12 md:mb-10">
+          {strips.map(({ label, event }) => (
+            <Link
+              key={label}
+              href={`/events/${event.slug}`}
+              className="group flex flex-wrap items-center gap-x-6 gap-y-1 border border-paper/25 bg-night/90 px-4 py-3 transition-colors duration-500 ease-flow hover:border-clay"
+            >
+              <span className="hud flex items-center gap-2 text-clay">
+                <span className="size-2 animate-pulse bg-clay" aria-hidden />
+                {label}
+              </span>
+              <span className="font-medium">{event.title}</span>
+              <Hud className="text-night-faint">{dateLabel(event)}</Hud>
+              <ArrowRight
+                className="ml-auto size-4 transition-transform duration-500 ease-flow group-hover:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+          ))}
+        </div>
       )}
       <Ph className="absolute bottom-4 right-6 hidden border-clay text-clay md:inline-flex">
         Placeholder content

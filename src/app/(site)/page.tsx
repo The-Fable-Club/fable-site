@@ -9,7 +9,7 @@ import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
 import CountUp from "@/components/CountUp";
 import { getContent } from "@/lib/content";
-import { featured, openEvents } from "@/lib/events";
+import { heroStrips, openEvents } from "@/lib/events";
 import { initials } from "@/lib/members";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ const groupTone = {
   Faculty: "bg-ink text-paper",
   Board: "bg-clay text-ink",
   Leads: "bg-manilla text-ink",
+  Member: "bg-paper text-ink",
 } as const;
 
 export default async function Home() {
@@ -28,7 +29,7 @@ export default async function Home() {
   return (
     <>
       <SectionIndex />
-      <Hero club={club} event={featured(events)} />
+      <Hero club={club} strips={heroStrips(events)} />
 
       {/* About */}
       <div id="about">
