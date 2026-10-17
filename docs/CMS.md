@@ -1,4 +1,4 @@
-> **Interim.** Keystatic is the stopgap editor. The planned replacement (Supabase + a Publish button, no repo access) is in [CMS-PLAN.md](CMS-PLAN.md).
+> **Interim.** Keystatic is the stopgap editor. Its replacement (a separate private CMS with a Publish button, no repo access) is outlined in [CMS-PLAN.md](CMS-PLAN.md).
 
 # Editing the site (CMS)
 
