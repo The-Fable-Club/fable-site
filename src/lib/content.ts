@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 import { Snapshot, type SnapshotEvent, type SnapshotMember } from "@/lib/contract";
@@ -26,9 +26,9 @@ export type Content = {
   club: Club;
   aims: Aim[];
   events: ClubEvent[];
-  /** Faculty and board: written in this repo (content/members), not the CMS. */
+  /** Faculty, board and leads (home people section, contact, and the first groups on /members). */
   members: Member[];
-  /** General members: published from the CMS (the /members page). */
+  /** General members (the last group on /members). */
   community: Member[];
 };
 
@@ -98,13 +98,13 @@ export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
   };
 }
 
-export function toCommunityMember(m: SnapshotMember, i: number): Member {
+export function toMember(m: SnapshotMember): Member {
   return {
     slug: m.slug,
     name: m.name,
     role: m.role,
-    group: "Member",
-    order: i,
+    group: m.group,
+    order: m.order,
     department: m.department,
     year: m.year.mode === "none" ? undefined : m.year.text,
     bio: m.bio,
@@ -117,35 +117,11 @@ export function toCommunityMember(m: SnapshotMember, i: number): Member {
   };
 }
 
-type RawBoardMember = Omit<Member, "slug" | "year" | "linkedin" | "github" | "photo"> & {
-  year?: string;
-  linkedin?: string;
-  github?: string;
-  photo?: string | null;
-};
-
-function boardAndFaculty(): Member[] {
-  const dir = path.join(/*turbopackIgnore: true*/ root, "content", "members");
-  return readdirSync(dir)
-    .filter((f) => f.endsWith(".json"))
-    .map((f): Member => {
-      const m = readJson<RawBoardMember>("content", "members", f);
-      return {
-        ...m,
-        slug: f.replace(/\.json$/, ""),
-        year: m.year || undefined,
-        linkedin: m.linkedin || undefined,
-        github: m.github || undefined,
-        art: art(m.art),
-        photo: m.photo || undefined,
-      };
-    })
-    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
-}
+const byOrder = (a: Member, b: Member) => a.order - b.order || a.name.localeCompare(b.name);
 
 /**
- * Everything the site renders. Events and general members come from the
- * published release; the club text, aims, board and faculty from this repo.
+ * Everything the site renders. Events and all people come from the published
+ * release; the club text and aims from this repo.
  * Cached for an hour so Live / Open / Past follow the calendar without a rebuild.
  */
 export async function getContent(): Promise<Content> {
@@ -157,12 +133,13 @@ export async function getContent(): Promise<Content> {
   const snap = loadSnapshot();
   const clubRaw = readJson<Omit<Club, "name">>("content", "club.json");
   const aimsRaw = readJson<{ aims: Aim[] }>("content", "aims.json");
+  const people = snap.members.map(toMember).sort(byOrder);
 
   return {
     club: { name: "The Fable Club", ...clubRaw },
     aims: aimsRaw.aims,
     events: snap.events.map((e) => toClubEvent(e, today)),
-    members: boardAndFaculty(),
-    community: snap.members.map(toCommunityMember),
+    members: people.filter((m) => m.group !== "Member"),
+    community: people.filter((m) => m.group === "Member"),
   };
 }

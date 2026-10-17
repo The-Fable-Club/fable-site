@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SnapshotEvent } from "@/lib/contract";
-import { toClubEvent } from "@/lib/content";
+import { toClubEvent, toMember } from "@/lib/content";
 import { heroStrips, openEvents, pastEvents } from "@/lib/events";
 
 const TODAY = "2026-10-17";
@@ -98,5 +98,16 @@ describe("home page announcements", () => {
     expect(openEvents([tba, m, reg, live]).map((e) => e.slug)).toEqual(["live", "reg", "m", "tba"]);
     const older = ev({ slug: "older", date: { mode: "exact", start: "2025-01-01" } });
     expect(pastEvents([older, old]).map((e) => e.slug)).toEqual(["old", "older"]);
+  });
+});
+
+describe("toMember", () => {
+  const m = { slug: "a", name: "Ada", role: "Chairperson", group: "Board" as const, order: 10, department: "CSE", year: { mode: "none" as const }, bio: "b", focus: ["x"], links: { email: "a@x.co", linkedin: null }, art: "party", photo: null };
+  it("maps group, order, links and art", () => {
+    expect(toMember(m)).toMatchObject({ group: "Board", order: 10, role: "Chairperson", email: "a@x.co", linkedin: undefined, art: "/art/party.svg", year: undefined, photo: undefined });
+  });
+  it("uses typed year text and an empty email when hidden", () => {
+    const x = toMember({ ...m, year: { mode: "text" as const, text: "Final year" }, links: {} });
+    expect(x).toMatchObject({ year: "Final year", email: "" });
   });
 });
