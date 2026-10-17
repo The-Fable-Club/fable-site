@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local Claude Code settings and skills (not part of the site)
 .claude/
+
+# the release fetched at build time (scripts/pull-snapshot.mjs)
+/.snapshot/
