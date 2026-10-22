@@ -218,3 +218,94 @@ body {
     transform 0.8s var(--ease-flow),
     opacity 0.8s var(--ease-flow);
 }
+
+/* ------------------------------------------------------------------
+   Loading screen (components/boot-screen.tsx)
+------------------------------------------------------------------- */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  color: var(--color-paper);
+}
+.boot-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.2%;
+  background-color: var(--color-night-sunken);
+  background-image: radial-gradient(circle at 1px 1px, rgb(194 192 182 / 0.14) 1px, transparent 0);
+  background-size: 28px 28px;
+  transition: transform 1.1s var(--ease-flow);
+}
+.boot-top {
+  top: 0;
+}
+.boot-bottom {
+  bottom: 0;
+}
+.boot-content {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity 0.5s var(--ease-flow),
+    transform 0.75s var(--ease-flow);
+}
+.boot-seam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--color-clay);
+  transform: scaleX(0);
+  transition:
+    transform 0.7s var(--ease-flow) 0.1s,
+    opacity 0.5s var(--ease-flow);
+}
+.boot-cell {
+  background: rgb(250 249 245 / 0.18);
+  transition: background-color 0.3s var(--ease-flow);
+}
+.boot-cell[data-on="1"] {
+  background: var(--color-clay);
+}
+@keyframes boot-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+.boot-blink {
+  animation: boot-blink 1s var(--ease-flow) infinite;
+}
+/* hand-over: content falls away, the seam draws, then the halves slide apart */
+.boot[data-phase="exit"] .boot-content,
+.boot[data-phase="open"] .boot-content {
+  opacity: 0;
+  transform: scale(1.05);
+}
+.boot[data-phase="exit"] .boot-pct {
+  color: var(--color-paper);
+}
+.boot[data-phase="exit"] .boot-seam,
+.boot[data-phase="open"] .boot-seam {
+  transform: scaleX(1);
+}
+.boot[data-phase="open"] .boot-seam {
+  opacity: 0;
+}
+.boot[data-phase="open"] .boot-top {
+  transform: translateY(-100%);
+}
+.boot[data-phase="open"] .boot-bottom {
+  transform: translateY(100%);
+}
+.boot[data-phase="open"] {
+  pointer-events: none;
+}

@@ -82,7 +82,7 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
     <section
       id="top"
       ref={stage}
-      className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-night text-paper"
+      className="hero-intro relative isolate flex min-h-dvh flex-col overflow-hidden bg-night text-paper"
     >
       {/* dot grid */}
       <div
