@@ -43,6 +43,10 @@ export type ClubEvent = {
   registration: RegistrationState;
   /** Outside form link when apply.mode is "link". */
   applyUrl?: string;
+  /** The event's official VIT EventHub page. When set, registration happens there (button goes via /go/<slug>). */
+  eventhubUrl?: string;
+  /** Answered questions the club chose to show. */
+  faq: { question: string; answer: string }[];
   hub: HubItem[];
 };
 
@@ -71,6 +75,20 @@ export function heroStrips(events: ClubEvent[]): HeroStrip[] {
   if (reg) strips.push({ label: "Registrations open", event: reg });
   if (strips.length === 0 && open[0]) strips.push({ label: "Next up", event: open[0] });
   return strips;
+}
+
+/**
+ * Where the "Register on EventHub" button may send someone: the event's own EventHub page, only while
+ * registration is open, and only on the real EventHub host (checked again here, not just in the CMS).
+ */
+export function eventhubTarget(e: Pick<ClubEvent, "eventhubUrl" | "registration"> | undefined): string | null {
+  if (!e?.eventhubUrl || e.registration !== "open") return null;
+  try {
+    const u = new URL(e.eventhubUrl);
+    return u.protocol === "https:" && u.hostname === "eventhubcc.vit.ac.in" ? u.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 export const dateLabel = (e: Pick<ClubEvent, "dateText">) => e.dateText;

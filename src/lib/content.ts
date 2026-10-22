@@ -93,8 +93,10 @@ export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
     art: art(e.art),
     photo: e.photo ?? undefined,
     apply,
-    registration: registrationState(apply, status),
+    registration: registrationState(apply, status, Boolean(e.eventhub)),
     applyUrl: apply.mode === "link" ? apply.url : undefined,
+    eventhubUrl: e.eventhub ?? undefined,
+    faq: e.faq,
     hub,
   };
 }

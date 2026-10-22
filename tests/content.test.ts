@@ -8,7 +8,7 @@ const base: SnapshotEvent = {
   slug: "e", title: "E", kind: "Workshop", phase: 1, status_override: null,
   date: { mode: "exact", start: "2026-11-20", end: null },
   time: { mode: "text", text: "4 pm" }, venue: { mode: "text", text: "Lab" }, seats: { mode: "open" },
-  apply: { mode: "form" }, summary: "s", description: ["d"], highlights: [], art: "pointer", photo: null, hub: [],
+  apply: { mode: "form" }, summary: "s", description: ["d"], highlights: [], art: "pointer", photo: null, hub: [], eventhub: null, faq: [],
 };
 const ev = (o: Partial<SnapshotEvent>) => toClubEvent({ ...base, ...o }, TODAY);
 
@@ -122,5 +122,22 @@ describe("toMember", () => {
   it("uses typed year text and an empty email when hidden", () => {
     const x = toMember({ ...m, year: { mode: "text" as const, text: "Final year" }, links: {} });
     expect(x).toMatchObject({ year: "Final year", email: "" });
+  });
+});
+
+describe("EventHub link and FAQ", () => {
+  it("an EventHub link opens registration until the event is past, whatever our own form says", () => {
+    const e = ev({ apply: { mode: "none" }, eventhub: "https://eventhubcc.vit.ac.in/EventHub/e/1" });
+    expect(e.registration).toBe("open");
+    expect(e.eventhubUrl).toBe("https://eventhubcc.vit.ac.in/EventHub/e/1");
+    expect(ev({ eventhub: "https://eventhubcc.vit.ac.in/x", date: { mode: "exact", start: "2026-01-01" } }).registration).toBe("closed");
+    expect(ev({ eventhub: null }).eventhubUrl).toBeUndefined();
+  });
+  it("carries the FAQ through", () => {
+    expect(ev({ faq: [{ question: "Free?", answer: "Yes." }] }).faq).toEqual([{ question: "Free?", answer: "Yes." }]);
+  });
+  it("an EventHub event is announced as Registrations open", () => {
+    const hubEvent = ev({ slug: "hub", apply: { mode: "none" }, eventhub: "https://eventhubcc.vit.ac.in/x" });
+    expect(heroStrips([hubEvent]).map((s) => s.label)).toEqual(["Registrations open"]);
   });
 });
