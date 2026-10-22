@@ -6,7 +6,7 @@ const json = (body: object, status = 200) => Response.json(body, { status, heade
 /** Shared handler for the two live forms: guard, validate, insert, answer. */
 export async function handleSubmission<S extends z.ZodType>(
   req: Request,
-  opts: { schema: S; table: "applications" | "registrations"; toRow: (v: z.infer<S>) => object },
+  opts: { schema: S; table: "applications" | "registrations" | "event_questions"; toRow: (v: z.infer<S>) => object },
 ) {
   const guard = guardRequest(req);
   if (!guard.ok) return json({ ok: false, message: guard.message }, guard.status);

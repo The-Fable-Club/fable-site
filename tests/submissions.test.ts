@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApplicationInput, RegistrationInput, fieldErrors, guardRequest, insertRow, mapDbError } from "@/lib/submissions";
+import { ApplicationInput, QuestionInput, RegistrationInput, fieldErrors, guardRequest, insertRow, mapDbError } from "@/lib/submissions";
+import { POST as postQuestion } from "@/app/api/questions/route";
 import { POST as postRegistration } from "@/app/api/registrations/route";
 import { POST as postApplication } from "@/app/api/applications/route";
 
@@ -144,5 +145,40 @@ describe("API routes", () => {
     expect(sent.tracks).toEqual(["Claude Code"]);
     expect(sent).not.toHaveProperty("consent");
     expect(sent).not.toHaveProperty("website");
+  });
+});
+
+describe("questions", () => {
+  const ask = (o: Record<string, unknown> = {}) => ({ event_slug: "some-event", question: "Is it free to attend?", ...o });
+  it("validates: question length, optional name and email", () => {
+    expect(QuestionInput.safeParse(ask()).success).toBe(true);
+    expect(QuestionInput.safeParse(ask({ name: "", email: "" })).success).toBe(true);
+    expect(QuestionInput.safeParse(ask({ question: "Hi" })).success).toBe(false);
+    expect(QuestionInput.safeParse(ask({ question: "x".repeat(501) })).success).toBe(false);
+    expect(QuestionInput.safeParse(ask({ email: "nope" })).success).toBe(false);
+    expect(QuestionInput.safeParse(ask({ event_slug: "Bad Slug" })).success).toBe(false);
+  });
+  it("saves only the question columns; empty name and email become null", async () => {
+    const f = stubDb(201);
+    const res = await postQuestion(request(ask({ name: "", email: "", website: "" })));
+    expect(res.status).toBe(200);
+    const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("https://p.supabase.co/rest/v1/event_questions");
+    expect(JSON.parse(init.body as string)).toEqual({ event_slug: "some-event", question: "Is it free to attend?", name: null, email: null });
+  });
+  it("cannot set an answer or publish itself (extra fields are dropped)", async () => {
+    const f = stubDb(201);
+    await postQuestion(request(ask({ answer: "Yes", show_on_site: true, hidden: false })));
+    const sent = JSON.parse((f.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(Object.keys(sent).sort()).toEqual(["email", "event_slug", "name", "question"]);
+  });
+  it("closed events, spam and bots", async () => {
+    stubDb(401, { code: "42501" });
+    expect((await postQuestion(request(ask()))).status).toBe(403);
+    stubDb(400, { code: "P0001" });
+    expect((await postQuestion(request(ask()))).status).toBe(429);
+    const f = stubDb(201);
+    expect(await (await postQuestion(request(ask({ website: "http://spam" })))).json()).toEqual({ ok: true });
+    expect(f).not.toHaveBeenCalled();
   });
 });

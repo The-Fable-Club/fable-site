@@ -43,6 +43,23 @@ export const RegistrationInput = z.object({
 });
 export type RegistrationInput = z.infer<typeof RegistrationInput>;
 
+/** A question asked under an event. Name and email are optional; the email is only used to send the answer. */
+export const QuestionInput = z.object({
+  event_slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(80),
+  question: z.string().trim().min(5, "Write a question (at least a few words).").max(500, "Keep it under 500 characters."),
+  name: z.string().trim().max(80, "Keep your name under 80 characters.").optional().transform((v) => v || undefined),
+  email: z
+    .string()
+    .trim()
+    .max(200)
+    .email("Enter a valid email, or leave it empty.")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  website: z.string().max(0).optional(),
+});
+export type QuestionInput = z.infer<typeof QuestionInput>;
+export const questionRow = (v: QuestionInput) => ({ event_slug: v.event_slug, question: v.question, name: v.name ?? null, email: v.email ?? null });
+
 export type FieldErrors = Record<string, string>;
 export function fieldErrors(error: z.ZodError): FieldErrors {
   const out: FieldErrors = {};
@@ -66,14 +83,14 @@ export type InsertOutcome =
 export function mapDbError(httpStatus: number, body: { code?: string; message?: string } | null): InsertOutcome {
   const code = body?.code;
   if (code === "23505") return { ok: false, status: 409, code: "duplicate", message: "You have already registered with this email." };
-  if (code === "42501") return { ok: false, status: 403, code: "closed", message: "Registration for this is not open." };
+  if (code === "42501") return { ok: false, status: 403, code: "closed", message: "This is not open right now." };
   if (code === "P0001") return { ok: false, status: 429, code: "busy", message: "Too many attempts right now. Please try again in a while." };
   if (code === "23514" || code === "22P02" || httpStatus === 400) return { ok: false, status: 422, code: "invalid", message: "Some details were not accepted. Please check them and try again." };
   return { ok: false, status: 503, code: "unavailable", message: "We could not save this right now. Please try again shortly." };
 }
 
 /** Insert one row with the publishable key; RLS only allows insert, nothing is read back. */
-export async function insertRow(table: "applications" | "registrations", row: object, env = process.env): Promise<InsertOutcome> {
+export async function insertRow(table: "applications" | "registrations" | "event_questions", row: object, env = process.env): Promise<InsertOutcome> {
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
   const key = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return { ok: false, status: 503, code: "unavailable", message: "Submissions are not available right now." };
