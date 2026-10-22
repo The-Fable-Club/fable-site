@@ -65,6 +65,18 @@ async function EventDetail({
               <p className="mt-6 max-w-[56ch] font-serif text-xl leading-relaxed text-ink-soft">
                 {e.summary}
               </p>
+              {/* Phones: the register button would otherwise sit below the whole page; repeat it up here. */}
+              {e.registration === "open" && e.eventhubUrl && (
+                <a
+                  href={`/go/${e.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 flex h-14 items-center justify-between bg-clay px-5 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay-deep hover:text-paper md:hidden"
+                >
+                  Register on EventHub
+                  <ArrowUpRight className="size-5" aria-hidden />
+                </a>
+              )}
             </div>
             <Image
               src={e.art}
