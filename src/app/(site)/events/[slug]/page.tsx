@@ -9,6 +9,7 @@ import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { bySlug, dateLabel, isOpen } from "@/lib/events";
 import { RegisterForm } from "@/components/register-form";
+import { AskForm } from "@/components/ask-form";
 
 export async function generateStaticParams() {
   const { events } = await getContent();
@@ -98,6 +99,29 @@ async function EventDetail({
               ))}
             </ul>
             <Ph className="mt-8">Event details are placeholders</Ph>
+
+            {e.faq.length > 0 && (
+              <>
+                <h2 className="mt-14 font-display text-3xl leading-none">Questions people asked</h2>
+                <dl className="mt-6 divide-y divide-ink/15 border-y border-ink/15">
+                  {e.faq.map((f, i) => (
+                    <div key={i} className="py-5">
+                      <dt className="font-display text-xl leading-snug">{f.question}</dt>
+                      <dd className="mt-2 max-w-[62ch] whitespace-pre-line font-serif text-lg leading-relaxed text-ink-soft">{f.answer}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
+
+            {open && (
+              <div id="ask" className="mt-14 max-w-xl">
+                <h2 className="font-display text-3xl leading-none">Have a question?</h2>
+                <div className="mt-6">
+                  <AskForm slug={e.slug} />
+                </div>
+              </div>
+            )}
           </div>
 
           <aside className="md:sticky md:top-8 md:self-start">
@@ -135,7 +159,21 @@ async function EventDetail({
               <div className="space-y-3 border-t border-ink p-5">
                 {open ? (
                   <>
-                    {e.registration === "open" && e.applyUrl && (
+                    {e.registration === "open" && e.eventhubUrl && (
+                      <div>
+                        <a
+                          href={`/go/${e.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-14 items-center justify-between bg-clay px-5 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay-deep hover:text-paper"
+                        >
+                          Register on EventHub
+                          <ArrowUpRight className="size-5" aria-hidden />
+                        </a>
+                        <p className="mt-2 text-xs text-ink-faint">The official VIT registration (eventhubcc.vit.ac.in). It asks for your VTOP login there, never here.</p>
+                      </div>
+                    )}
+                    {e.registration === "open" && !e.eventhubUrl && e.applyUrl && (
                       <a
                         href={e.applyUrl}
                         target="_blank"
@@ -177,7 +215,7 @@ async function EventDetail({
             </div>
             {e.registration === "open" && e.apply.mode === "form" && (
               <div className="mt-6">
-                <RegisterForm slug={e.slug} title={e.title} />
+                <RegisterForm slug={e.slug} title={e.title} heading={e.eventhubUrl ? "On-spot / club sign-up" : undefined} />
               </div>
             )}
           </aside>

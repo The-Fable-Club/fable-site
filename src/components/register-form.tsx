@@ -12,7 +12,7 @@ const input =
   "h-12 w-full border border-ink/40 bg-paper px-3 text-base outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-clay/40 aria-[invalid=true]:border-destructive";
 
 /** Registration for one event. Posts to /api/registrations, which writes to the database. */
-export function RegisterForm({ slug, title }: { slug: string; title: string }) {
+export function RegisterForm({ slug, title, heading }: { slug: string; title: string; heading?: string }) {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export function RegisterForm({ slug, title }: { slug: string; title: string }) {
 
   return (
     <form id="register" onSubmit={onSubmit} noValidate className="grid gap-4 border border-ink bg-paper-raised p-5">
-      <Hud className="text-ink-faint">Register for this event</Hud>
+      <Hud className="text-ink-faint">{heading ?? "Register for this event"}</Hud>
       <label className="block">
         <span className="hud text-ink-faint">Full name</span>
         <input name="name" autoComplete="name" className={cn(input, "mt-1")} {...bad("name")} />

@@ -376,7 +376,18 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       </div>
                     </motion.dl>
                     <motion.div variants={rise} className="mt-auto flex flex-wrap gap-3 pt-7">
-                      {e.registration === "open" && e.applyUrl && (
+                      {e.registration === "open" && e.eventhubUrl && (
+                        <a
+                          href={`/go/${e.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn("inline-flex h-12 items-center gap-2 px-6 font-medium transition-colors duration-500 ease-flow", t.btn)}
+                        >
+                          Register on EventHub
+                          <ArrowUpRight className="size-4" aria-hidden />
+                        </a>
+                      )}
+                      {e.registration === "open" && !e.eventhubUrl && e.applyUrl && (
                         <a
                           href={e.applyUrl}
                           target="_blank"
@@ -387,7 +398,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                           <ArrowUpRight className="size-4" aria-hidden />
                         </a>
                       )}
-                      {e.registration === "open" && !e.applyUrl && (
+                      {e.registration === "open" && !e.eventhubUrl && !e.applyUrl && (
                         <Link
                           href={`/events/${e.slug}#register`}
                           className={cn("inline-flex h-12 items-center gap-2 px-6 font-medium transition-colors duration-500 ease-flow", t.btn)}
