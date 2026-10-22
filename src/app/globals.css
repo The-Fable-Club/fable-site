@@ -181,3 +181,40 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ------------------------------------------------------------------
+   Home events stage (components/home/events-stage.tsx)
+------------------------------------------------------------------- */
+/* Backdrops crossfade; the incoming one also settles in from a slight zoom. */
+.stage-media {
+  opacity: 0;
+  transform: scale(1.08);
+  transition:
+    opacity 0.9s var(--ease-flow),
+    transform 9s var(--ease-flow);
+}
+.stage-layer[data-on] .stage-media {
+  opacity: 1;
+  transform: scale(1);
+}
+/* The line under the title: fills over the time one event stays up (linear on purpose, it is a timer). */
+@keyframes stage-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.stage-fill {
+  animation-name: stage-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+/* Thumbnails slide along the strip: --o is the place relative to the current one. */
+.stage-thumb {
+  transform: translateX(calc(-50% + var(--o, 0) * var(--pitch))) scale(var(--sc, 1));
+  transition:
+    transform 0.8s var(--ease-flow),
+    opacity 0.8s var(--ease-flow);
+}

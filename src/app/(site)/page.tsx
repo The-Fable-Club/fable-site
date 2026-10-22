@@ -3,7 +3,7 @@ import { ArrowRight, Mail } from "lucide-react";
 import { Banner, Hud, Ph } from "@/components/hud";
 import { Hero } from "@/components/home/hero";
 import { AimsDial } from "@/components/home/aims-dial";
-import { EventsCarousel } from "@/components/home/events-carousel";
+import { EventsStage } from "@/components/home/events-stage";
 import { PeopleStage } from "@/components/home/people-stage";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
@@ -77,12 +77,10 @@ export default async function Home() {
       {/* Events */}
       <div id="events">
         <Banner label="Highlighted and upcoming" title="Events" art="/art/party.svg" tone="manilla" />
-        <section className="bg-paper-sunken py-16 md:py-24">
-          <div className="mx-auto max-w-[90rem]">
-            <EventsCarousel events={open} />
-          </div>
+        <EventsStage events={open} />
+        <section className="bg-paper-sunken pb-16 md:pb-24">
           <div className="mx-auto max-w-6xl px-6 md:px-12">
-            <div className="mt-20 flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-4 pt-16 md:pt-24">
               <div>
                 <Hud className="text-ink-faint">Timeline</Hud>
                 <h3 className="font-display text-4xl leading-none md:text-5xl">The year, in order</h3>
