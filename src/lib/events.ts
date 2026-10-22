@@ -43,7 +43,7 @@ export type ClubEvent = {
   registration: RegistrationState;
   /** Outside form link when apply.mode is "link". */
   applyUrl?: string;
-  /** The event's official VIT EventHub page. When set, registration happens there (button goes via /go/<slug>). */
+  /** The event's official VIT EventHub page. When set, registration happens there; the button links straight to it. */
   eventhubUrl?: string;
   /** Answered questions the club chose to show. */
   faq: { question: string; answer: string }[];

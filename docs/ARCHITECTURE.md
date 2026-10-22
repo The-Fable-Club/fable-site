@@ -15,7 +15,7 @@ The whole system (CMS, database, deploy hook, data flows, security, tests) is de
 `/api/applications` and `/api/registrations` use `src/lib/submit-route.ts`: origin check, size limit, JSON only, honeypot, zod validation (`src/lib/submissions.ts`), then one insert with the publishable key. The database decides who may insert (see the CMS repo's migrations).
 
 ## EventHub and questions
-- `eventhubTarget()` (`src/lib/events.ts`) decides where the EventHub button may send someone: only the event's saved link, only while registration is open, only on `eventhubcc.vit.ac.in`. `/go/<slug>` uses it, counts the press via `count_eventhub_click()` and redirects; otherwise it sends people back to the event page.
+- `eventhubTarget()` (`src/lib/events.ts`) decides where the Register on EventHub button may point: only the event's saved link, only while registration is open, only on `eventhubcc.vit.ac.in`. The button links straight there; nothing is counted.
 - An EventHub link makes registration "open" until the event is past, regardless of our own form (`registrationState(apply, status, hasEventhub)`).
 - `/api/questions` inserts into `event_questions`; nothing is shown until the CMS publishes an answer as FAQ.
 

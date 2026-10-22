@@ -3,7 +3,7 @@
 The public site for The Fable Club, a Claude learning club at VIT Chennai: **www.thefableclub.com**.
 Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind v4 · shadcn/ui (base-nova) · motion.
 
-The site is **static**. Events and people are managed in a separate CMS ([The-Fable-Club/fable-cms](https://github.com/The-Fable-Club/fable-cms)); when an editor presses Publish, Vercel rebuilds this site once from the newest release. Visitors never read the database while browsing. The only live database access is three small form routes (applications, event registrations, questions) and the EventHub click counter.
+The site is **static**. Events and people are managed in a separate CMS ([The-Fable-Club/fable-cms](https://github.com/The-Fable-Club/fable-cms)); when an editor presses Publish, Vercel rebuilds this site once from the newest release. Visitors never read the database while browsing. The only live database access is three small form routes (applications, event registrations, questions).
 
 Full picture, data flows, security and status: **[fable-cms/docs/ARCHITECTURE.md](https://github.com/The-Fable-Club/fable-cms/blob/main/docs/ARCHITECTURE.md)**. The site's side: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -25,7 +25,6 @@ npm test                     # unit tests
 | `/events` | Current and upcoming, the full timeline (undecided dates are marked or listed underneath), event history |
 | `/events/[slug]` | Event details, **Register on EventHub** (official VIT registration), our own on-spot form, the FAQ and an ask-a-question box |
 | `/e/[slug]` | Poster short link: redirects to the event page |
-| `/go/[slug]` | The EventHub button: counts the press (numbers only) and forwards to that event's EventHub page |
 | `/events/[slug]/attendance` | Attendance page: **layout only**, disabled and not linked until the backend exists |
 | `/events/[slug]/hub` | Participant hub (links and announcements from the organisers). Public to anyone with the link. |
 | `/members` | Faculty, board, leads and members; click a card for the bio. Deep link: `/members?m=<slug>` |

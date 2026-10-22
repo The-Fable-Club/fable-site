@@ -6,7 +6,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { motion, useInView, type Variants } from "motion/react";
 import { useReducedMotion } from "@/lib/motion";
 import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
-import { dateLabel, type ClubEvent } from "@/lib/events";
+import { dateLabel, eventhubTarget, type ClubEvent } from "@/lib/events";
 import { ArrowBtn, Hud } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { cn } from "@/lib/utils";
@@ -376,9 +376,9 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       </div>
                     </motion.dl>
                     <motion.div variants={rise} className="mt-auto flex flex-wrap gap-3 pt-7">
-                      {e.registration === "open" && e.eventhubUrl && (
+                      {eventhubTarget(e) && (
                         <a
-                          href={`/go/${e.slug}`}
+                          href={eventhubTarget(e)!}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={cn("inline-flex h-12 items-center gap-2 px-6 font-medium transition-colors duration-500 ease-flow", t.btn)}

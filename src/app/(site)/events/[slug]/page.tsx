@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-reac
 import { Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
-import { bySlug, dateLabel, isOpen } from "@/lib/events";
+import { bySlug, dateLabel, eventhubTarget, isOpen } from "@/lib/events";
 import { RegisterForm } from "@/components/register-form";
 import { AskForm } from "@/components/ask-form";
 
@@ -39,6 +39,8 @@ async function EventDetail({
   const e = bySlug(events, slug);
   if (!e) notFound();
   const open = isOpen(e);
+  // Only ever the event's own link, only while open, only on the real EventHub host.
+  const eventhub = eventhubTarget(e);
 
   return (
     <>
@@ -66,9 +68,9 @@ async function EventDetail({
                 {e.summary}
               </p>
               {/* Phones: the register button would otherwise sit below the whole page; repeat it up here. */}
-              {e.registration === "open" && e.eventhubUrl && (
+              {eventhub && (
                 <a
-                  href={`/go/${e.slug}`}
+                  href={eventhub}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-8 flex h-14 items-center justify-between bg-clay px-5 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay-deep hover:text-paper md:hidden"
@@ -171,10 +173,10 @@ async function EventDetail({
               <div className="space-y-3 border-t border-ink p-5">
                 {open ? (
                   <>
-                    {e.registration === "open" && e.eventhubUrl && (
+                    {eventhub && (
                       <div>
                         <a
-                          href={`/go/${e.slug}`}
+                          href={eventhub}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex h-14 items-center justify-between bg-clay px-5 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay-deep hover:text-paper"
