@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import { useReducedMotion } from "@/lib/motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Aim } from "@/lib/content";
@@ -10,12 +10,17 @@ import { Dial3D, MODEL_LABEL } from "@/components/home/point-cloud";
 import { cn } from "@/lib/utils";
 
 const FLOW = [0.65, 0, 0.35, 1] as const;
+/** How long each aim stays up before the wheel moves on by itself (the active tab fills over this). */
+const AUTO_MS = 7000;
 
 // Carousel stage with a rotating dial and a 3D model viewer, after
 // Endfield's "Lore" panel. Changing slide turns the dial one step, swaps the
 // copy, and re-forms the 3D model with a laser scan.
 export function AimsDial({ aims }: { aims: Aim[] }) {
   const [i, setI] = useState(0);
+  const [hover, setHover] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  const onScreen = useInView(root, { amount: 0.35 });
   const reduce = useReducedMotion();
   const n = aims.length;
 
@@ -37,6 +42,11 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
 
   return (
     <section
+      ref={root}
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse") setHover(true);
+      }}
+      onPointerLeave={() => setHover(false)}
       aria-roledescription="carousel"
       aria-label="What the club is for"
       className="relative overflow-hidden bg-night-sunken text-paper"
@@ -100,9 +110,18 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
                   <span
                     className={cn(
                       "absolute inset-x-0 bottom-1.5 h-[3px] transition-colors duration-500 ease-flow",
-                      k === i ? "bg-clay" : "bg-paper/25 group-hover:bg-paper/50",
+                      k < i ? "bg-paper/60" : "bg-paper/25 group-hover:bg-paper/50",
                     )}
                   />
+                  {/* the active tab fills while this aim is up; when it is full the wheel moves on */}
+                  {k === i && (
+                    <span
+                      key={i}
+                      onAnimationEnd={() => go(1)}
+                      className="stage-fill absolute inset-x-0 bottom-1.5 h-[3px] origin-left bg-clay"
+                      style={{ animationDuration: `${AUTO_MS}ms`, animationPlayState: onScreen && !hover ? "running" : "paused" }}
+                    />
+                  )}
                 </button>
               ))}
             </div>
