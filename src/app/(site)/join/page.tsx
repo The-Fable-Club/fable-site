@@ -26,7 +26,7 @@ const faq = [
   { q: "Do I need to know how to code?", a: "No. Beginners are welcome." },
   { q: "I’m not in a computing department. Is this for me?", a: "Yes. Every department is welcome." },
   { q: "How often does the club meet?", a: "Every other week." },
-  { q: "Is the club part of Anthropic?", a: "No. The club is independent and is applying for official status." },
+  { q: "Is the club part of Anthropic?", a: "No. The Fable Club is an independent student club approved by VIT. We are applying for official status with Anthropic." },
 ];
 
 export default async function JoinPage() {
@@ -70,16 +70,27 @@ export default async function JoinPage() {
                 </p>
                 <p className="mt-5 max-w-[46ch] font-serif text-lg leading-relaxed text-night-soft">
                   {r.state === "soon"
-                    ? "The form will appear on this page when applications open. Follow us to hear the moment it does."
+                    ? "The form will appear on this page when applications open. Join the WhatsApp group to hear the moment it does."
                     : "Thanks to everyone who applied. Follow us to hear when the next intake opens."}
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
+                  {r.whatsapp && (
+                    <a
+                      href={r.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-12 items-center gap-2 bg-clay px-6 font-medium text-ink transition-colors duration-500 ease-flow hover:bg-paper"
+                    >
+                      Join the WhatsApp group
+                      <ArrowUpRight className="size-4" aria-hidden />
+                    </a>
+                  )}
                   {instagram && (
                     <a
                       href={instagram.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-12 items-center gap-2 bg-clay px-6 font-medium text-ink transition-colors duration-500 ease-flow hover:bg-paper"
+                      className="inline-flex h-12 items-center gap-2 border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
                     >
                       Follow on Instagram
                       <ArrowUpRight className="size-4" aria-hidden />
@@ -157,6 +168,17 @@ export default async function JoinPage() {
                   </details>
                 ))}
               </div>
+              {r.whatsapp && r.state === "open" && (
+                <a
+                  href={r.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex items-center justify-between border border-ink px-4 py-3 text-sm font-medium transition-colors duration-500 ease-flow hover:bg-ink hover:text-paper"
+                >
+                  Recruitment WhatsApp group
+                  <ArrowUpRight className="size-4" aria-hidden />
+                </a>
+              )}
               <p className="mt-4 text-sm text-ink-soft">
                 Anything else? Write to{" "}
                 <a href={`mailto:${club.contactEmail}`} className="underline underline-offset-4 transition-colors duration-500 ease-flow hover:text-clay-deep">
