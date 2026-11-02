@@ -298,6 +298,21 @@ body {
     opacity 0.8s var(--ease-flow);
 }
 
+/* People backdrops: the artwork drifts and breathes slowly, so a stage left open never sits dead still. */
+@keyframes backdrop-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-28px, -14px) scale(1.06);
+  }
+}
+.backdrop-drift {
+  transform-box: view-box;
+  transform-origin: 60% 50%;
+  animation: backdrop-drift 22s var(--ease-flow) infinite alternate;
+}
+
 /* ------------------------------------------------------------------
    Loading screen (components/boot-screen.tsx)
 ------------------------------------------------------------------- */

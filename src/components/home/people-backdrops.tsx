@@ -399,7 +399,7 @@ export function BackdropSvg({ role }: { role: string }) {
       className="absolute inset-0 size-full"
       style={{ background: b.bg }}
     >
-      {b.art}
+      <g className="backdrop-drift">{b.art}</g>
     </svg>
   );
 }
