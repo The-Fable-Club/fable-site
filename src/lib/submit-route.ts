@@ -6,10 +6,18 @@ const json = (body: object, status = 200) => Response.json(body, { status, heade
 /** Shared handler for the two live forms: guard, validate, insert, answer. */
 export async function handleSubmission<S extends z.ZodType>(
   req: Request,
-  opts: { schema: S; table: "applications" | "registrations" | "event_questions"; toRow: (v: z.infer<S>) => object },
+  opts: {
+    schema: S;
+    table: "applications" | "registrations" | "event_questions";
+    toRow: (v: z.infer<S>) => object;
+    /** Refuse before reading the body, e.g. when applications are not open: the reason, or null to go ahead. */
+    closed?: () => string | null;
+  },
 ) {
   const guard = guardRequest(req);
   if (!guard.ok) return json({ ok: false, message: guard.message }, guard.status);
+  const shut = opts.closed?.();
+  if (shut) return json({ ok: false, code: "closed", message: shut }, 403);
 
   let body: unknown;
   try {

@@ -4,8 +4,11 @@ import { z } from "zod";
 
 export const REG_NO = /^\d{2}[A-Za-z]{3}\d{4,5}$/;
 export const YEARS = ["1st", "2nd", "3rd", "4th", "Postgraduate"] as const;
-export const LEVELS = ["beginner", "everyday", "builder"] as const;
-export const TRACKS = ["AI Fluency fundamentals", "Claude.ai for daily work", "Claude Code", "Agents & MCP"] as const;
+/** The board's teams, as applicants can pick them (plus "not sure"). */
+export const TEAMS = ["Web Development", "Agentic AI", "Technical", "Operations", "Finance", "Creative & Communications", "Not sure yet"] as const;
+/** VIT student mailboxes. */
+export const VIT_EMAIL = /^[^\s@]+@vitstudent\.ac\.in$/i;
+export const PHONE = /^[0-9+()\- ]{7,20}$/;
 
 const text = (min: number, max: number, msg: string) => z.string().trim().min(min, msg).max(max, msg);
 const person = {
@@ -25,9 +28,17 @@ const person = {
 
 export const ApplicationInput = z.object({
   ...person,
-  level: z.enum(LEVELS, { message: "Pick the one that fits best." }),
-  tracks: z.array(z.enum(TRACKS)).max(TRACKS.length).default([]),
+  email: z
+    .string()
+    .trim()
+    .max(200)
+    .regex(VIT_EMAIL, "Use your VIT student email (it ends in @vitstudent.ac.in).")
+    .transform((v) => v.toLowerCase()),
+  phone: z.string().trim().regex(PHONE, "Enter your phone or WhatsApp number."),
+  team: z.enum(TEAMS, { message: "Pick a team, or “Not sure yet”." }),
+  build: text(10, 2000, "Tell us what you would like to build or learn (a sentence is enough)."),
   why: text(20, 2000, "Tell us a little more (at least a sentence)."),
+  task: text(20, 3000, "Answer the short task in a few sentences."),
 });
 export type ApplicationInput = z.infer<typeof ApplicationInput>;
 
@@ -37,7 +48,7 @@ export const RegistrationInput = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^[0-9+()\- ]{7,20}$/, "Enter a valid phone number, or leave it empty.")
+    .regex(PHONE, "Enter a valid phone number, or leave it empty.")
     .optional()
     .or(z.literal("").transform(() => undefined)),
 });
@@ -68,8 +79,20 @@ export function fieldErrors(error: z.ZodError): FieldErrors {
 }
 
 /** The row sent to Supabase (no consent/honeypot columns). */
-export function applicationRow(v: ApplicationInput) {
-  return { name: v.name, reg_no: v.reg_no, email: v.email, department: v.department, year: v.year, level: v.level, tracks: v.tracks, why: v.why };
+export function applicationRow(v: ApplicationInput, intake: string) {
+  return {
+    name: v.name,
+    reg_no: v.reg_no,
+    email: v.email,
+    phone: v.phone,
+    department: v.department,
+    year: v.year,
+    team: v.team,
+    build: v.build,
+    why: v.why,
+    task: v.task,
+    intake,
+  };
 }
 export function registrationRow(v: RegistrationInput) {
   return { event_slug: v.event_slug, name: v.name, reg_no: v.reg_no, email: v.email, department: v.department, year: v.year, phone: v.phone ?? null };
@@ -80,9 +103,15 @@ export type InsertOutcome =
   | { ok: false; status: number; code: "duplicate" | "closed" | "busy" | "invalid" | "unavailable"; message: string };
 
 /** Map a PostgREST error to something a person can act on. */
-export function mapDbError(httpStatus: number, body: { code?: string; message?: string } | null): InsertOutcome {
+export function mapDbError(httpStatus: number, body: { code?: string; message?: string } | null, table?: string): InsertOutcome {
   const code = body?.code;
-  if (code === "23505") return { ok: false, status: 409, code: "duplicate", message: "You have already registered with this email." };
+  if (code === "23505")
+    return {
+      ok: false,
+      status: 409,
+      code: "duplicate",
+      message: table === "applications" ? "You have already applied in this intake. We will be in touch by email." : "You have already registered with this email.",
+    };
   if (code === "42501") return { ok: false, status: 403, code: "closed", message: "This is not open right now." };
   if (code === "P0001") return { ok: false, status: 429, code: "busy", message: "Too many attempts right now. Please try again in a while." };
   if (code === "23514" || code === "22P02" || httpStatus === 400) return { ok: false, status: 422, code: "invalid", message: "Some details were not accepted. Please check them and try again." };
@@ -103,7 +132,7 @@ export async function insertRow(table: "applications" | "registrations" | "event
     });
     if (res.ok) return { ok: true };
     const body = (await res.json().catch(() => null)) as { code?: string; message?: string } | null;
-    return mapDbError(res.status, body);
+    return mapDbError(res.status, body, table);
   } catch {
     return { ok: false, status: 503, code: "unavailable", message: "We could not save this right now. Please try again shortly." };
   }

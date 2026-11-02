@@ -5,6 +5,7 @@ import { Snapshot, type SnapshotEvent, type SnapshotMember } from "@/lib/contrac
 import { dateLabel, deriveStatus, eventWindow, registrationState } from "@/lib/event-logic";
 import type { ClubEvent, HubItem } from "@/lib/events";
 import type { Member } from "@/lib/members";
+import { recruitmentState, type Recruitment, type RecruitmentStatus } from "@/lib/recruitment";
 
 export type Club = {
   name: string;
@@ -17,6 +18,8 @@ export type Club = {
   socials: { label: string; href: string }[];
   stats: { label: string; value: string; note: string }[];
   phases: { name: string; span: string }[];
+  /** Recruitment settings plus `state`: what applies today (recomputed at least hourly). */
+  recruitment: Recruitment & { state: RecruitmentStatus };
 };
 
 export type AimModel = "pages" | "book" | "blocks" | "steps" | "network";
@@ -134,15 +137,20 @@ export async function getContent(): Promise<Content> {
 
   const today = ymd(new Date());
   const snap = loadSnapshot();
-  const clubRaw = readJson<Omit<Club, "name">>("content", "club.json");
+  const clubRaw = readJson<Omit<Club, "name" | "recruitment"> & { recruitment: Recruitment }>("content", "club.json");
   const aimsRaw = readJson<{ aims: Aim[] }>("content", "aims.json");
   const people = snap.members.map(toMember).sort(byOrder);
 
   return {
-    club: { name: "The Fable Club", ...clubRaw },
+    club: { name: "The Fable Club", ...clubRaw, recruitment: { ...clubRaw.recruitment, state: recruitmentState(clubRaw.recruitment, today) } },
     aims: aimsRaw.aims,
     events: snap.events.map((e) => toClubEvent(e, today)),
     members: people.filter((m) => m.group !== "Member"),
     community: people.filter((m) => m.group === "Member"),
   };
+}
+
+/** The recruitment settings, read fresh (not cached): the form route checks them on every submission. */
+export function readRecruitment(): Recruitment {
+  return readJson<{ recruitment: Recruitment }>("content", "club.json").recruitment;
 }

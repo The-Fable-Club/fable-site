@@ -54,5 +54,13 @@
       "name": "Outcomes & Handover",
       "span": "Apr 2027"
     }
-  ]
+  ],
+  "recruitment": {
+    "status": "soon",
+    "intake": "2026-27",
+    "opens": null,
+    "closes": null,
+    "taskPrompt": "Pick one repetitive task from your college life that you would hand to an AI agent. What should it do, what would it need access to, and how would you check it did the job well?",
+    "taskIsPlaceholder": true
+  }
 }

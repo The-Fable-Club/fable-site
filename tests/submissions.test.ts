@@ -1,4 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+// The applications route reads the recruitment settings from content/club.json; tests set them here.
+const rec = vi.hoisted(() => ({ value: { status: "open", intake: "2026-27", taskPrompt: "t" } as Record<string, unknown> }));
+vi.mock("@/lib/content", async (orig) => ({ ...(await orig<object>()), readRecruitment: () => rec.value }));
 import { ApplicationInput, QuestionInput, RegistrationInput, fieldErrors, guardRequest, insertRow, mapDbError } from "@/lib/submissions";
 import { POST as postQuestion } from "@/app/api/questions/route";
 import { POST as postRegistration } from "@/app/api/registrations/route";
@@ -6,7 +10,16 @@ import { POST as postApplication } from "@/app/api/applications/route";
 
 const person = { name: "Ada Lovelace", reg_no: "25abc1234", email: "ada@vit.ac.in", department: "CSE", year: "2nd", consent: true };
 const reg = (o: Record<string, unknown> = {}) => ({ ...person, event_slug: "some-event", ...o });
-const app = (o: Record<string, unknown> = {}) => ({ ...person, level: "builder", tracks: ["Claude Code"], why: "I want to build agents with Claude.", ...o });
+const app = (o: Record<string, unknown> = {}) => ({
+  ...person,
+  email: "Ada.Lovelace2025@VITstudent.ac.in",
+  phone: "+91 98765 43210",
+  team: "Agentic AI",
+  build: "An agent that plans my week.",
+  why: "I want to build agents with Claude.",
+  task: "I would hand it my lab-record formatting, with read access to my notes only.",
+  ...o,
+});
 
 const env = { NEXT_PUBLIC_SUPABASE_URL: "https://p.supabase.co", NEXT_PUBLIC_SUPABASE_ANON_KEY: "pk" };
 const request = (body: unknown, headers: Record<string, string> = {}) =>
@@ -48,12 +61,22 @@ describe("validation", () => {
     expect(RegistrationInput.safeParse(reg({ phone: "" })).success).toBe(true);
     expect(RegistrationInput.safeParse(reg({ phone: "+91 98765 43210" })).success).toBe(true);
   });
-  it("application needs a real level and a long enough reason", () => {
+  it("application: every answer the club asked for, with readable errors", () => {
     expect(ApplicationInput.safeParse(app()).success).toBe(true);
-    expect(ApplicationInput.safeParse(app({ level: "expert" })).success).toBe(false);
-    expect(ApplicationInput.safeParse(app({ why: "short" })).success).toBe(false);
-    expect(ApplicationInput.safeParse(app({ tracks: ["Hacking"] })).success).toBe(false);
-    expect(ApplicationInput.safeParse(app({ why: "x".repeat(2001) })).success).toBe(false);
+    const bad = (o: Record<string, unknown>) => {
+      const r = ApplicationInput.safeParse(app(o));
+      return r.success ? null : fieldErrors(r.error);
+    };
+    expect(bad({ email: "ada@gmail.com" })?.email).toMatch(/vitstudent/);
+    expect(bad({ email: "ada@vitstudent.ac.in.evil.com" })?.email).toBeTruthy();
+    expect(bad({ phone: "" })?.phone).toBeTruthy();
+    expect(bad({ phone: "call me" })?.phone).toBeTruthy();
+    expect(bad({ team: "Marketing" })?.team).toBeTruthy();
+    expect(bad({ build: "x" })?.build).toBeTruthy();
+    expect(bad({ why: "short" })?.why).toBeTruthy();
+    expect(bad({ why: "x".repeat(2001) })?.why).toBeTruthy();
+    expect(bad({ task: "too short" })?.task).toBeTruthy();
+    expect(bad({ task: undefined })?.task).toBeTruthy();
   });
 });
 
@@ -74,6 +97,7 @@ describe("guardRequest", () => {
 describe("database error mapping", () => {
   it("maps codes to outcomes", () => {
     expect(mapDbError(409, { code: "23505" })).toMatchObject({ status: 409, code: "duplicate" });
+    expect(mapDbError(409, { code: "23505" }, "applications")).toMatchObject({ message: expect.stringMatching(/already applied/) });
     expect(mapDbError(401, { code: "42501" })).toMatchObject({ status: 403, code: "closed" });
     expect(mapDbError(400, { code: "P0001" })).toMatchObject({ status: 429, code: "busy" });
     expect(mapDbError(400, { code: "23514" })).toMatchObject({ status: 422, code: "invalid" });
@@ -137,14 +161,44 @@ describe("API routes", () => {
     expect((await postRegistration(request("{not json"))).status).toBe(400);
     expect(f).not.toHaveBeenCalled();
   });
-  it("application: valid -> saved with array tracks", async () => {
+  it("application: valid -> saved into the current intake, only the table columns are sent", async () => {
     const f = stubDb(201);
-    const res = await postApplication(request(app()));
+    const res = await postApplication(request(app({ intake: "pre-launch", status: "accepted" })));
     expect(res.status).toBe(200);
     const sent = JSON.parse((f.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
-    expect(sent.tracks).toEqual(["Claude Code"]);
-    expect(sent).not.toHaveProperty("consent");
-    expect(sent).not.toHaveProperty("website");
+    expect(sent).toEqual({
+      name: "Ada Lovelace",
+      reg_no: "25ABC1234",
+      email: "ada.lovelace2025@vitstudent.ac.in",
+      phone: "+91 98765 43210",
+      department: "CSE",
+      year: "2nd",
+      team: "Agentic AI",
+      build: "An agent that plans my week.",
+      why: "I want to build agents with Claude.",
+      task: "I would hand it my lab-record formatting, with read access to my notes only.",
+      intake: "2026-27",
+    });
+  });
+  it("application: refused while applications are not open, before touching the database", async () => {
+    const f = stubDb(201);
+    try {
+      rec.value = { ...rec.value, status: "soon" };
+      const soon = await postApplication(request(app()));
+      expect(soon.status).toBe(403);
+      expect((await soon.json()).message).toMatch(/not open yet/);
+      rec.value = { ...rec.value, status: "open", closes: "2020-01-01" };
+      expect((await postApplication(request(app()))).status).toBe(403);
+      expect(f).not.toHaveBeenCalled();
+    } finally {
+      rec.value = { status: "open", intake: "2026-27", taskPrompt: "t" };
+    }
+  });
+  it("application: a second one in the same intake says so", async () => {
+    stubDb(409, { code: "23505" });
+    const res = await postApplication(request(app()));
+    expect(res.status).toBe(409);
+    expect((await res.json()).message).toMatch(/already applied/);
   });
 });
 
