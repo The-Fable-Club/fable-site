@@ -140,24 +140,28 @@ export default async function Home() {
         </section>
       </div>
 
-      {/* Join */}
+      {/* Join: follows the recruitment state in content/club.json */}
       <section id="join" className="relative overflow-hidden bg-clay text-ink">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-20 md:grid-cols-[1fr_auto] md:px-12 md:py-28">
           <div>
-            <Hud className="opacity-70">Recruitment</Hud>
+            <Hud className="flex items-center gap-2 opacity-80">
+              <span className={cn("size-2 bg-ink", club.recruitment.state === "open" && "animate-pulse")} aria-hidden />
+              Recruitment · {{ open: "Open now", soon: "Opening soon", closed: "Closed" }[club.recruitment.state]}
+            </Hud>
             <h2 className="mt-3 max-w-[14ch] font-display text-[clamp(2.75rem,1.7rem+4.6vw,6rem)] leading-[0.96]">
-              The best time to join is at the start.
+              {{ open: "Applications are open.", soon: "Applications open soon.", closed: "Applications are closed." }[club.recruitment.state]}
             </h2>
-            <p className="mt-5 max-w-[44ch] font-serif text-xl leading-relaxed">
-              Foundations runs through October and November and assumes no prior experience. Any
-              department is welcome.
+            <p className="mt-5 max-w-[46ch] font-serif text-xl leading-relaxed">
+              {club.recruitment.state === "closed"
+                ? "Follow the club to hear when the next intake opens."
+                : "Every VIT Chennai student, any department, no coding needed. It is free; joining is a short task and a quick chat."}
             </p>
           </div>
           <Link
             href="/join"
             className="inline-flex h-14 items-center gap-3 bg-ink px-8 text-lg font-medium text-paper transition-colors duration-500 ease-flow hover:bg-paper hover:text-ink"
           >
-            Apply to join
+            {club.recruitment.state === "open" ? "Apply to join" : "How joining works"}
             <ArrowRight className="size-5" aria-hidden />
           </Link>
         </div>
