@@ -37,6 +37,7 @@ npm test                     # unit tests
 |---|---|
 | Events, hub posts, faculty, board, leads, members | The CMS release (`.snapshot/release.json`, fetched at build time, validated against `src/lib/contract.ts`) |
 | Club text, contact, socials and the five aims | `content/club.json`, `content/aims.json` (edit and push) |
+| Recruitment (open / opening soon / closed, intake, optional opening and closing days, the short task) | `content/club.json` → `recruitment`. Dated changes apply by themselves within the hour; the form route checks on every submission. Needs CMS migration 0008. |
 | Offline fallback | `content/seed/snapshot.json` (refreshed by the CMS seed script) |
 
 Event status (Live / Open / Past) is derived from the dates (`src/lib/event-logic.ts`) and refreshes within the hour without a rebuild. Many details can be undecided in the CMS (date, time, venue, seats, registration); the site shows "to be announced" and the right button state.
