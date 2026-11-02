@@ -5,6 +5,7 @@ import { Hero } from "@/components/home/hero";
 import { AimsDial } from "@/components/home/aims-dial";
 import { EventsStage } from "@/components/home/events-stage";
 import { PeopleStage } from "@/components/home/people-stage";
+import { ParallaxStrip } from "@/components/home/parallax-strip";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
 import { getContent } from "@/lib/content";
@@ -59,6 +60,8 @@ export default async function Home() {
         </section>
         <AimsDial aims={aims} />
       </div>
+
+      <ParallaxStrip />
 
       {/* Events */}
       <div id="events">
