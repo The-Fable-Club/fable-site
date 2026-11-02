@@ -69,18 +69,24 @@ function RegisterAction({ e }: { e: ClubEvent }) {
 }
 
 /**
- * One event's backdrop. The poster picture is always there; the video (when the
- * event has one) fades in over it once it is actually playing, and only the
- * current and the leaving event keep a <video> element at all.
+ * One event's backdrop. The poster picture is only there once the event is near
+ * (current, leaving or next in line), so the rest of the set costs nothing until
+ * it is about to show; the video (when the event has one) fades in over it once
+ * it is actually playing, and only the current and the leaving event keep a
+ * <video> element at all. The current layer wipes in over the leaving one.
  */
 function Backdrop({
   media,
   on,
+  leaving,
+  near,
   keepVideo,
   run,
 }: {
   media: EventMedia;
   on: boolean;
+  leaving: boolean;
+  near: boolean;
   keepVideo: boolean;
   run: boolean;
 }) {
@@ -95,9 +101,9 @@ function Backdrop({
   }, [run, on, keepVideo]);
 
   return (
-    <div aria-hidden className="stage-layer absolute inset-0" data-on={on ? "" : undefined}>
+    <div aria-hidden className="stage-layer absolute inset-0" data-on={on ? "" : undefined} data-leaving={leaving ? "" : undefined}>
       <div className="stage-media absolute inset-0">
-        <Image src={media.poster} alt="" fill sizes="100vw" priority={on} className="object-cover" />
+        {near && <Image src={media.poster} alt="" fill sizes="100vw" className="object-cover" />}
         {media.video && keepVideo && (
           <video
             ref={video}
@@ -174,7 +180,9 @@ function Lightbox({
 export function EventsStage({ events }: { events: ClubEvent[] }) {
   const root = useRef<HTMLElement>(null);
   const onScreen = useInView(root, { amount: 0.25 });
-  const [sel, setSel] = useState({ active: 0, prev: -1 });
+  // videos only start loading once the stage is about a screen away
+  const soon = useInView(root, { once: true, margin: "100% 0px" });
+  const [sel, setSel] = useState({ active: 0, prev: -1, dir: 1 });
   const [hover, setHover] = useState(false);
   const [viewer, setViewer] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
@@ -183,8 +191,11 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
   const active = n > 0 ? Math.min(sel.active, n - 1) : 0;
   const prev = sel.prev;
 
-  const go = useCallback((d: number) => setSel((s) => ({ active: step(s.active, d, n), prev: s.active })), [n]);
-  const jump = useCallback((i: number) => setSel((s) => (s.active === i ? s : { active: i, prev: s.active })), []);
+  const go = useCallback((d: number) => setSel((s) => ({ active: step(s.active, d, n), prev: s.active, dir: d < 0 ? -1 : 1 })), [n]);
+  const jump = useCallback(
+    (i: number) => setSel((s) => (s.active === i ? s : { active: i, prev: s.active, dir: i < s.active ? -1 : 1 })),
+    [],
+  );
 
   if (n === 0) {
     return (
@@ -238,10 +249,43 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
       }}
       className="relative isolate flex min-h-[41rem] flex-col justify-end overflow-hidden bg-black text-paper outline-offset-[-4px] md:h-[min(54rem,calc(100dvh-4rem))] md:min-h-[38rem]"
     >
-      {/* backdrops: every event keeps its still, only the current and leaving ones keep a video */}
-      {events.map((ev, i) => (
-        <Backdrop key={ev.slug} media={medias[i]} on={i === active} keepVideo={i === active || i === prev} run={onScreen} />
-      ))}
+      {/* backdrops: after the first change, the current one wipes in over the leaving one, a clay bar riding its edge */}
+      <div className="absolute inset-0 isolate" data-dir={sel.dir < 0 ? "back" : "next"} data-moved={prev >= 0 ? "" : undefined}>
+        {events.map((ev, i) => (
+          <Backdrop
+            key={ev.slug}
+            media={medias[i]}
+            on={i === active}
+            leaving={i === prev && prev !== active}
+            near={i === prev || Math.abs(offset(i)) <= 1}
+            keepVideo={soon && (i === active || i === prev)}
+            run={onScreen}
+          />
+        ))}
+        {prev >= 0 && (
+          <div key={`${active}-${prev}`} aria-hidden className="stage-sweep pointer-events-none absolute inset-0 z-[3]">
+            <span className="stage-sweep-bar" />
+          </div>
+        )}
+      </div>
+
+      {/* the side tab, after Endfield's: the event's kind set vertically, rolling over on each change */}
+      <div aria-hidden className="absolute inset-y-0 right-0 z-10 hidden w-16 overflow-hidden bg-clay text-ink lg:block">
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={e.slug}
+            initial={{ y: sel.dir < 0 ? "-100%" : "100%" }}
+            animate={{ y: 0, transition: { duration: 0.9, ease: FLOW } }}
+            exit={{ y: sel.dir < 0 ? "100%" : "-100%", transition: { duration: 0.9, ease: FLOW } }}
+            className="absolute inset-0 flex flex-col items-center justify-between bg-clay py-8"
+          >
+            <span className="font-display text-4xl uppercase leading-none [writing-mode:vertical-rl]">{e.kind}</span>
+            <span className="hud tabular-nums [writing-mode:vertical-rl]">
+              EVT {pad(active + 1)} / {pad(n)}
+            </span>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* legibility: left-weighted shade, a floor for the thumbnails, a faint scan texture */}
       <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-black/10" />
@@ -252,7 +296,7 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
       />
 
       {/* top row: what this event is right now, and where we are in the set */}
-      <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 px-6 pt-6 md:px-14 md:pt-8">
+      <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 px-6 pt-6 md:px-14 md:pt-8 lg:pr-[7.5rem]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={e.slug}
@@ -274,7 +318,7 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
       </div>
 
       {/* bottom: info + buttons on the left, the strip on the right */}
-      <div className="relative z-10 px-6 pb-8 md:px-14 md:pb-10">
+      <div className="relative z-10 px-6 pb-8 md:px-14 md:pb-10 lg:pr-[7.5rem]">
         <div className="md:max-w-[min(32rem,42%)]">
           <div aria-live="polite" className="min-h-[15rem] md:min-h-[17rem]">
             <AnimatePresence mode="wait" initial={false}>
@@ -344,7 +388,7 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
         {/* thumbnail strip */}
         {n > 1 && (
           <div
-            className="relative mt-8 h-[calc(var(--tw)*0.5625+1rem)] w-full [--pitch:10.25rem] [--tw:11rem] md:absolute md:bottom-10 md:right-0 md:mt-0 md:w-[min(58%,50rem)] md:[--pitch:17.5rem] md:[--tw:18rem]"
+            className="relative mt-8 h-[calc(var(--tw)*0.5625+1rem)] w-full [--pitch:10.25rem] [--tw:11rem] md:absolute md:bottom-10 md:right-0 md:mt-0 lg:right-16 md:w-[min(58%,50rem)] md:[--pitch:17.5rem] md:[--tw:18rem]"
           >
             <div
               className="absolute inset-0 [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
