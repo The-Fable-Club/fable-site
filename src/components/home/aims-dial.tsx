@@ -10,8 +10,11 @@ import { Dial3D, MODEL_LABEL } from "@/components/home/point-cloud";
 import { cn } from "@/lib/utils";
 
 const FLOW = [0.65, 0, 0.35, 1] as const;
-/** How long each aim stays up before the wheel moves on by itself (the active tab fills over this). */
-const AUTO_MS = 7000;
+/**
+ * How long each aim stays up before the wheel moves on by itself (the active tab fills over this).
+ * Once someone switches aims themselves, the auto-advance stops for good: they are reading.
+ */
+const AUTO_MS = 4000;
 
 // Carousel stage with a rotating dial and a 3D model viewer, after
 // Endfield's "Lore" panel. Changing slide turns the dial one step, swaps the
@@ -24,18 +27,27 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
   const reduce = useReducedMotion();
   const n = aims.length;
 
+  const [manual, setManual] = useState(false);
   const go = useCallback((d: number) => setI((v) => (v + d + n) % n), [n]);
+  /** A switch the visitor made: also turns the auto-advance off. */
+  const choose = useCallback(
+    (next: (v: number) => number) => {
+      setManual(true);
+      setI((v) => next(v));
+    },
+    [],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && /input|textarea|select/i.test(t.tagName)) return;
-      if (e.key === "ArrowRight") go(1);
-      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") choose((v) => (v + 1) % n);
+      if (e.key === "ArrowLeft") choose((v) => (v - 1 + n) % n);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go]);
+  }, [choose, n]);
 
   if (!n) return null;
   const a = aims[i];
@@ -104,17 +116,17 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
                   role="tab"
                   aria-selected={k === i}
                   aria-label={x.title}
-                  onClick={() => setI(k)}
+                  onClick={() => choose(() => k)}
                   className="group relative h-6 flex-1"
                 >
                   <span
                     className={cn(
                       "absolute inset-x-0 bottom-1.5 h-[3px] transition-colors duration-500 ease-flow",
-                      k < i ? "bg-paper/60" : "bg-paper/25 group-hover:bg-paper/50",
+                      k === i && manual ? "bg-clay" : k < i ? "bg-paper/60" : "bg-paper/25 group-hover:bg-paper/50",
                     )}
                   />
                   {/* the active tab fills while this aim is up; when it is full the wheel moves on */}
-                  {k === i && (
+                  {k === i && !manual && (
                     <span
                       key={i}
                       onAnimationEnd={() => go(1)}
@@ -126,10 +138,10 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
               ))}
             </div>
             <div className="flex gap-2">
-              <ArrowBtn tone="paper" onClick={() => go(-1)} aria-label="Previous">
+              <ArrowBtn tone="paper" onClick={() => choose((v) => (v - 1 + n) % n)} aria-label="Previous">
                 <ChevronLeft className="size-5" aria-hidden />
               </ArrowBtn>
-              <ArrowBtn tone="paper" onClick={() => go(1)} aria-label="Next">
+              <ArrowBtn tone="paper" onClick={() => choose((v) => (v + 1) % n)} aria-label="Next">
                 <ChevronRight className="size-5" aria-hidden />
               </ArrowBtn>
             </div>
