@@ -11,158 +11,292 @@ import { prefersReducedMotion } from "@/lib/motion";
 //   together, and dragging either turns both.
 // - Rotation is horizontal only (like Endfield). The model is allowed to
 //   leak well outside the ring.
-// - Changing model: the wheel spins up like a high-speed flywheel and shrinks
-//   a little while the old model vanishes; a laser then scans the new model
-//   into place from a reset angle, and the wheel eases back to a slow orbit.
+// - First appearance: a laser scans the model into place, top to bottom.
+// - Changing model: the points of one shape flow into the next. Each point
+//   lifts off in turn (top first), swirls out and round the axis, and lands
+//   in its place in the new shape, while the wheel spins up like a flywheel.
 // - Performance: points are drawn in a handful of batched paths (not one fill
 //   each), orbit speed is time-based, and quality scales itself down when
 //   frames get slow (e.g. laptop on battery).
 //
-// Models are procedural stand-ins; real ones (GLB / scanned points) can
-// replace the generators below without touching the renderer.
+// Models are generated in code (no licences): the club's sprout mark, an open
+// book, building blocks, a spiral stair and the network globe.
 
-export type ModelKey = "pages" | "book" | "blocks" | "steps" | "network";
+export type ModelKey = "sprout" | "book" | "blocks" | "steps" | "network";
 
 export const MODEL_LABEL: Record<ModelKey, string> = {
-  pages: "Pages",
+  sprout: "Sprout",
   book: "Open book",
-  blocks: "Blocks",
-  steps: "Steps",
-  network: "Network",
+  blocks: "Building blocks",
+  steps: "Spiral stair",
+  network: "Network globe",
 };
 
 const N = 3600;
 type V3 = [number, number, number];
+/** A sampled point, and whether it is drawn in clay (accent) rather than paper. */
+type P = [number, number, number, boolean];
 
 const rnd = (a = 0, b = 1) => a + Math.random() * (b - a);
 const clamp01 = (t: number) => Math.max(0, Math.min(1, t));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const r3 = (n: number) => Math.round(n * 1000) / 1000; // Node/browser float digits differ → hydration warnings
+const r3 = (n: number) => Math.round(n * 1000) / 1000; // Node/browser float digits differ, hydration warnings
+const pick = <T,>(weights: [number, T][]): T => {
+  let r = Math.random() * weights.reduce((s, [w]) => s + w, 0);
+  for (const [w, v] of weights) if ((r -= w) <= 0) return v;
+  return weights[weights.length - 1][1];
+};
+const withColor = (p: V3, clay: boolean): P => [p[0], p[1], p[2], clay];
+const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
-function fill(sampler: (i: number) => V3): Float32Array {
-  const out = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    const [x, y, z] = sampler(i);
-    out[i * 3] = x;
-    out[i * 3 + 1] = y;
-    out[i * 3 + 2] = z;
-  }
-  return out;
+const rotY = ([x, y, z]: V3, a: number): V3 => [x * Math.cos(a) + z * Math.sin(a), y, -x * Math.sin(a) + z * Math.cos(a)];
+
+/** A point on the surface of a sphere. */
+function onSphere(c: V3, r: number): V3 {
+  const u = rnd(-1, 1);
+  const t = rnd(0, Math.PI * 2);
+  const s = Math.sqrt(1 - u * u);
+  return [c[0] + r * s * Math.cos(t), c[1] + r * u, c[2] + r * s * Math.sin(t)];
 }
 
-const rotY = ([x, y, z]: V3, a: number): V3 => [
-  x * Math.cos(a) + z * Math.sin(a),
-  y,
-  -x * Math.sin(a) + z * Math.cos(a),
+/** A point on a thin tube from a to b (a stem, a branch, a rail). */
+function onTube(a: V3, b: V3, r: number): V3 {
+  const t = Math.random();
+  const d: V3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const len = Math.hypot(d[0], d[1], d[2]) || 1;
+  const n: V3 = [d[0] / len, d[1] / len, d[2] / len];
+  const h: V3 = Math.abs(n[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const u: V3 = [n[1] * h[2] - n[2] * h[1], n[2] * h[0] - n[0] * h[2], n[0] * h[1] - n[1] * h[0]];
+  const ul = Math.hypot(u[0], u[1], u[2]) || 1;
+  const e1: V3 = [u[0] / ul, u[1] / ul, u[2] / ul];
+  const e2: V3 = [n[1] * e1[2] - n[2] * e1[1], n[2] * e1[0] - n[0] * e1[2], n[0] * e1[1] - n[1] * e1[0]];
+  const ang = rnd(0, Math.PI * 2);
+  const c = Math.cos(ang) * r;
+  const sn = Math.sin(ang) * r;
+  return [a[0] + d[0] * t + e1[0] * c + e2[0] * sn, a[1] + d[1] * t + e1[1] * c + e2[1] * sn, a[2] + d[2] * t + e1[2] * c + e2[2] * sn];
+}
+
+/** A point on a cube surface: mostly on its edges (so it reads as a solid), some on the faces. */
+function onCube(c0: V3, s: number, edgeShare: number): V3 {
+  const c = [rnd(-s, s), rnd(-s, s), rnd(-s, s)];
+  const axis = Math.floor(rnd(0, 3));
+  const a = (axis + 1) % 3;
+  const b = (axis + 2) % 3;
+  c[a] = Math.random() < 0.5 ? -s : s;
+  if (Math.random() < edgeShare) c[b] = Math.random() < 0.5 ? -s : s;
+  return [c0[0] + c[0], c0[1] + c[1], c0[2] + c[2]];
+}
+
+// The club sprout mark grown into 3D: a stem, two pairs of branches turned in
+// different directions so it has depth, five clay seed-nodes and the halo.
+const MK = 1 / 300; // mark units to model units, centred on the mark
+const m = (x: number, y: number): [number, number] => [(x - 512) * MK, (560 - y) * MK];
+const LOW = 0.55; // the lower pair of branches turns one way, the upper pair the other
+const UP = -0.55;
+const flat = (pt: [number, number], side: 1 | -1, turn: number): V3 => rotY([pt[0] * side, pt[1], 0], turn);
+const S_BASE: V3 = [...m(512, 800), 0];
+const S_FORK: V3 = [...m(512, 614), 0];
+const S_TOP: V3 = [...m(512, 330), 0];
+const NODE_R = 46 * MK;
+const SEEDS: [V3, number][] = [
+  [S_TOP, NODE_R],
+  [flat(m(330, 682), -1, LOW), NODE_R * 1.05],
+  [flat(m(330, 682), 1, LOW), NODE_R * 1.05],
+  [flat(m(330, 492), -1, UP), NODE_R],
+  [flat(m(330, 492), 1, UP), NODE_R],
 ];
-
-// a stack of written pages
-function pages(): Float32Array {
-  return fill((i) => {
-    const sheet = i % 6;
-    const w = 0.62;
-    const h = 0.82;
-    let x: number;
-    let y: number;
-    if (Math.random() < 0.28) {
-      const t = rnd(0, 4);
-      if (t < 1) [x, y] = [rnd(-w, w), h];
-      else if (t < 2) [x, y] = [rnd(-w, w), -h];
-      else if (t < 3) [x, y] = [-w, rnd(-h, h)];
-      else [x, y] = [w, rnd(-h, h)];
-    } else {
-      const row = Math.floor(rnd(0, 7));
-      y = h - 0.28 - row * 0.19;
-      x = rnd(-w + 0.14, w - 0.14 - (row % 3 === 2 ? 0.35 : 0));
-    }
-    return rotY([x, y, (sheet - 2.5) * 0.17], (sheet - 2.5) * 0.09);
-  });
-}
-
-// open book: two pages meeting at a spine, with ruled lines
-function book(): Float32Array {
-  return fill((i) => {
-    const side = i % 2 ? 1 : -1;
-    const x = rnd(0.04, 0.95);
-    const ruled = Math.random() < 0.8;
-    const y = ruled ? -0.7 + Math.floor(rnd(0, 9)) * 0.175 : rnd(-0.75, 0.75);
-    return [side * x, y, x * 0.42 - 0.2];
-  });
-}
-
-// nested cubes (building blocks)
-function blocks(): Float32Array {
-  const edges = (s: number, offset: V3): V3 => {
-    const axis = Math.floor(rnd(0, 3));
-    const c = [rnd(-s, s), rnd(-s, s), rnd(-s, s)];
-    const a = (axis + 1) % 3;
-    const b = (axis + 2) % 3;
-    c[a] = Math.random() < 0.5 ? -s : s;
-    c[b] = Math.random() < 0.5 ? -s : s;
-    return [c[0] + offset[0], c[1] + offset[1], c[2] + offset[2]];
-  };
-  return fill((i) => {
-    const k = i % 10;
-    if (k < 6) return edges(0.7, [0, 0, 0]);
-    if (k < 9) return edges(0.34, [0.25, -0.22, 0.17]);
-    return [rnd(-0.7, 0.7), rnd(-0.7, 0.7), rnd(-0.7, 0.7)];
-  });
-}
-
-// staircase
-function steps(): Float32Array {
-  return fill(() => {
-    const s = Math.floor(rnd(0, 5));
-    const w = 0.5;
-    const stepH = 0.34;
-    const run = 0.34;
-    const x0 = -0.85 + s * run;
-    const top = -0.8 + (s + 1) * stepH;
-    if (Math.random() < 0.55) return [rnd(x0, x0 + run), top, rnd(-w, w)];
-    return [x0, rnd(top - stepH, top), rnd(-w, w)];
-  });
-}
-
-// network globe
-function network(): Float32Array {
-  return fill((i) => {
-    if (i % 3 === 0) {
-      const k = i / 3;
-      const phi = Math.acos(1 - (2 * (k + 0.5)) / (N / 3));
-      const th = Math.PI * (1 + Math.sqrt(5)) * k;
-      return [
-        0.85 * Math.cos(th) * Math.sin(phi),
-        0.85 * Math.cos(phi),
-        0.85 * Math.sin(th) * Math.sin(phi),
-      ];
-    }
-    const ring = i % 3;
+const BRANCHES: [V3, V3][] = [
+  [S_BASE, flat(m(364, 706), -1, LOW)],
+  [S_BASE, flat(m(364, 706), 1, LOW)],
+  [S_FORK, flat(m(364, 516), -1, UP)],
+  [S_FORK, flat(m(364, 516), 1, UP)],
+];
+function sprout(): P {
+  const part = pick<string>([
+    [13, "stem"],
+    [24, "branch"],
+    [41, "seed"],
+    [18, "halo"],
+    [4, "dust"],
+  ]);
+  if (part === "stem") return withColor(onTube(S_BASE, [S_TOP[0], S_TOP[1] - NODE_R, 0], 0.028), false);
+  if (part === "branch") {
+    const [a, b] = BRANCHES[Math.floor(rnd(0, 4))];
+    return withColor(onTube(a, b, 0.024), false);
+  }
+  if (part === "seed") {
+    const [c, r] = SEEDS[Math.floor(rnd(0, 5))];
+    return withColor(onSphere(c, r), true);
+  }
+  if (part === "halo") {
+    // a torus around the top seed, facing the viewer
     const t = rnd(0, Math.PI * 2);
-    const c: V3 = [Math.cos(t) * 0.86, Math.sin(t) * 0.86, 0];
-    if (ring === 1) return [c[0], 0, c[1]];
-    return rotY([c[0], c[1], 0], Math.PI / 2.4);
-  });
+    const R = 106 * MK;
+    const tube = rnd(0, Math.PI * 2);
+    const rr = 0.022;
+    const cy = m(512, 326)[1];
+    return [(R + rr * Math.cos(tube)) * Math.cos(t), cy + (R + rr * Math.cos(tube)) * Math.sin(t), rr * Math.sin(tube), Math.random() < 0.08];
+  }
+  // a few motes drifting up from the base
+  const a = rnd(0, Math.PI * 2);
+  const r = rnd(0.1, 0.75);
+  return [Math.cos(a) * r, S_BASE[1] + rnd(0, 0.5) * Math.random(), Math.sin(a) * r, Math.random() < 0.2];
 }
 
-const BUILDERS: Record<ModelKey, () => Float32Array> = { pages, book, blocks, steps, network };
+// An open book: two bowed page blocks, ruled text lines, pages fanning over,
+// and a clay ribbon falling from the spine.
+const BW = 0.9;
+const BH = 0.62;
+/** A page leaving the spine at angle phi, bowing gently. */
+const pagePoint = (side: number, phi: number, u: number, v: number): V3 => {
+  const bow = 0.12 * Math.sin(Math.PI * u);
+  return [side * u * BW * Math.cos(phi), v, -u * BW * Math.sin(phi) - bow * Math.cos(phi) + 0.12];
+};
+function book(): P {
+  const part = pick<string>([
+    [30, "text"],
+    [26, "outline"],
+    [20, "fan"],
+    [10, "block"],
+    [5, "spine"],
+    [9, "ribbon"],
+  ]);
+  const side = Math.random() < 0.5 ? -1 : 1;
+  if (part === "text") {
+    // ruled text lines inside a margin, short last lines of paragraphs
+    const row = Math.floor(rnd(0, 8));
+    const lineEnd = row % 4 === 3 ? 0.55 : 0.88;
+    return withColor(pagePoint(side, 0.3, rnd(0.14, lineEnd), BH - 0.2 - row * 0.15), false);
+  }
+  if (part === "outline") {
+    // the page edges: top, bottom and the outer edge, so it reads as a page
+    const e = Math.random();
+    if (e < 0.36) return withColor(pagePoint(side, 0.3, rnd(0.02, 1), BH), false);
+    if (e < 0.72) return withColor(pagePoint(side, 0.3, rnd(0.02, 1), -BH), false);
+    return withColor(pagePoint(side, 0.3, 1, rnd(-BH, BH)), false);
+  }
+  if (part === "fan") {
+    // three pages mid-turn on the right: outlines with a few lines
+    const k = Math.floor(rnd(0, 3));
+    const phi = 0.55 + k * 0.38;
+    const e = Math.random();
+    if (e < 0.3) return withColor(pagePoint(1, phi, rnd(0.02, 1), Math.random() < 0.5 ? BH : -BH), false);
+    if (e < 0.5) return withColor(pagePoint(1, phi, 1, rnd(-BH, BH)), false);
+    const row = Math.floor(rnd(0, 8));
+    return withColor(pagePoint(1, phi, rnd(0.14, 0.85), BH - 0.2 - row * 0.15), false);
+  }
+  if (part === "block") {
+    // the thickness of the page block under each side
+    const p = pagePoint(side, 0.3, rnd(0.03, 1), Math.random() < 0.5 ? -BH : BH);
+    return [p[0], p[1], p[2] + rnd(0.01, 0.08), false];
+  }
+  if (part === "spine") return [rnd(-0.015, 0.015), rnd(-BH - 0.03, BH + 0.03), 0.12 + rnd(0, 0.06), false];
+  // ribbon: from the top of the spine, curling down past the bottom edge
+  const t = Math.random();
+  return [Math.sin(t * 3.2) * 0.12, BH + 0.02 - t * (2 * BH + 0.35), 0.16 + t * 0.12, true];
+}
 
-type Built = { pts: Float32Array; rank: Float32Array };
+// Building blocks: a stepped tower of cubes, with two clay blocks still floating into place.
+const CUBE = 0.18;
+const TOWER: V3[] = (() => {
+  const g = 0.39;
+  const out: V3[] = [];
+  for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) out.push([x * g, -0.55, z * g]);
+  for (const [x, z] of [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5]] as const) out.push([x * g, -0.16, z * g]);
+  out.push([-0.5 * g, 0.23, -0.5 * g]);
+  return out;
+})();
+const FLOATING: V3[] = [
+  [0.2, 0.55, 0.2],
+  [0.5, 0.12, 0.42],
+];
+function blocks(): P {
+  if (Math.random() < 0.8) return withColor(onCube(TOWER[Math.floor(rnd(0, TOWER.length))], CUBE, 0.72), false);
+  const c = FLOATING[Math.random() < 0.55 ? 0 : 1];
+  if (Math.random() < 0.12) {
+    // the dotted path each floating block is coming down
+    const t = Math.random();
+    return [c[0], c[1] - CUBE - t * 0.3, c[2], true];
+  }
+  return withColor(add(rotY(onCube([0, 0, 0], CUBE * 0.92, 0.8), 0.5), c), true);
+}
 
-/** Rank each point top-to-bottom (with jitter) = the order the laser places them. */
+// A spiral stair: treads winding round a column, a clay handrail and a goal at the top.
+const TREADS = 15;
+const tY = (k: number) => -0.78 + k * 0.095;
+const tA = (k: number) => k * 0.52;
+function steps(): P {
+  const part = pick<string>([
+    [58, "tread"],
+    [12, "column"],
+    [20, "rail"],
+    [10, "goal"],
+  ]);
+  if (part === "tread") {
+    const k = Math.floor(rnd(0, TREADS));
+    const a0 = tA(k);
+    const outline = Math.random() < 0.45;
+    let a = a0 + rnd(-0.2, 0.2);
+    let r = rnd(0.1, 0.72);
+    if (outline) {
+      if (Math.random() < 0.5) r = 0.72; // the outer edge
+      else a = a0 + (Math.random() < 0.5 ? -0.2 : 0.2); // the two side edges
+    }
+    return [Math.cos(a) * r, tY(k) - (Math.random() < 0.25 ? rnd(0, 0.05) : 0), Math.sin(a) * r, false];
+  }
+  if (part === "column") {
+    const a = rnd(0, Math.PI * 2);
+    return [Math.cos(a) * 0.07, rnd(-0.92, tY(TREADS) + 0.05), Math.sin(a) * 0.07, false];
+  }
+  if (part === "rail") {
+    const k = rnd(0, TREADS - 1);
+    return [Math.cos(tA(k)) * 0.76, tY(k) + 0.26, Math.sin(tA(k)) * 0.76, true];
+  }
+  const a = tA(TREADS - 1);
+  return withColor(onSphere([Math.cos(a) * 0.4, tY(TREADS - 1) + 0.2, Math.sin(a) * 0.4], 0.1), true);
+}
+
+// The network globe, kept as it was (the club likes it).
+let globeI = 0;
+function network(): P {
+  const i = globeI++;
+  const clay = i % 11 === 0;
+  if (i % 3 === 0) {
+    const k = i / 3;
+    const phi = Math.acos(1 - (2 * (k + 0.5)) / (N / 3));
+    const th = Math.PI * (1 + Math.sqrt(5)) * k;
+    return [0.85 * Math.cos(th) * Math.sin(phi), 0.85 * Math.cos(phi), 0.85 * Math.sin(th) * Math.sin(phi), clay];
+  }
+  const t = rnd(0, Math.PI * 2);
+  const c: V3 = [Math.cos(t) * 0.86, Math.sin(t) * 0.86, 0];
+  return withColor(i % 3 === 1 ? [c[0], 0, c[1]] : rotY([c[0], c[1], 0], Math.PI / 2.4), clay);
+}
+
+const BUILDERS: Record<ModelKey, () => P> = { sprout, book, blocks, steps, network };
+
+/** Points stored top to bottom (with jitter): the laser places them in that order, and a morph pairs points by height. */
+type Built = { pts: Float32Array; clay: Uint8Array };
+
 function build(key: ModelKey): Built {
-  const pts = BUILDERS[key]();
-  const idx = Array.from({ length: N }, (_, i) => i);
-  const score = idx.map((i) => -pts[i * 3 + 1] + rnd(-0.07, 0.07));
-  idx.sort((a, b) => score[a] - score[b]);
-  const rank = new Float32Array(N);
-  idx.forEach((pi, r) => (rank[pi] = r / N));
-  return { pts, rank };
+  globeI = 0;
+  const raw = Array.from({ length: N }, () => BUILDERS[key]());
+  const order = raw.map((p, i) => [-p[1] + rnd(-0.07, 0.07), i] as const).sort((a, b) => a[0] - b[0]);
+  const pts = new Float32Array(N * 3);
+  const clay = new Uint8Array(N);
+  order.forEach(([, i], r) => {
+    const p = raw[i];
+    pts[r * 3] = p[0];
+    pts[r * 3 + 1] = p[1];
+    pts[r * 3 + 2] = p[2];
+    clay[r] = p[3] ? 1 : 0;
+  });
+  return { pts, clay };
 }
 
-const OUT_MS = 700;
-const IN_MS = 1300;
-const IDLE_SPIN = 0.4; // rad/s: a slow, clearly-moving orbit (time-based, so low fps doesn't slow it)
-const YAW0 = 0.6; // every new model starts from this angle
+const IN_MS = 1300; // first appearance: the laser scan
+const MORPH_MS = 1900; // every change after that: the points flow into the next shape
+const IDLE_SPIN = 0.4; // rad/s: a slow, clearly moving orbit (time based, so low fps does not slow it)
+const YAW0 = 0.6; // the first model starts from this angle
 const PITCH = -0.22; // fixed: horizontal rotation only
 const CAM = 3.8; // camera distance: bigger = flatter perspective
 const TICKS = 72;
@@ -194,8 +328,19 @@ export function Dial3D({ model, label, caption, className }: Props) {
     (Object.keys(BUILDERS) as ModelKey[]).forEach((k) => (built[k] = build(k)));
 
     let shown: ModelKey = want.current;
-    let phase: "in" | "idle" | "out" = reduce ? "idle" : "in";
+    let phase: "in" | "idle" | "morph" = reduce ? "idle" : "in";
     let phaseStart = performance.now();
+    // What is on screen right now (so a change mid-morph starts from where the points are),
+    // where a morph started from, and each point's own swirl for the trip.
+    const cur = new Float32Array(built[shown].pts);
+    const curClay = new Uint8Array(built[shown].clay);
+    const from = new Float32Array(N * 3);
+    const fromClay = new Uint8Array(N);
+    const swirl = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const v = onSphere([0, 0, 0], rnd(0.25, 0.75));
+      swirl.set(v, i * 3);
+    }
 
     let yaw = YAW0;
     let vDrag = 0; // rad/s from a drag release
@@ -318,35 +463,39 @@ export function Dial3D({ model, label, caption, className }: Props) {
       const stride = level + 1;
 
       // ---- phase machine -------------------------------------------------
-      if (phase === "idle" && want.current !== shown) {
+      if (want.current !== shown) {
+        from.set(cur);
+        fromClay.set(curClay);
+        shown = want.current;
+        vDrag = 0;
         if (reduce) {
-          shown = want.current;
-          yaw = YAW0;
+          cur.set(built[shown].pts);
+          curClay.set(built[shown].clay);
+          phase = "idle";
         } else {
-          phase = "out";
+          phase = "morph";
           phaseStart = now;
         }
       }
-      if (phase === "out" && now - phaseStart >= OUT_MS) {
-        shown = want.current;
-        yaw = YAW0; // reset coords for the new object
-        vDrag = 0;
-        phase = "in";
-        phaseStart = now;
-      }
       if (phase === "in" && now - phaseStart >= IN_MS) phase = "idle";
+      if (phase === "morph" && now - phaseStart >= MORPH_MS) {
+        cur.set(built[shown].pts);
+        curClay.set(built[shown].clay);
+        phase = "idle";
+      }
 
       let spin = IDLE_SPIN;
-      let alphaMul = 1;
+      const alphaMul = 1;
       let scaleMul = 1;
       let reveal = 1;
       let focus = 0; // 0..1: how "flywheel-fast" the wheel is right now
-      if (phase === "out") {
-        const k = ease(clamp01((now - phaseStart) / OUT_MS));
-        spin += 22 * k * k;
-        alphaMul = 1 - k;
-        scaleMul = 1 - 0.3 * k;
-        focus = k;
+      let mt = 1; // morph progress
+      if (phase === "morph") {
+        mt = clamp01((now - phaseStart) / MORPH_MS);
+        const k = Math.sin(Math.PI * mt);
+        spin += 9 * k * k;
+        scaleMul = 1 - 0.1 * k;
+        focus = 0.8 * k;
       } else if (phase === "in") {
         const t = clamp01((now - phaseStart) / IN_MS);
         reveal = ease(t);
@@ -365,7 +514,29 @@ export function Dial3D({ model, label, caption, className }: Props) {
       // ---- model ---------------------------------------------------------
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      const { pts, rank } = built[shown];
+      const { pts: to, clay: toClay } = built[shown];
+      // Morph: each point leaves in turn (top first), swirls out and round, and lands in the new shape.
+      if (phase === "morph") {
+        for (let i = 0; i < N; i++) {
+          const local = clamp01((mt - (i / N) * 0.38) / 0.62);
+          const e = ease(local);
+          const lift = Math.sin(Math.PI * e);
+          const j = i * 3;
+          let x = from[j] + (to[j] - from[j]) * e + swirl[j] * lift;
+          const y = from[j + 1] + (to[j + 1] - from[j + 1]) * e + swirl[j + 1] * lift * 0.6;
+          let z = from[j + 2] + (to[j + 2] - from[j + 2]) * e + swirl[j + 2] * lift;
+          const tw = lift * 1.1; // twist round the vertical axis while in flight
+          const ct = Math.cos(tw);
+          const st = Math.sin(tw);
+          [x, z] = [x * ct + z * st, -x * st + z * ct];
+          cur[j] = x;
+          cur[j + 1] = y;
+          cur[j + 2] = z;
+          curClay[i] = e > 0.5 ? toClay[i] : fromClay[i];
+        }
+      }
+      const pts = phase === "morph" ? cur : to;
+      const clayOf = phase === "morph" ? curClay : toClay;
       const cy = Math.cos(yaw);
       const sy = Math.sin(yaw);
       const pitch = PITCH + (reduce ? 0 : Math.sin(now / 2600) * 0.03);
@@ -383,7 +554,7 @@ export function Dial3D({ model, label, caption, className }: Props) {
       for (let b = 0; b < 8; b++) paths[b] = new Path2D();
 
       for (let i = 0; i < N; i += stride) {
-        const age = phase === "in" ? (reveal - rank[i]) / AGE : 2;
+        const age = phase === "in" ? (reveal - i / N) / AGE : 2;
         if (phase === "in" && age < 0) continue; // not placed yet
 
         const j = i * 3;
@@ -397,7 +568,7 @@ export function Dial3D({ model, label, caption, className }: Props) {
         const persp = CAM / (CAM + z2);
         const px = cx0 + x1 * scale * persp;
         const py = cy0 - y2 * scale * persp;
-        const clay = i % 11 === 0;
+        const clay = clayOf[i] === 1;
 
         const fresh = age >= 0 && age < 1 ? 1 - age : 0;
         if (fresh > 0) {

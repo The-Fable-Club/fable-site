@@ -24,7 +24,7 @@ export type Club = {
   recruitment: Recruitment & { state: RecruitmentStatus };
 };
 
-export type AimModel = "pages" | "book" | "blocks" | "steps" | "network";
+export type AimModel = "sprout" | "book" | "blocks" | "steps" | "network";
 export type Aim = { title: string; body: string; model: AimModel };
 
 export type Content = {
