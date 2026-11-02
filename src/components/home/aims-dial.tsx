@@ -53,7 +53,7 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
           <p className="mt-5 max-w-[30ch] font-serif text-night-soft">
             Most students meet AI as a chat box. We treat Claude as a tool worth learning well.
           </p>
-          <Ph className="mt-5 border-clay text-clay">Placeholder copy</Ph>
+          <Ph className="mt-5 border-clay text-clay">Heading not final</Ph>
         </div>
 
         {/* centre: one wheel (ring + 3D model share a single rotation) */}

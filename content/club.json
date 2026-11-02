@@ -1,6 +1,12 @@
 {
   "tagline": "Learn Claude thoroughly. Then build with it.",
-  "description": "The Fable Club is a student-led AI learning and building community at VIT Chennai. We help students from every department get reliably good work out of Claude, from writing, research and studying to Claude Code and building agents.",
+  "description": "The Fable Club is an independent, student-run community at VIT Chennai for learning to build with Claude and agentic AI tools, open to all students.",
+  "why": "VIT has plenty of AI users but no structured path to actually build with LLMs. The club gives students hands-on sessions and real projects, so they leave with something shipped, not just something attended.",
+  "highlights": [
+    "Hands-on sessions every other week",
+    "One member project",
+    "Free, and open to every department"
+  ],
   "institution": "VIT Chennai",
   "office": "Office of Students’ Welfare",
   "contactEmail": "contact@thefableclub.com",
@@ -13,46 +19,10 @@
     {
       "label": "LinkedIn",
       "href": "https://www.linkedin.com/company/the-fable-club"
-    }
-  ],
-  "stats": [
-    {
-      "label": "Build sessions",
-      "value": "2 hrs",
-      "note": "Every other week, hands-on."
     },
     {
-      "label": "Events this year",
-      "value": "10",
-      "note": "Workshops, a hackathon, a demo day."
-    },
-    {
-      "label": "Phases",
-      "value": "4",
-      "note": "Foundations to outcomes."
-    },
-    {
-      "label": "Open to",
-      "value": "All",
-      "note": "Every department. No prior experience."
-    }
-  ],
-  "phases": [
-    {
-      "name": "Foundations",
-      "span": "Oct – Nov 2026"
-    },
-    {
-      "name": "Building Skills",
-      "span": "Jan – Feb 2027"
-    },
-    {
-      "name": "Advanced & Flagship",
-      "span": "Mar 2027"
-    },
-    {
-      "name": "Outcomes & Handover",
-      "span": "Apr 2027"
+      "label": "GitHub",
+      "href": "https://github.com/The-Fable-Club"
     }
   ],
   "recruitment": {
@@ -60,7 +30,8 @@
     "intake": "2026-27",
     "opens": null,
     "closes": null,
-    "taskPrompt": "Pick one repetitive task from your college life that you would hand to an AI agent. What should it do, what would it need access to, and how would you check it did the job well?",
-    "taskIsPlaceholder": true
+    "whatsapp": "https://chat.whatsapp.com/J16lN63W4rX93keObrgGNf",
+    "taskPrompt": "Think of one small, boring task from your week, like notes, timetables, assignments or club work. How could an AI assistant like Claude help you with it?",
+    "taskIsPlaceholder": false
   }
 }

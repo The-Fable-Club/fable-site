@@ -16,6 +16,8 @@ export type Recruitment = {
   intake: string;
   opens?: string | null;
   closes?: string | null;
+  /** The recruitment WhatsApp group (public: shared so students hear when applications open). */
+  whatsapp?: string | null;
   /** The short task every applicant answers. */
   taskPrompt: string;
   /** True while the task wording is a stand-in the club has not approved. */

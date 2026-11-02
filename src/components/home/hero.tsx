@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { Hud, Ph } from "@/components/hud";
+import { Hud } from "@/components/hud";
 import { dateLabel, type HeroStrip } from "@/lib/events";
 import type { Club } from "@/lib/content";
 
@@ -107,7 +107,10 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
 
       <div className="grid flex-1 items-center gap-10 px-6 py-10 md:grid-cols-[1.1fr_0.9fr] md:px-12">
         <div className="relative z-10">
-          <Hud className="text-clay">Phase 1 · Foundations · Oct – Nov 2026</Hud>
+          <Link href="/join" className="hud inline-flex items-center gap-2 text-clay transition-colors duration-500 ease-flow hover:text-paper">
+            <span className={club.recruitment.state === "open" ? "size-2 animate-pulse bg-clay" : "size-2 bg-clay"} aria-hidden />
+            {{ open: "Applications are open", soon: "Applications open soon", closed: "Applications closed" }[club.recruitment.state]}
+          </Link>
           <h1 className="mt-5 font-display text-[clamp(3.5rem,1.6rem+9vw,9.5rem)] leading-[0.9] tracking-[-0.02em]">
             The Fable
             <br />
@@ -228,9 +231,6 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
           ))}
         </div>
       )}
-      <Ph className="absolute bottom-4 right-6 hidden border-clay text-clay md:inline-flex">
-        Placeholder content
-      </Ph>
 
       <style>{`
         @keyframes draw { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }

@@ -16,8 +16,10 @@ export type Club = {
   contactEmail: string;
   disclaimer: string;
   socials: { label: string; href: string }[];
-  stats: { label: string; value: string; note: string }[];
-  phases: { name: string; span: string }[];
+  /** Why the club exists: the About section's paragraph. */
+  why: string;
+  /** Three plain lines for the About section. */
+  highlights: string[];
   /** Recruitment settings plus `state`: what applies today (recomputed at least hourly). */
   recruitment: Recruitment & { state: RecruitmentStatus };
 };

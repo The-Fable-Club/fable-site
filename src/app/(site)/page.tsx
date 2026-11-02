@@ -7,7 +7,6 @@ import { EventsStage } from "@/components/home/events-stage";
 import { PeopleStage } from "@/components/home/people-stage";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
-import CountUp from "@/components/CountUp";
 import { getContent } from "@/lib/content";
 import { heroStrips, openEvents } from "@/lib/events";
 import { initials } from "@/lib/members";
@@ -36,39 +35,26 @@ export default async function Home() {
         <Banner label="About the club" title="About" art="/art/sprouts.svg" />
         <section className="bg-paper">
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:px-12 md:py-24">
-            <div>
-              <h2 className="max-w-[16ch] font-display text-[clamp(2.25rem,1.6rem+2.9vw,4.25rem)] leading-[1.02]">
-                A student club for learning Claude properly.
-              </h2>
-              <Ph className="mt-5">Placeholder copy</Ph>
-            </div>
-            <div>
-              <p className="font-serif text-xl leading-relaxed text-ink-soft">{club.description}</p>
-              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
-                {club.phases.map((p, i) => (
-                  <div key={p.name} className="min-w-[10rem]">
-                    <Hud className="text-ink-faint">Phase {i + 1}</Hud>
-                    <p className="font-display text-xl leading-tight">{p.name}</p>
-                    <Hud className="text-ink-faint">{p.span}</Hud>
-                  </div>
-                ))}
-              </div>
+            <h2 className="max-w-[14ch] font-display text-[clamp(2.25rem,1.6rem+2.9vw,4.25rem)] leading-[1.02]">
+              A structured path to actually building with AI.
+            </h2>
+            <div className="space-y-5 font-serif leading-relaxed text-ink-soft">
+              <p className="text-xl">{club.description}</p>
+              <p className="text-lg">{club.why}</p>
             </div>
           </div>
-          <dl className="mx-auto grid max-w-6xl border-y border-ink/20 md:grid-cols-4 md:border-x">
-            {club.stats.map((s) => (
-              <div
-                key={s.label}
+          {/* the session photo strip goes above this row once the inauguration photos arrive */}
+          <ul className="mx-auto grid max-w-6xl border-y border-ink/20 md:grid-cols-3 md:border-x">
+            {club.highlights.map((h, i) => (
+              <li
+                key={h}
                 className="border-b border-ink/20 px-6 py-8 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"
               >
-                <dt className="hud text-ink-faint">{s.label}</dt>
-                <dd className="mt-2 font-display text-6xl leading-none">
-                  {/^\d+$/.test(s.value) ? <CountUp to={Number(s.value)} duration={1.6} /> : s.value}
-                </dd>
-                <dd className="mt-3 max-w-[22ch] text-sm text-ink-soft">{s.note}</dd>
-              </div>
+                <Hud className="text-clay-deep">{String(i + 1).padStart(2, "0")}</Hud>
+                <p className="mt-3 max-w-[16ch] font-display text-3xl leading-tight">{h}</p>
+              </li>
             ))}
-          </dl>
+          </ul>
           <div className="h-16 md:h-24" />
         </section>
         <AimsDial aims={aims} />
