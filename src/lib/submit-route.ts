@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { fieldErrors, guardRequest, insertRow } from "@/lib/submissions";
+import { fieldErrors, guardRequest, insertRow, readJsonLimited } from "@/lib/submissions";
 
 const json = (body: object, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -19,12 +19,10 @@ export async function handleSubmission<S extends z.ZodType>(
   const shut = opts.closed?.();
   if (shut) return json({ ok: false, code: "closed", message: shut }, 403);
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return json({ ok: false, message: "That request could not be read." }, 400);
-  }
+  // The Content-Length check above can be skipped by a chunked upload: the limit also holds while reading.
+  const read = await readJsonLimited(req);
+  if (!read.ok) return read.tooLarge ? json({ ok: false, message: "That request is too large." }, 413) : json({ ok: false, message: "That request could not be read." }, 400);
+  const body = read.body;
   // Bots fill the hidden field: say thanks and store nothing.
   if (body && typeof body === "object" && "website" in body && String((body as { website?: unknown }).website ?? "") !== "") {
     return json({ ok: true });
