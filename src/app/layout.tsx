@@ -4,36 +4,37 @@ import { getContent } from "@/lib/content";
 import { SITE_URL } from "@/lib/meta";
 import "./globals.css";
 
-// Anthropic type family, supplied by the club (see src/fonts).
+// Anthropic type family, supplied by the club (see src/fonts). The browser gets the WOFF2
+// copies (about half the size); the .otf originals stay for the link-preview images (lib/og.tsx).
 const sans = localFont({
   variable: "--f-sans",
   display: "swap",
   src: [
-    { path: "../fonts/sans-regular.otf", weight: "400", style: "normal" },
-    { path: "../fonts/sans-medium.otf", weight: "500", style: "normal" },
-    { path: "../fonts/sans-semibold.otf", weight: "600", style: "normal" },
+    { path: "../fonts/sans-regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/sans-medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/sans-semibold.woff2", weight: "600", style: "normal" },
   ],
 });
 const display = localFont({
   variable: "--f-display",
   display: "swap",
   src: [
-    { path: "../fonts/serif-display-regular.otf", weight: "400", style: "normal" },
-    { path: "../fonts/serif-display-italic.otf", weight: "400", style: "italic" },
+    { path: "../fonts/serif-display-regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/serif-display-italic.woff2", weight: "400", style: "italic" },
   ],
 });
 const serif = localFont({
   variable: "--f-serif",
   display: "swap",
   src: [
-    { path: "../fonts/serif-text-regular.otf", weight: "400", style: "normal" },
-    { path: "../fonts/serif-text-italic.otf", weight: "400", style: "italic" },
+    { path: "../fonts/serif-text-regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/serif-text-italic.woff2", weight: "400", style: "italic" },
   ],
 });
 const mono = localFont({
   variable: "--f-mono",
   display: "swap",
-  src: [{ path: "../fonts/mono-regular.otf", weight: "400", style: "normal" }],
+  src: [{ path: "../fonts/mono-regular.woff2", weight: "400", style: "normal" }],
 });
 
 const HOME_TITLE = "The Fable Club — A Claude club at VIT Chennai";
