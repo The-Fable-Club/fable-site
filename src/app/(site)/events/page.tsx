@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/meta";
 import { Hud, PageHead, Ph } from "@/components/hud";
 import { EventRow } from "@/components/event-row";
 import { EventsCarousel } from "@/components/home/events-carousel";
@@ -6,10 +7,7 @@ import { Timeline } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { openEvents, pastEvents } from "@/lib/events";
 
-export const metadata: Metadata = {
-  title: "Events",
-  description: "Current and upcoming events, the year’s timeline and event history.",
-};
+export const metadata: Metadata = pageMeta("Events", "Current and upcoming events, the year’s timeline and event history.", "/events");
 
 export default async function EventsPage() {
   const { events } = await getContent();

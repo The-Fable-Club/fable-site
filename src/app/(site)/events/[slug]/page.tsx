@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/meta";
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const { events } = await getContent();
   const e = bySlug(events, slug);
-  return e ? { title: e.title, description: e.summary } : {};
+  return e ? pageMeta(e.title, e.summary, `/events/${e.slug}`) : {};
 }
 
 async function EventDetail({

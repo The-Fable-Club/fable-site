@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/meta";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { Hud, PageHead } from "@/components/hud";
 import { JoinForm } from "@/components/join-form";
 import { getContent } from "@/lib/content";
 import { dayLabel } from "@/lib/recruitment";
 
-export const metadata: Metadata = {
-  title: "Join",
-  description: "Join The Fable Club: open to every VIT Chennai student, from any department. Free, with a short task and a quick chat.",
-};
+export const metadata: Metadata = pageMeta(
+  "Join",
+  "Join The Fable Club: open to every VIT Chennai student, from any department. Free, with a short task and a quick chat.",
+  "/join",
+);
 
 // Everything below comes from the club's answers (November 2026). Change it here.
 const steps = [

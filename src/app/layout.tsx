@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { getContent } from "@/lib/content";
+import { SITE_URL } from "@/lib/meta";
 import "./globals.css";
 
 // Anthropic type family, supplied by the club (see src/fonts).
@@ -34,16 +36,28 @@ const mono = localFont({
   src: [{ path: "../fonts/mono-regular.otf", weight: "400", style: "normal" }],
 });
 
-const description =
-  "The Fable Club is a student-led AI learning and building community at VIT Chennai, focused on Claude.";
+const HOME_TITLE = "The Fable Club — A Claude club at VIT Chennai";
 
-export const metadata: Metadata = {
-  title: {
-    default: "The Fable Club — A Claude club at VIT Chennai",
-    template: "%s — The Fable Club",
-  },
-  description,
-};
+// Defaults for every page. Pages set their own title and description (see lib/meta.ts);
+// the link-preview image comes from app/opengraph-image.tsx unless a route has its own.
+export async function generateMetadata(): Promise<Metadata> {
+  const { club } = await getContent();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: HOME_TITLE, template: "%s — The Fable Club" },
+    description: club.description,
+    applicationName: "The Fable Club",
+    openGraph: {
+      type: "website",
+      siteName: "The Fable Club",
+      locale: "en_IN",
+      title: HOME_TITLE,
+      description: club.description,
+      url: "/",
+    },
+    twitter: { card: "summary_large_image", title: HOME_TITLE, description: club.description },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#faf9f5",
