@@ -2,6 +2,9 @@
 // event registration). Pure where possible so it can be tested without a network.
 import { z } from "zod";
 
+// No compiled validators: they need eval, which the site's CSP forbids (zod would only probe for it, but the probe is reported as a violation).
+z.config({ jitless: true });
+
 export const REG_NO = /^\d{2}[A-Za-z]{3}\d{4,5}$/;
 export const YEARS = ["1st", "2nd", "3rd", "4th", "Postgraduate"] as const;
 /** The board's teams, as applicants can pick them (plus "not sure"). */
