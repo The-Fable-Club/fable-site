@@ -46,11 +46,17 @@ Event status (Live / Open / Past) is derived from the dates (`src/lib/event-logi
 
 ## Still placeholder
 
-Copy and bios are placeholder text (marked with `<Ph />` on the page), board emails are placeholders, there are no member photos yet, and the 3D models in "What we're for" are procedural stand-ins. See [docs/ASKS.md](docs/ASKS.md).
+Copy and bios are placeholder text (marked with `<Ph />` on the page), board emails are placeholders, there are no member photos yet, the Events stage uses generated clips, and the 3D models in "What we're for" are procedural stand-ins. Open work is tracked in the [GitHub issues](https://github.com/The-Fable-Club/fable-site/issues); the summary is in [docs/ASKS.md](docs/ASKS.md).
+
+## Link previews, headers, SEO
+
+- Share images are generated at build time: `app/opengraph-image.tsx` (the site) and `app/(site)/events/[slug]/opengraph-image.tsx` (one per event), with shared bits in `lib/og.tsx`. Page titles and descriptions go through `pageMeta()` in `lib/meta.ts`.
+- `app/sitemap.ts` and `app/robots.ts` list the public pages (hub and attendance pages stay out).
+- Security headers and the Content-Security-Policy are in `next.config.ts`. A new outside host (an embed, a media CDN) must be added there or the browser blocks it.
 
 ## Assets
 
-- Fonts: Anthropic Sans / Serif / Mono in `src/fonts` (`next/font/local`). Confirm the licence before a wide launch.
+- Fonts: Anthropic Sans / Serif / Mono in `src/fonts` (`next/font/local`). Pages load the `.woff2` copies; the `.otf` originals are only read by the share-image renderer.
 - Illustrations: `public/art/*.svg`. Brand images: `public/logo-*.jpg`, `public/banner-*.jpg`.
 - `_reference/` (gitignored): prototype, font archives, Endfield notes.
 
@@ -58,4 +64,4 @@ Copy and bios are placeholder text (marked with `<Ph />` on the page), board ema
 
 - Left rail: icons until hovered or focused, then labels; on `/` it follows the section being scrolled. Right-edge section index.
 - "What we're for": canvas point-cloud viewer (`components/home/point-cloud.tsx`); drag to orbit. Swap the generators for real models later.
-- Events: path-style carousel and a continuous, draggable timeline. All motion uses one easing, `ease-flow` (`cubic-bezier(.65,0,.35,1)`), at full strength (reduced motion is deliberately not honoured).
+- Events: on `/` a full-bleed media stage after Endfield's (the next backdrop wipes in with a clay bar on its edge, a side tab rolls the event kind; media loads only when near the screen); on `/events` the path-style carousel; both with the continuous, draggable timeline. A giant wordmark strip slides with scroll between About and Events. All motion uses one easing, `ease-flow` (`cubic-bezier(.65,0,.35,1)`), at full strength (reduced motion is deliberately not honoured).

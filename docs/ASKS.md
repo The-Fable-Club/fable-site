@@ -1,24 +1,24 @@
-# Open asks (things I need from the club later)
+# Open asks (things the club still has to send or decide)
 
-Not blocking. Everything has a placeholder today.
+Open work now lives in the GitHub issues. Items labelled **waiting on club** need content, accounts or a decision; **ready** ones can be built straight away.
 
-## 3D viewer ("What we're for")
-The point-cloud models are procedural stand-ins. For real ones, any of:
-- A **GLB or OBJ** per aim (or a single club-mark model) that can be sampled into points.
-- Or a **vector logo / sketch** per aim that can be extruded.
-- The **final text for the five aims** (title + 2 lines each).
+- Site: https://github.com/The-Fable-Club/fable-site/issues
+- CMS: https://github.com/The-Fable-Club/fable-cms/issues
 
-## Content
-- Real events: dates, venues, registration choice, seats (enter them in the CMS).
-- Real member bios, departments, years, photos, contact links (CMS).
-- Media (photos / clips) for events and the gallery.
+| What | Issue |
+|---|---|
+| Photos and clips for every spot on the site (events, About strip, board portraits, group photo, logo file) | [fable-site#2](https://github.com/The-Fable-Club/fable-site/issues/2) |
+| Media hosting on ImageKit (account, keys) | [fable-cms#1](https://github.com/The-Fable-Club/fable-cms/issues/1), site side [fable-site#1](https://github.com/The-Fable-Club/fable-site/issues/1) |
+| Replace the placeholder events, people and copy; the inauguration venue and time | [fable-site#3](https://github.com/The-Fable-Club/fable-site/issues/3) |
+| Recruitment opening and closing dates | [fable-site#4](https://github.com/The-Fable-Club/fable-site/issues/4) |
+| Email alert for each new application (Resend account and domain) | [fable-cms#2](https://github.com/The-Fable-Club/fable-cms/issues/2) |
+| Someone signed in to click through the CMS screens | [fable-cms#5](https://github.com/The-Fable-Club/fable-cms/issues/5) |
+| Full event recordings on YouTube (later) | [fable-cms#4](https://github.com/The-Fable-Club/fable-cms/issues/4) |
 
-## Member backgrounds (People section)
-Each group (web dev, agentic AI, operations, finance, creative, technical, leadership) needs a background. Recommended: generated SVG motifs in the club palette (no licensing). Options are in the CMS repo's `docs/ROADMAP.md`.
+## Still open, not yet an issue
+- 3D viewer ("What we're for"): the five models are procedural. A GLB/OBJ per aim (or one club-mark model) could replace them; the heading is still marked "not final".
 
-## Done since this was written
-GitHub org, Vercel, the CMS, the database, applications and event registrations are all live. Hub posts are published from the CMS (they are public to anyone with the link).
-
-## Fix later
-- Font licensing: deliberately deferred.
-- Photos: the upload control exists in the CMS but has not been tested end to end.
+## Decided
+- Fonts: the Anthropic typefaces are used as they are (the club's call, 2026-11-02).
+- Motion: always at full strength; reduced-motion settings are deliberately not honoured.
+- Member backgrounds: generated SVG motifs per group, built (`components/home/people-backdrops.tsx`).
