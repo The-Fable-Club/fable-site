@@ -5,11 +5,11 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind v4 · shadcn
 
 The site is **static**. Events and people are managed in a separate CMS ([The-Fable-Club/fable-cms](https://github.com/The-Fable-Club/fable-cms)); when an editor presses Publish, Vercel rebuilds this site once from the newest release. Visitors never read the database while browsing. The only live database access is three small form routes (applications, event registrations, questions).
 
-Full picture, data flows, security and status: **[fable-cms/docs/ARCHITECTURE.md](https://github.com/The-Fable-Club/fable-cms/blob/main/docs/ARCHITECTURE.md)**. The site's side: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Full picture, data flows, security and status: **[fable-cms/docs/ARCHITECTURE.md](https://github.com/The-Fable-Club/fable-cms/blob/main/docs/ARCHITECTURE.md)**. The site's side: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Code map, rules and recipes (also what AI assistants read): [AGENTS.md](AGENTS.md). Locked out, lost a key or lost data: **[fable-cms/docs/RECOVERY.md](https://github.com/The-Fable-Club/fable-cms/blob/main/docs/RECOVERY.md)**.
 
 ```bash
 npm install
-# .env.local needs NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (both public values)
+cp .env.example .env.local  # two public values: the Supabase URL and publishable key
 npm run dev                  # http://localhost:3000, follows new releases automatically
 npm run build && npm start
 npm test                     # unit tests
