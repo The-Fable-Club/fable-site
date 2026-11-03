@@ -133,7 +133,7 @@ export default async function Home() {
       <section id="join" className="relative overflow-hidden bg-clay text-ink">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-20 md:grid-cols-[1fr_auto] md:px-12 md:py-28">
           <div>
-            <Hud className="flex items-center gap-2 opacity-80">
+            <Hud className="flex items-center gap-2 opacity-90">
               <span className={cn("size-2 bg-ink", club.recruitment.state === "open" && "animate-pulse")} aria-hidden />
               Recruitment · {{ open: "Open now", soon: "Opening soon", closed: "Closed" }[club.recruitment.state]}
             </Hud>

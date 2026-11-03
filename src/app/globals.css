@@ -23,14 +23,14 @@
   --color-paper-field: #e8e6dc;
   --color-ink: #141413;
   --color-ink-soft: #3d3d3a;
-  --color-ink-faint: #73726c;
+  --color-ink-faint: #6b6a65; /* 4.5:1 on paper-raised for 11px labels */
   --color-night: #262624;
   --color-night-raised: #30302e;
   --color-night-sunken: #1f1e1d;
   --color-night-soft: #c2c0b6;
   --color-night-faint: #9c9a92;
   --color-clay: #d97757;
-  --color-clay-deep: #c6613f;
+  --color-clay-deep: #b1583a; /* 4.5:1 on paper for 11px labels, and paper text on it */
   --color-kraft: #d4a27f;
   --color-manilla: #ebdbbc;
   --color-oat: #e3dacc;
@@ -85,7 +85,7 @@
   --secondary: #e8e6dc;
   --secondary-foreground: #141413;
   --muted: #f0eee6;
-  --muted-foreground: #73726c;
+  --muted-foreground: #6b6a65;
   --accent: #d97757;
   --accent-foreground: #141413;
   --destructive: #b3261e;

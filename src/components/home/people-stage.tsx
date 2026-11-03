@@ -283,8 +283,14 @@ export function PeopleStage({ people }: { people: Member[] }) {
                 <motion.div
                   key={m.slug}
                   role={order > 0 ? "button" : undefined}
-                  aria-label={order > 0 ? `Bring ${m.name} to the front` : undefined}
+                  tabIndex={order > 0 && order <= 2 ? 0 : undefined}
                   onClick={() => order > 0 && setP(i)}
+                  onKeyDown={(ev) => {
+                    if (order > 0 && (ev.key === "Enter" || ev.key === " ")) {
+                      ev.preventDefault();
+                      setP(i);
+                    }
+                  }}
                   drag={order === 0 && n > 1 ? "x" : false}
                   dragSnapToOrigin
                   dragElastic={0.35}
@@ -304,6 +310,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
                   style={{ zIndex: n - order }}
                   className={cn("absolute inset-0 touch-pan-y", order > 0 ? "cursor-pointer" : n > 1 ? "cursor-grab active:cursor-grabbing" : "")}
                 >
+                  {order > 0 && <span className="sr-only">Bring to the front: </span>}
                   <PersonCard member={m} front={order === 0} />
                 </motion.div>
               );
@@ -330,7 +337,7 @@ function PersonCard({ member: m, front }: { member: Member; front: boolean }) {
             <path d="M20 240c0-56 36-92 80-92s80 36 80 92" fill="none" stroke="#141413" strokeWidth="3" />
           </svg>
         )}
-        <span className="absolute left-0 top-0 grid size-11 place-items-center bg-ink font-display text-lg text-paper">
+        <span aria-hidden className="absolute left-0 top-0 grid size-11 place-items-center bg-ink font-display text-lg text-paper">
           {initials(m.name)}
         </span>
       </div>

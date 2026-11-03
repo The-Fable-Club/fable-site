@@ -30,7 +30,10 @@ export default async function EventsPage() {
       </PageHead>
 
       {current.length > 0 && (
-        <section id="highlights" className="bg-paper-sunken py-16 md:py-24">
+        <section id="highlights" aria-labelledby="highlights-title" className="bg-paper-sunken py-16 md:py-24">
+          <h2 id="highlights-title" className="sr-only">
+            Highlighted events
+          </h2>
           <div className="mx-auto max-w-[90rem]">
             <EventsCarousel events={current} />
           </div>

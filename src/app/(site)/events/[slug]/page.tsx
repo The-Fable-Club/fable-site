@@ -142,31 +142,31 @@ async function EventDetail({
           <aside className="md:sticky md:top-8 md:self-start">
             <div className="border border-ink bg-paper-raised">
               <dl className="divide-y divide-ink/15">
-                <div className="flex gap-3 p-5">
-                  <Clock className="mt-0.5 size-5 shrink-0 text-clay-deep" aria-hidden />
-                  <div>
-                    <dt className="hud text-ink-faint">When</dt>
-                    <dd className="mt-1">
-                      {dateLabel(e)}
-                      {e.tentative && e.start && e.dateMode !== "tba" && <span className="hud ml-2 border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
-                    </dd>
-                    <dd className="text-ink-soft">{e.time}</dd>
-                  </div>
+                <div className="relative p-5 pl-[3.25rem]">
+                  <dt className="hud text-ink-faint">
+                    <Clock className="absolute left-5 top-[1.375rem] size-5 text-clay-deep" aria-hidden />
+                    When
+                    </dt>
+                  <dd className="mt-1">
+                    {dateLabel(e)}
+                    {e.tentative && e.start && e.dateMode !== "tba" && <span className="hud ml-2 border border-dashed border-ink-faint px-1 py-0.5 text-ink-faint">Tentative</span>}
+                  </dd>
+                  <dd className="text-ink-soft">{e.time}</dd>
                 </div>
-                <div className="flex gap-3 p-5">
-                  <MapPin className="mt-0.5 size-5 shrink-0 text-clay-deep" aria-hidden />
-                  <div>
-                    <dt className="hud text-ink-faint">Where</dt>
-                    <dd className="mt-1">{e.venue}</dd>
-                  </div>
+                <div className="relative p-5 pl-[3.25rem]">
+                  <dt className="hud text-ink-faint">
+                    <MapPin className="absolute left-5 top-[1.375rem] size-5 text-clay-deep" aria-hidden />
+                    Where
+                    </dt>
+                  <dd className="mt-1">{e.venue}</dd>
                 </div>
                 {e.seats && (
-                  <div className="flex gap-3 p-5">
-                    <Users className="mt-0.5 size-5 shrink-0 text-clay-deep" aria-hidden />
-                    <div>
-                      <dt className="hud text-ink-faint">Who</dt>
-                      <dd className="mt-1">{e.seats}</dd>
-                    </div>
+                  <div className="relative p-5 pl-[3.25rem]">
+                    <dt className="hud text-ink-faint">
+                      <Users className="absolute left-5 top-[1.375rem] size-5 text-clay-deep" aria-hidden />
+                      Who
+                      </dt>
+                    <dd className="mt-1">{e.seats}</dd>
                   </div>
                 )}
               </dl>

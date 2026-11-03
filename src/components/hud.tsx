@@ -72,7 +72,7 @@ export function Banner({
         )}
       />
       <div className="min-w-0">
-        <Hud className="block opacity-70">{label}</Hud>
+        <Hud className="block opacity-85">{label}</Hud>
         <h2 className="font-display text-4xl leading-none md:text-5xl">{title}</h2>
       </div>
       {/* corner ticks */}

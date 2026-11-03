@@ -405,7 +405,6 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
                   key={ev.slug}
                   role="tab"
                   aria-selected={isOn}
-                  aria-label={`${ev.title}, ${ordinal} of ${n}`}
                   tabIndex={near ? 0 : -1}
                   onClick={() => (isOn ? setViewer(true) : jump(i))}
                   className={cn(
@@ -430,13 +429,14 @@ export function EventsStage({ events }: { events: ClubEvent[] }) {
                   />
                   <span className="absolute inset-x-0 bottom-0 p-3">
                     {!isOn && (
-                      <Hud className="mb-1 block text-paper/80 tabular-nums">
+                      <span aria-hidden className="hud mb-1 block text-paper/80 tabular-nums">
                         {o < 0 ? `${pad(ordinal)} / ${pad(n)} · LAST` : `NEXT · ${pad(ordinal)} / ${pad(n)}`}
-                      </Hud>
+                      </span>
                     )}
                     <span className={cn("line-clamp-2 block font-display leading-tight", isOn ? "text-base text-ink md:text-lg" : "text-sm text-paper md:text-base")}>
                       {ev.title}
                     </span>
+                    <span className="sr-only">{`, ${ordinal} of ${n}`}</span>
                   </span>
                 </button>
               );
