@@ -141,6 +141,38 @@ export async function insertRow(table: "applications" | "registrations" | "event
   }
 }
 
+/**
+ * Read a JSON body, stopping at maxBytes even when the request sends no Content-Length
+ * (chunked uploads). `tooLarge` says why it failed: too big, or not JSON.
+ */
+export async function readJsonLimited(req: Request, maxBytes = 10_000): Promise<{ ok: true; body: unknown } | { ok: false; tooLarge: boolean }> {
+  const reader = req.body?.getReader();
+  if (!reader) return { ok: false, tooLarge: false };
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel().catch(() => {});
+      return { ok: false, tooLarge: true };
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) {
+    bytes.set(c, at);
+    at += c.byteLength;
+  }
+  try {
+    return { ok: true, body: JSON.parse(new TextDecoder().decode(bytes)) };
+  } catch {
+    return { ok: false, tooLarge: false };
+  }
+}
+
 /** Reject cross-site posts and oversized bodies before doing any work. */
 export function guardRequest(req: Request, maxBytes = 10_000): { ok: true } | { ok: false; status: number; message: string } {
   const len = Number(req.headers.get("content-length") ?? 0);

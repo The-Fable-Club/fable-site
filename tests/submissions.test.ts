@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // The applications route reads the recruitment settings from content/club.json; tests set them here.
 const rec = vi.hoisted(() => ({ value: { status: "open", intake: "2026-27", taskPrompt: "t" } as Record<string, unknown> }));
 vi.mock("@/lib/content", async (orig) => ({ ...(await orig<object>()), readRecruitment: () => rec.value }));
-import { ApplicationInput, QuestionInput, RegistrationInput, fieldErrors, guardRequest, insertRow, mapDbError } from "@/lib/submissions";
+import { ApplicationInput, QuestionInput, RegistrationInput, fieldErrors, guardRequest, insertRow, mapDbError, readJsonLimited } from "@/lib/submissions";
 import { POST as postQuestion } from "@/app/api/questions/route";
 import { POST as postRegistration } from "@/app/api/registrations/route";
 import { POST as postApplication } from "@/app/api/applications/route";
@@ -234,5 +234,32 @@ describe("questions", () => {
     const f = stubDb(201);
     expect(await (await postQuestion(request(ask({ website: "http://spam" })))).json()).toEqual({ ok: true });
     expect(f).not.toHaveBeenCalled();
+  });
+});
+
+describe("readJsonLimited", () => {
+  const streamed = (text: string, chunk = 1000) => {
+    const bytes = new TextEncoder().encode(text);
+    let at = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(c) {
+        if (at >= bytes.length) return c.close();
+        c.enqueue(bytes.slice(at, (at += chunk)));
+      },
+    });
+    // no Content-Length header, like a chunked upload
+    return new Request("https://x.test/api/x", { method: "POST", body, duplex: "half" } as RequestInit);
+  };
+  it("reads a normal body", async () => {
+    expect(await readJsonLimited(streamed(JSON.stringify({ a: 1 })))).toEqual({ ok: true, body: { a: 1 } });
+  });
+  it("stops at the limit even without Content-Length", async () => {
+    expect(await readJsonLimited(streamed(JSON.stringify({ a: "x".repeat(50_000) })))).toEqual({ ok: false, tooLarge: true });
+  });
+  it("says when it is not JSON", async () => {
+    expect(await readJsonLimited(streamed("not json"))).toEqual({ ok: false, tooLarge: false });
+  });
+  it("keeps multi-byte characters split across chunks intact", async () => {
+    expect(await readJsonLimited(streamed(JSON.stringify({ n: "தமிழ் ✓" }), 3))).toEqual({ ok: true, body: { n: "தமிழ் ✓" } });
   });
 });
