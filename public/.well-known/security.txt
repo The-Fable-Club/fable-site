@@ -1,0 +1,8 @@
+# The Fable Club (www.thefableclub.com, cms.thefableclub.com)
+# Owner and maintainer: GitHub Haise-727. Security testing of these systems is authorised by the owner;
+# scope and rules: the Policy link. Please report problems privately to the contact below.
+Contact: mailto:contact@thefableclub.com
+Expires: 2027-11-03T00:00:00.000Z
+Policy: https://github.com/The-Fable-Club/fable-cms/blob/main/docs/SECURITY-TESTING.md
+Preferred-Languages: en
+Canonical: https://www.thefableclub.com/.well-known/security.txt
