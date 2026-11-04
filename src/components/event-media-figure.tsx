@@ -6,8 +6,8 @@ import type { EventMedia } from "@/lib/event-media";
 
 /**
  * The event page's picture or silent loop. The loop plays muted only while it is on screen
- * and the visitor hasn't asked for reduced motion; otherwise picture 1 (or the clip's still)
- * stays as a still image.
+ * (reduced motion is deliberately not honoured site-wide, the club's decision: AGENTS.md);
+ * if the browser blocks autoplay, picture 1 (or the clip's still) stays as a still image.
  */
 export function EventMediaFigure({ media, title }: { media: EventMedia; title: string }) {
   const box = useRef<HTMLDivElement>(null);
@@ -17,8 +17,7 @@ export function EventMediaFigure({ media, title }: { media: EventMedia; title: s
 
   useEffect(() => {
     if (!media.video || !box.current) return;
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const io = new IntersectionObserver(([e]) => setPlay(e.isIntersecting && !still.matches), { threshold: 0.25 });
+    const io = new IntersectionObserver(([e]) => setPlay(e.isIntersecting), { threshold: 0.25 });
     io.observe(box.current);
     return () => io.disconnect();
   }, [media.video]);
