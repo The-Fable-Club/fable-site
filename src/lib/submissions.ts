@@ -8,7 +8,7 @@ z.config({ jitless: true });
 export const REG_NO = /^\d{2}[A-Za-z]{3}\d{4,5}$/;
 export const YEARS = ["1st", "2nd", "3rd", "4th", "Postgraduate"] as const;
 /** The board's teams, as applicants can pick them (plus "not sure"). */
-export const TEAMS = ["Web Development", "Agentic AI", "Technical", "Operations", "Finance", "Creative & Communications", "Not sure yet"] as const;
+export const TEAMS = ["Web Development", "Agentic AI", "Projects", "Operations", "Finance", "Creative & Communications", "Not sure yet"] as const;
 /** VIT student mailboxes. */
 export const VIT_EMAIL = /^[^\s@]+@vitstudent\.ac\.in$/i;
 export const PHONE = /^[0-9+()\- ]{7,20}$/;

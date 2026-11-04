@@ -214,7 +214,7 @@ const coSecretary: Backdrop = {
   ),
 };
 
-const technical: Backdrop = {
+const projects: Backdrop = {
   bg: "#1f1e1d",
   dark: true,
   art: (() => {
@@ -377,7 +377,7 @@ const BACKDROPS: Record<string, Backdrop> = {
   "Vice-Chairperson": viceChair,
   Secretary: secretary,
   "Co-Secretary": coSecretary,
-  Technical: technical,
+  Projects: projects,
   "Web Development": webDev,
   "Agentic AI": agentic,
   Operations: operations,
