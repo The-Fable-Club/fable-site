@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Copy, Mail } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { Hud, Ph } from "@/components/hud";
+import type { Team } from "@/lib/content";
 import { ApplicationInput, TEAMS, YEARS, fieldErrors } from "@/lib/submissions";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +16,42 @@ function Err({ errors, k }: { errors: Errors; k: string }) {
       {errors[k]}
     </p>
   ) : null;
+}
+
+/** What the picked team does and looks for, under the team buttons. */
+export function TeamDetail({ team, id, plain }: { team: Team; id?: string; plain?: boolean }) {
+  return (
+    <div id={id} className={plain ? undefined : "border-l-2 border-clay bg-paper-raised p-5"}>
+      {!plain && <p className="font-display text-2xl leading-tight">{team.name}</p>}
+      <p className={cn("mt-2 max-w-[62ch] font-serif leading-relaxed text-ink-soft", plain ? "text-base" : "text-lg")}>{team.about}</p>
+      {team.lookingFor.length > 0 && (
+        <div className="mt-4">
+          <Hud className="text-ink-faint">What we look for</Hud>
+          <ul className="mt-2 grid gap-1.5 text-sm">
+            {team.lookingFor.map((x) => (
+              <li key={x} className="flex gap-2.5">
+                <span aria-hidden className="mt-[0.45rem] size-1.5 shrink-0 bg-clay-deep" />
+                {x}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {team.niceToHave.length > 0 && (
+        <div className="mt-4">
+          <Hud className="text-ink-faint">Nice to have</Hud>
+          <ul className="mt-2 grid gap-1.5 text-sm text-ink-soft">
+            {team.niceToHave.map((x) => (
+              <li key={x} className="flex gap-2.5">
+                <span aria-hidden className="mt-[0.45rem] size-1.5 shrink-0 border border-ink/50" />
+                {x}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** One numbered part of the form. */
@@ -51,10 +89,12 @@ export function JoinForm({
   contactEmail,
   taskPrompt,
   taskIsPlaceholder,
+  teams,
 }: {
   contactEmail: string;
   taskPrompt: string;
   taskIsPlaceholder?: boolean;
+  teams: Team[];
 }) {
   const form = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Errors>({});
@@ -64,6 +104,8 @@ export function JoinForm({
   const [sent, setSent] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [taskLen, setTaskLen] = useState(0);
+  const [team, setTeam] = useState<string | null>(null);
+  const picked = teams.find((t) => t.name === team);
   const status = useRef<HTMLDivElement>(null);
 
   // The confirmation is much shorter than the form it replaces: bring it into view, or people are left looking at the footer.
@@ -272,12 +314,37 @@ export function JoinForm({
                 key={t}
                 className="cursor-pointer border border-ink/40 px-4 py-2.5 text-sm transition-colors duration-500 ease-flow hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-clay"
               >
-                <input type="radio" name="team" value={t} className="sr-only" {...field("team")} />
+                <input
+                  type="radio"
+                  name="team"
+                  value={t}
+                  className="sr-only"
+                  onChange={() => setTeam(t)}
+                  aria-controls="team-detail"
+                  {...field("team")}
+                />
                 {t}
               </label>
             ))}
           </div>
           <Err errors={errors} k="team" />
+          <p className="mt-3 text-sm text-ink-faint">Pick a team to see what it does and what it looks for.</p>
+          <div aria-live="polite">
+            <AnimatePresence mode="wait" initial={false}>
+              {picked && (
+                <motion.div
+                  key={picked.name}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.35, ease: [0.65, 0, 0.35, 1] }}
+                  className="mt-4"
+                >
+                  <TeamDetail team={picked} id="team-detail" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <label className="block">
           <span className="hud text-ink-faint">What would you like to build or learn?</span>

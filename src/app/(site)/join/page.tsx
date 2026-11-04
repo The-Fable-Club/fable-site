@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { pageMeta } from "@/lib/meta";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { Hud, PageHead } from "@/components/hud";
-import { JoinForm } from "@/components/join-form";
-import { getContent } from "@/lib/content";
+import { JoinForm, TeamDetail } from "@/components/join-form";
+import { getContent, readTeams } from "@/lib/content";
 import { dayLabel } from "@/lib/recruitment";
 
 export const metadata: Metadata = pageMeta(
@@ -20,7 +20,7 @@ const steps = [
 ];
 const facts = [
   { t: "Who can apply", d: "Every VIT Chennai student, from any department. Beginners are welcome." },
-  { t: "What members do", d: "A hands-on session every other week on building with Claude and agentic tools, and one member project." },
+  { t: "What members do", d: "A hands-on session every other week on building with Claude and agentic tools, and two member projects." },
   { t: "What you get", d: "A participation certificate, projects you have actually shipped for your resume, and workshops on Claude and agentic tools." },
   { t: "Cost", d: "Free." },
 ];
@@ -37,6 +37,7 @@ export default async function JoinPage() {
   const opens = r.opens ? dayLabel(r.opens) : null;
   const closes = r.closes ? dayLabel(r.closes) : null;
   const instagram = club.socials.find((s) => s.label === "Instagram");
+  const teams = readTeams();
 
   const head = {
     open: {
@@ -60,7 +61,7 @@ export default async function JoinPage() {
         <div className="mx-auto grid max-w-6xl gap-14 px-6 py-14 md:grid-cols-[1fr_20rem] md:px-12 md:py-20">
           <div className="min-w-0">
             {r.state === "open" ? (
-              <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} />
+              <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} teams={teams} />
             ) : (
               <div className="relative overflow-hidden bg-night p-7 text-paper md:p-10">
                 <span className="hud flex items-center gap-2 text-clay">
@@ -123,6 +124,36 @@ export default async function JoinPage() {
                   </li>
                 ))}
               </ol>
+            )}
+
+            {/* the teams, so people can choose before the form opens (the form shows the same text when a team is picked) */}
+            {r.state !== "open" && (
+              <div className="mt-14">
+                <Hud className="text-ink-faint">The teams</Hud>
+                <p className="mt-2 font-display text-3xl leading-tight">Find where you fit.</p>
+                <div className="mt-6 divide-y divide-ink/15 border-y border-ink/15">
+                  {teams
+                    .filter((t) => t.lookingFor.length > 0)
+                    .map((t) => (
+                      <details key={t.name} className="group py-5">
+                        <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                          <span>
+                            <span className="block font-display text-2xl leading-tight">{t.name}</span>
+                            <span className="mt-1 block text-sm text-ink-soft">{t.short}</span>
+                          </span>
+                          <span
+                            aria-hidden
+                            className="mt-2 block size-2.5 shrink-0 rotate-45 border-b-2 border-r-2 border-ink transition-transform duration-500 ease-flow group-open:translate-y-1 group-open:-rotate-[135deg]"
+                          />
+                        </summary>
+                        <div className="mt-3">
+                          <TeamDetail team={t} plain />
+                        </div>
+                      </details>
+                    ))}
+                </div>
+                <p className="mt-4 text-sm text-ink-soft">Not sure yet? That&rsquo;s an option on the form too, and we&rsquo;ll help you choose.</p>
+              </div>
             )}
           </div>
 
