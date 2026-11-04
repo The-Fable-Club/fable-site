@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BOOT_FIRST_MS, BOOT_GIVE_UP_MS, BOOT_REPEAT_MS, bootProgress, span } from "@/lib/boot";
 
 // Loading screen, after Endfield's: a vertical bar and a big percentage on the
-// left (the only progress bar), the club mark drawing itself in the middle and
-// the tagline along the bottom. When it reaches 100% the content falls away, a line
+// left (the only progress bar) and the club mark drawing itself in the middle. When it reaches 100% the content falls away, a line
 // draws across the seam and the two halves of the screen slide apart to reveal
 // the site (the hero's own intro animation is held until that moment).
 //
@@ -20,7 +19,7 @@ const SEEN = "fable-boot-seen";
 
 type Phase = "run" | "exit" | "open" | "gone";
 
-export function BootScreen({ institution, tagline }: { institution: string; tagline: string }) {
+export function BootScreen({ institution }: { institution: string }) {
   const [phase, setPhase] = useState<Phase>("run");
   const pct = useRef<HTMLSpanElement>(null);
   const bar = useRef<HTMLSpanElement>(null);
@@ -167,10 +166,6 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
             </div>
           </div>
 
-          {/* bottom: tagline */}
-          <p className="absolute inset-x-6 bottom-8 text-center text-[0.8rem] font-medium uppercase tracking-[0.18em] text-night-soft md:bottom-12">
-            {tagline}
-          </p>
         </div>
       </div>
     </>

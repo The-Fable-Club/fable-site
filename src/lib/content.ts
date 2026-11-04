@@ -9,7 +9,6 @@ import { recruitmentState, type Recruitment, type RecruitmentStatus } from "@/li
 
 export type Club = {
   name: string;
-  tagline: string;
   description: string;
   institution: string;
   office: string;

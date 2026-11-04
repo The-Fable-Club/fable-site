@@ -11,7 +11,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
   const { club } = await getContent();
   return (
     <>
-      <BootScreen institution={club.institution} tagline={club.tagline} />
+      <BootScreen institution={club.institution} />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-20 focus:top-3 focus:z-[100] focus:bg-ink focus:px-3 focus:py-2 focus:text-paper"

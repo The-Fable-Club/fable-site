@@ -19,7 +19,6 @@ export default async function Image() {
               {`${club.institution} · Claude club`}
             </div>
             <div style={{ fontFamily: "Display", fontSize: 104, lineHeight: 1, marginTop: 18 }}>The Fable Club</div>
-            <div style={{ fontFamily: "Serif", fontSize: 36, lineHeight: 1.25, marginTop: 24, color: OG.inkSoft }}>{club.tagline}</div>
           </div>
         </div>
         <div
