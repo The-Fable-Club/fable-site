@@ -36,7 +36,7 @@ const ICONS: Record<string, LucideIcon> = {
   "Vice-Chairperson": Award,
   Secretary: PenLine,
   "Co-Secretary": MessageSquare,
-  Technical: Code,
+  Projects: Code,
   "Web Development": Monitor,
   "Agentic AI": Bot,
   Operations: ClipboardList,
@@ -55,7 +55,7 @@ const GROUPS: { label: string; roles: string[]; icon: LucideIcon; backdrop?: str
   { label: "Secretary & Co-Secretary", roles: ["Secretary", "Co-Secretary"], icon: PenLine, backdrop: "Secretary" },
   { label: "Web Development", roles: ["Web Development"], icon: Monitor },
   { label: "Agentic AI", roles: ["Agentic AI"], icon: Bot },
-  { label: "Technical", roles: ["Technical"], icon: Code },
+  { label: "Projects", roles: ["Projects"], icon: Code },
 ];
 
 const rise: Variants = {

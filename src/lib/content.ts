@@ -121,7 +121,7 @@ export function toMember(m: SnapshotMember): Member {
   return {
     slug: m.slug,
     name: m.name,
-    role: m.role,
+    role: m.role === "Technical" ? "Projects" : m.role, // the board renamed this team (Nov 2026)
     group: m.group,
     order: m.order,
     department: m.department,
@@ -161,6 +161,14 @@ export async function getContent(): Promise<Content> {
     members: people.filter((m) => m.group !== "Member"),
     community: people.filter((m) => m.group === "Member"),
   };
+}
+
+/** A team applicants can pick on /join, with what it does and looks for (content/teams.json). */
+export type Team = { name: string; short: string; about: string; lookingFor: string[]; niceToHave: string[] };
+
+/** The team descriptions shown on /join. Edit content/teams.json; docs/TEAMS.md has the board's full wording. */
+export function readTeams(): Team[] {
+  return readJson<{ teams: Team[] }>("content", "teams.json").teams;
 }
 
 /** The recruitment settings, read fresh (not cached): the form route checks them on every submission. */
