@@ -46,7 +46,7 @@ Event status (Live / Open / Past) is derived from the dates (`src/lib/event-logi
 
 ## Still placeholder
 
-Copy and bios are placeholder text (marked with `<Ph />` on the page), board emails are placeholders, there are no member photos yet, the Events stage uses generated clips, and the 3D models in "What we're for" are procedural stand-ins. Open work is tracked in the [GitHub issues](https://github.com/The-Fable-Club/fable-site/issues); the summary is in [docs/ASKS.md](docs/ASKS.md).
+Copy and bios are placeholder text (marked with `<Ph />` on the page), board emails are placeholders, member photos and event pictures/loops come from the CMS (ImageKit) once uploaded, and until then the Events stage uses generated clips, and the 3D models in "What we're for" are procedural stand-ins. Open work is tracked in the [GitHub issues](https://github.com/The-Fable-Club/fable-site/issues); the summary is in [docs/ASKS.md](docs/ASKS.md).
 
 ## Link previews, headers, SEO
 
