@@ -10,6 +10,8 @@ import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { bySlug, dateLabel, eventhubTarget, isOpen } from "@/lib/events";
 import { RegisterForm } from "@/components/register-form";
+import { EventMediaFigure } from "@/components/event-media-figure";
+import { resolveEventMedia } from "@/lib/event-media";
 import { AskForm } from "@/components/ask-form";
 
 export async function generateStaticParams() {
@@ -91,6 +93,19 @@ async function EventDetail({
           </div>
         </div>
       </header>
+
+      {/* Uploaded pictures or loop (schema 2). No uploads: the page keeps its art, as before. */}
+      {(() => {
+        const media = resolveEventMedia(e, 0);
+        if (media.placeholder) return null;
+        return (
+          <div className="border-b border-ink/15 bg-paper">
+            <div className="mx-auto max-w-6xl px-6 py-8 md:px-12">
+              <EventMediaFigure media={media} title={e.title} />
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="bg-paper">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-14 md:grid-cols-[1fr_22rem] md:px-12 md:py-20">
