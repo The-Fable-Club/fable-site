@@ -1,0 +1,88 @@
+{
+  "_note": "What applicants see when they pick a team on /join. Full board wording, open questions and suggestions are in docs/TEAMS.md. The names must match TEAMS in src/lib/submissions.ts and fable-cms src/lib/applications.ts.",
+  "teams": [
+    {
+      "name": "Web Development",
+      "short": "Builds and runs the club's websites and apps.",
+      "about": "Web Development turns the club's ideas into working, deployed websites and apps, then keeps them running and secure. You don't need to write every line yourself, but you should understand how a modern stack fits together.",
+      "lookingFor": [
+        "Planning and shipping sites or apps from the club's ideas",
+        "Understanding tech stacks and how the pieces connect (hosting, databases, auth, APIs)",
+        "Looking after the club's GitHub repositories",
+        "Interest in security: testing and hardening what we build"
+      ],
+      "niceToHave": ["UI design or Figma skills, for the artwork on our sites and apps", "Coding experience (helpful, not required)"]
+    },
+    {
+      "name": "Agentic AI",
+      "short": "Builds AI systems that act on their own, and the automation around them.",
+      "about": "Agentic AI goes past prompting: we build agents and automated systems that do real work, and the pipelines that test and ship them. We want people who already use AI tools well and can show something they have made.",
+      "lookingFor": [
+        "Real experience building with AI tools such as Claude Code, with work you can show",
+        "Agents with tool calling and memory, or several agents working together",
+        "Automating workflows end to end, including CI/CD and basic DevOps",
+        "Python or TypeScript fundamentals, enough to debug what the AI writes"
+      ],
+      "niceToHave": ["RAG, vector databases or context engineering", "Frameworks such as LangGraph or the Claude Agent SDK"]
+    },
+    {
+      "name": "Projects",
+      "short": "The club's planners: ideas, research and project direction.",
+      "about": "Projects is where the club's ideas start. You brainstorm what we should build, check whether an idea is new and actually doable, and plan it so the other teams can deliver it.",
+      "lookingFor": [
+        "Coming up with project and event ideas",
+        "Checking whether an idea is original (has it been done?) and feasible (can we build it in time?)",
+        "Turning an idea into a plan with clear steps for the other teams",
+        "Curiosity about what is new in AI"
+      ],
+      "niceToHave": ["Experience running or planning a project, in college or outside it"]
+    },
+    {
+      "name": "Operations",
+      "short": "Plans and runs events, schedules and the logistics behind them.",
+      "about": "Operations makes things happen on the day. You plan events and workshops, keep the teams talking to each other, and handle logistics, registrations and records so nothing falls through the cracks.",
+      "lookingFor": [
+        "Planning and coordinating events, workshops and club activities",
+        "Managing timelines, schedules and who does what",
+        "Handling logistics, resources, registrations and attendance",
+        "Staying calm and solving problems when plans change",
+        "Keeping documentation, reports and records up to date",
+        "Strong organisation, communication and time management"
+      ],
+      "niceToHave": ["Experience in event management, team coordination or running operations"]
+    },
+    {
+      "name": "Finance",
+      "short": "Sponsors, budgets and the money side of events.",
+      "about": "Finance keeps the club funded and its events paid for. You reach out to sponsors, track what we spend, and sort out the practical costs of events like food and materials.",
+      "lookingFor": [
+        "Reaching out to and talking with sponsors",
+        "Budgeting and tracking costs",
+        "Event logistics that cost money, such as food and materials",
+        "Handling event registrations with the Operations team",
+        "Being careful and reliable with numbers"
+      ],
+      "niceToHave": ["Sponsorship, fundraising or treasury experience"]
+    },
+    {
+      "name": "Creative & Communications",
+      "short": "Design, posters, videos and the club's look online.",
+      "about": "Creative makes everything people see from the club: posters, social media posts, event content and videos. You should already have hands-on time with at least one design tool.",
+      "lookingFor": [
+        "Hands-on experience with at least one design tool: Canva, Photoshop, Illustrator or Figma",
+        "Posters, social media creatives or event content",
+        "A feel for colour, typography, layout and composition",
+        "Basic photo and video editing",
+        "Willingness to pick up new tools"
+      ],
+      "niceToHave": ["Video editing in Premiere Pro, CapCut or DaVinci Resolve", "Basic UI design in Figma"]
+    },
+    {
+      "name": "Not sure yet",
+      "short": "Pick this if you'd like us to help you choose.",
+      "about": "That's fine. Tell us below what you'd like to build or learn, and we'll suggest a team during the short chat.",
+      "lookingFor": [],
+      "niceToHave": []
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SnapshotEvent } from "@/lib/contract";
-import { eventMediaInput, toClubEvent, toMember } from "@/lib/content";
+import { eventMediaInput, readTeams, toClubEvent, toMember } from "@/lib/content";
+import { TEAMS } from "@/lib/submissions";
 import { resolveEventMedia } from "@/lib/event-media";
 import { heroStrips, openEvents, pastEvents } from "@/lib/events";
 
@@ -123,6 +124,23 @@ describe("toMember", () => {
   it("uses typed year text and an empty email when hidden", () => {
     const x = toMember({ ...m, year: { mode: "text" as const, text: "Final year" }, links: {} });
     expect(x).toMatchObject({ year: "Final year", email: "" });
+  });
+  it("shows the old Technical team under its new name, Projects", () => {
+    expect(toMember({ ...m, role: "Technical" }).role).toBe("Projects");
+  });
+});
+
+describe("team descriptions (content/teams.json)", () => {
+  const teams = readTeams();
+  it("describe exactly the teams the form offers, in the same order", () => {
+    expect(teams.map((t) => t.name)).toEqual([...TEAMS]);
+  });
+  it("every real team says what it does and what it looks for", () => {
+    for (const t of teams.filter((x) => x.name !== "Not sure yet")) {
+      expect(t.short.length, t.name).toBeGreaterThan(10);
+      expect(t.about.length, t.name).toBeGreaterThan(40);
+      expect(t.lookingFor.length, t.name).toBeGreaterThan(0);
+    }
   });
 });
 
