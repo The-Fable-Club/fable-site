@@ -24,7 +24,8 @@ The public website of The Fable Club (a student club at VIT Chennai), www.thefab
 | `src/lib/contract.ts`, `event-logic.ts` | **Byte-identical copies** of the CMS files |
 | `src/lib/content.ts` | Release file → page data (`getContent()`, `'use cache'`) |
 | `src/lib/submissions.ts` | zod schemas shared by the forms and the routes |
-| `src/lib/recruitment.ts`, `events.ts`, `members.ts`, `event-media.ts`, `meta.ts`, `og.tsx`, `boot.ts`, `motion.ts` | Recruitment state, event helpers, media fallback, page metadata, share images, loading screen, motion settings |
+| `src/lib/recruitment.ts`, `events.ts`, `members.ts`, `event-media.ts`, `meta.ts`, `og.tsx`, `boot.ts`, `motion.ts` | Recruitment state, event helpers, media (release media first, placeholder clips otherwise), page metadata, share images, loading screen, motion settings |
+| `src/lib/image-loader.ts`, `components/event-media-figure.tsx` | next/image loader (ImageKit resizes uploaded pictures; our own files served as they are) and the event page's picture/loop |
 | `src/components/home/*` | Home sections: hero, aims dial + point cloud, events stage, parallax strip, people stage + backdrops |
 | `content/club.json`, `content/aims.json` | Club text and recruitment state (edited here, not in the CMS) |
 | `content/seed/snapshot.json` | Offline fallback release |
@@ -44,7 +45,8 @@ Don't run `next build` or delete `.next` inside this folder while `npm run dev` 
 1. **The site is static.** No database reads for pages at request time. The only runtime access is the insert-only form routes, which must keep the origin check, size limit, honeypot and zod validation.
 2. **No secrets in this repo or its env.** It only ever needs the public Supabase URL and publishable key. The Supabase secret key, the deploy hook and the database URL belong to the CMS only.
 3. **`contract.ts` and `event-logic.ts` must stay identical** to the CMS copies. Change the CMS first, then copy byte for byte.
-4. **A new outside host** (a media CDN, an embed) must be added to the CSP in `next.config.ts`, or browsers block it.
+4. **A new outside host** (a media CDN, an embed) must be added to the CSP in `next.config.ts`, or browsers block it. Uploaded media comes only from `https://ik.imagekit.io` (the data contract refuses other hosts).
+   **The release shape** (`contract.ts`, byte-identical to the CMS): when it changes, `SCHEMA_VERSION` goes up and the site keeps accepting the older versions; this repo merges first.
 5. **Placeholders are labelled** with `<Ph />` on the page. Never invent club facts, names or numbers.
 6. **Motion:** one easing everywhere (`ease-flow`, `cubic-bezier(.65,0,.35,1)`) at full strength. Reduced-motion is deliberately **not** honoured (the club's decision). Heavy media loads only when near the screen.
 7. **Commits:** small, one logical change each. No AI co-author or "generated with" trailers. Pushing to `main` deploys to production.

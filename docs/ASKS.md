@@ -8,7 +8,7 @@ Open work now lives in the GitHub issues. Items labelled **waiting on club** nee
 | What | Issue |
 |---|---|
 | Photos and clips for every spot on the site (events, About strip, board portraits, group photo, logo file) | [fable-site#2](https://github.com/The-Fable-Club/fable-site/issues/2) |
-| Media hosting on ImageKit (account, keys) | [fable-cms#1](https://github.com/The-Fable-Club/fable-cms/issues/1), site side [fable-site#1](https://github.com/The-Fable-Club/fable-site/issues/1) |
+| Media hosting on ImageKit (account, keys) | **Done 2026-11-04**: upload in the CMS event and member forms, shown on the site after Publish. [fable-cms#1](https://github.com/The-Fable-Club/fable-cms/issues/1), [fable-site#1](https://github.com/The-Fable-Club/fable-site/issues/1) |
 | Replace the placeholder events, people and copy; the inauguration venue and time | [fable-site#3](https://github.com/The-Fable-Club/fable-site/issues/3) |
 | Recruitment opening and closing dates | [fable-site#4](https://github.com/The-Fable-Club/fable-site/issues/4) |
 | Someone signed in to click through the CMS screens | [fable-cms#5](https://github.com/The-Fable-Club/fable-cms/issues/5) |
