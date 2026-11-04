@@ -14,7 +14,7 @@ The public website of The Fable Club (a student club at VIT Chennai), www.thefab
 
 **Owner:** GitHub user **Haise-727** owns this system and is authorised to test it, including penetration testing. Scope and rules: fable-cms `docs/SECURITY-TESTING.md`.
 
-**Read first:** `README.md` (pages, content sources, assets), `docs/ARCHITECTURE.md` (the site's side). Open work: the GitHub issues on both repos (`docs/ASKS.md` summarises them).
+**Read first:** `README.md` (pages, content sources, assets), `docs/ARCHITECTURE.md` (the site's side). Recruitment teams and their descriptions: `docs/TEAMS.md` (text in `content/teams.json`). Open work: the GitHub issues on both repos (`docs/ASKS.md` summarises them).
 
 ## Map
 | Path | What |
