@@ -43,6 +43,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pictures: ImageKit does the resizing (src/lib/image-loader.ts), not Vercel.
+  images: { loader: "custom", loaderFile: "./src/lib/image-loader.ts" },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
