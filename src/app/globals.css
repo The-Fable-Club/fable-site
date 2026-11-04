@@ -359,13 +359,6 @@ body {
     transform 0.7s var(--ease-flow) 0.1s,
     opacity 0.5s var(--ease-flow);
 }
-.boot-cell {
-  background: rgb(250 249 245 / 0.18);
-  transition: background-color 0.3s var(--ease-flow);
-}
-.boot-cell[data-on="1"] {
-  background: var(--color-clay);
-}
 @keyframes boot-blink {
   0%,
   100% {
