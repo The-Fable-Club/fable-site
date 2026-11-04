@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useInView } from "motion/react";
 import { useReducedMotion } from "@/lib/motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Aim } from "@/lib/content";
-import { ArrowBtn, Hud, Ph } from "@/components/hud";
+import { ArrowBtn, Hud } from "@/components/hud";
 import { Dial3D, MODEL_LABEL } from "@/components/home/point-cloud";
 import { cn } from "@/lib/utils";
 
@@ -66,23 +66,13 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
       <div className="mx-auto grid min-h-[min(46rem,90dvh)] max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto_1fr] md:px-12">
         {/* left: heading */}
         <div className="relative z-10 md:self-start md:pt-6">
-          <Hud className="text-night-faint">What we provide</Hud>
-          <h3 className="mt-3 font-display text-4xl leading-none md:text-5xl">
-            One assistant,
-            <br />
-            learned properly.
-          </h3>
-          <p className="mt-5 max-w-[30ch] font-serif text-night-soft">
-            Most students meet AI as a chat box. We treat Claude as a tool worth learning well.
-          </p>
-          <Ph className="mt-5 border-clay text-clay">Heading not final</Ph>
+          <h3 className="font-display text-4xl leading-none md:text-5xl">What we provide</h3>
         </div>
 
         {/* centre: one wheel (ring + 3D model share a single rotation) */}
         <Dial3D
           model={a.model}
           label={`3D model for "${a.title}": ${MODEL_LABEL[a.model]}. Drag to turn it.`}
-          caption={`Model ${String(i + 1).padStart(2, "0")} · ${MODEL_LABEL[a.model]}`}
           className="mx-auto size-[min(78vw,26rem)]"
         />
 
