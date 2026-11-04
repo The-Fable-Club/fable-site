@@ -47,8 +47,8 @@ To change any text, edit `content/teams.json`, then commit. The site rebuilds on
 2. It added what the draft lacked: automation, CI/CD and DevOps.
 3. Kept "Python or TypeScript fundamentals, enough to debug what the AI writes". That is the honest version of "vibe coding, the right way".
 4. Moved RAG, vector DBs and LangGraph to "nice to have": useful, but not a reason to turn someone away.
-5. **Open question:** should applicants link to a project (GitHub, a demo, a short video)? The form has no link field today. Either add one or tell Agentic AI applicants to put the link in "What would you like to build or learn?". Adding a field means a small database change (the `applications` table) plus the form.
-6. **Open question:** the boundary with Web Development is blurry (both deploy things, both touch CI/CD). One option: Web Dev owns the club's sites and their hosting, while Agentic AI owns AI systems and the automation that tests and ships them.
+5. **Decided:** no link field; applicants put project links in their text answers.
+6. **Decided: overlap is fine.** The boundary with Web Development is blurry (both deploy things, both touch CI/CD). One option: Web Dev owns the club's sites and their hosting, while Agentic AI owns AI systems and the automation that tests and ships them.
 
 ### Projects (formerly Technical)
 **On the site:** the club's planners: ideas, research and project direction.
@@ -86,8 +86,18 @@ Renamed from **Technical** in November 2026. The site shows any member whose rol
 
 **Suggestions:** the name says "Communications" but the notes only cover design and media. If this team also writes captions, runs Instagram or handles announcements, add that. Otherwise consider renaming it to "Creative". A portfolio link would help here too (see the open question under Agentic AI).
 
-## Still to decide
-- [ ] A portfolio or project link field on the form (Agentic AI, Creative, Web Dev would use it)
-- [ ] Projects vs Operations vs Finance: who owns registrations, logistics, project tracking
-- [ ] "Creative & Communications" or just "Creative"
-- [ ] Whether applicants may pick a second choice
+## Decided (board, 4 Nov 2026)
+- **No portfolio link field.** Applicants put links in their text answers.
+- **Teams may overlap.** Projects, Operations and Finance can share registrations, logistics and project tracking; no hard split.
+- **"Creative & Communications" stays**, covering both design/media and communications.
+- **One team choice only.** No second choice.
+
+## Recruitment timeline (2026-27 intake)
+Set in `content/club.json` → `recruitment.timeline`; `/join` shows it as "Key dates".
+
+| When | What |
+|---|---|
+| 1–4 Dec | Applications (the form is open from 4 Nov so the board can look and test; it closes after 4 Dec) |
+| 5–6 Dec | Online interviews |
+| 7 Dec | Results announced |
+| 10 Dec | First event (may move later if the schedule is too tight) |
