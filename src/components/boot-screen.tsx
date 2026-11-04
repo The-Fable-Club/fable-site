@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { BOOT_FIRST_MS, BOOT_GIVE_UP_MS, BOOT_REPEAT_MS, bootProgress, span } from "@/lib/boot";
 
 // Loading screen, after Endfield's: a vertical bar and a big percentage on the
-// left, the club mark drawing itself in the middle, a row of cells and the
-// tagline along the bottom. When it reaches 100% the content falls away, a line
+// left (the only progress bar), the club mark drawing itself in the middle and
+// the tagline along the bottom. When it reaches 100% the content falls away, a line
 // draws across the seam and the two halves of the screen slide apart to reveal
 // the site (the hero's own intro animation is held until that moment).
 //
@@ -16,7 +16,6 @@ import { BOOT_FIRST_MS, BOOT_GIVE_UP_MS, BOOT_REPEAT_MS, bootProgress, span } fr
 const STEMS = ["M512 800 V372", "M512 800 L364 706", "M512 800 L660 706", "M512 614 L364 516", "M512 614 L660 516"];
 const STEM_SPANS: [number, number][] = [[0, 26], [10, 36], [10, 36], [24, 50], [24, 50]];
 const NODES: [number, number][] = [[512, 330], [330, 492], [696, 492], [330, 682], [696, 682]];
-const CELLS = 14;
 const SEEN = "fable-boot-seen";
 
 type Phase = "run" | "exit" | "open" | "gone";
@@ -25,9 +24,7 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
   const [phase, setPhase] = useState<Phase>("run");
   const pct = useRef<HTMLSpanElement>(null);
   const bar = useRef<HTMLSpanElement>(null);
-  const rule = useRef<HTMLSpanElement>(null);
   const svg = useRef<SVGSVGElement>(null);
-  const cells = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let seen = false;
@@ -49,7 +46,6 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
     const stems = svg.current ? Array.from(svg.current.querySelectorAll<SVGPathElement>("[data-stem]")) : [];
     const halo = svg.current?.querySelector<SVGCircleElement>("[data-halo]");
     const nodes = svg.current ? Array.from(svg.current.querySelectorAll<SVGCircleElement>("[data-node]")) : [];
-    const cellEls = cells.current ? Array.from(cells.current.children) : [];
 
     const t0 = performance.now();
     let shown = 0; // what is on screen; chases the target so a late "ready" never jumps
@@ -60,7 +56,6 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
     const paint = (p: number) => {
       if (pct.current) pct.current.textContent = String(Math.round(p)).padStart(2, "0");
       if (bar.current) bar.current.style.transform = `scaleY(${p / 100})`;
-      if (rule.current) rule.current.style.transform = `scaleX(${p / 100})`;
       stems.forEach((el, i) => (el.style.strokeDashoffset = String(1 - span(p, STEM_SPANS[i][0], STEM_SPANS[i][1]))));
       if (halo) halo.style.strokeDashoffset = String(1 - span(p, 40, 72));
       nodes.forEach((el, i) => {
@@ -68,8 +63,6 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
         el.style.transform = `scale(${s})`;
         el.style.opacity = s > 0 ? "1" : "0";
       });
-      const lit = Math.floor((p / 100) * CELLS + 0.0001);
-      cellEls.forEach((c, i) => ((c as HTMLElement).dataset.on = i < lit ? "1" : "0"));
     };
 
     const finish = () => {
@@ -174,24 +167,10 @@ export function BootScreen({ institution, tagline }: { institution: string; tagl
             </div>
           </div>
 
-          {/* bottom: cells, rule and tagline */}
-          <div className="absolute inset-x-6 bottom-8 mx-auto max-w-[34rem] md:bottom-12">
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span aria-hidden className="text-clay">▼</span>
-                <span className="hud text-night-faint">Systems</span>
-              </div>
-              <div ref={cells} aria-hidden className="grid grid-cols-[repeat(14,0.55rem)] gap-1">
-                {Array.from({ length: CELLS }, (_, i) => (
-                  <span key={i} data-on="0" className="boot-cell h-2.5" />
-                ))}
-              </div>
-            </div>
-            <span aria-hidden className="relative mt-3 block h-px bg-paper/25">
-              <span ref={rule} className="absolute inset-0 origin-left bg-clay" style={{ transform: "scaleX(0)" }} />
-            </span>
-            <p className="mt-4 text-center text-[0.8rem] font-medium uppercase tracking-[0.18em] text-night-soft">{tagline}</p>
-          </div>
+          {/* bottom: tagline */}
+          <p className="absolute inset-x-6 bottom-8 text-center text-[0.8rem] font-medium uppercase tracking-[0.18em] text-night-soft md:bottom-12">
+            {tagline}
+          </p>
         </div>
       </div>
     </>
