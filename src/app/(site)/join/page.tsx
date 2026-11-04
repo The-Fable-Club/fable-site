@@ -64,6 +64,66 @@ export default async function JoinPage() {
       <section className="bg-paper">
         <div className="mx-auto grid max-w-6xl gap-14 px-6 py-14 md:grid-cols-[1fr_20rem] md:px-12 md:py-20">
           <div className="min-w-0">
+            {/* status, dates and the ways to follow the club */}
+            <div className="relative mb-14 overflow-hidden bg-night p-7 text-paper md:p-10">
+              <span className="hud flex items-center gap-2 text-clay">
+                <span className="size-2 animate-pulse bg-clay" aria-hidden />
+                {{ open: "Applications open", soon: "Opening soon", closed: "Closed" }[r.state]} · Intake {r.intake}
+              </span>
+              <p className="mt-5 max-w-[18ch] font-display text-[clamp(2.25rem,1.6rem+2.6vw,3.75rem)] leading-[1.02]">
+                {
+                {
+                  open: closes ? `Applications close on ${closes}.` : "Applications are open.",
+                  soon: opens ? `Applications open on ${opens}.` : "Opening date to be announced.",
+                  closed: "This intake is closed.",
+                }[r.state]
+              }
+              </p>
+              <p className="mt-5 max-w-[46ch] font-serif text-lg leading-relaxed text-night-soft">
+                {
+                  {
+                    open: "Find your team below, then fill in the form. Join the WhatsApp group for updates on interviews and results.",
+                    soon: "The form will appear on this page when applications open. Join the WhatsApp group to hear the moment it does.",
+                    closed: "Thanks to everyone who applied. Follow us to hear when the next intake opens.",
+                  }[r.state]
+                }
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                {r.whatsapp && (
+                  <a
+                    href={r.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-12 items-center gap-2 bg-clay px-6 font-medium text-ink transition-colors duration-500 ease-flow hover:bg-paper"
+                  >
+                    Join the WhatsApp group
+                    <ArrowUpRight className="size-4" aria-hidden />
+                  </a>
+                )}
+                {instagram && (
+                  <a
+                    href={instagram.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-12 items-center gap-2 border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
+                  >
+                    Follow on Instagram
+                    <ArrowUpRight className="size-4" aria-hidden />
+                  </a>
+                )}
+                <a
+                  href={`mailto:${club.contactEmail}`}
+                  className="inline-flex h-12 items-center gap-2 border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
+                >
+                  <Mail className="size-4" aria-hidden />
+                  {club.contactEmail}
+                </a>
+              </div>
+              {/* corner ticks */}
+              <span aria-hidden className="absolute right-4 top-4 size-3 border-r border-t border-paper/40" />
+              <span aria-hidden className="absolute bottom-4 right-4 size-3 border-b border-r border-paper/40" />
+            </div>
+
             {/* the teams first, so people find where they fit before anything else (the form shows the same text when a team is picked) */}
             <div id="teams" className="mb-14 scroll-mt-24">
               <Hud className="text-ink-faint">The teams</Hud>
@@ -92,56 +152,9 @@ export default async function JoinPage() {
               <p className="mt-4 text-sm text-ink-soft">Not sure yet? That&rsquo;s an option on the form too, and we&rsquo;ll help you choose.</p>
             </div>
 
-            {r.state === "open" ? (
-              <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} teams={teams} nextSteps={after} />
-            ) : (
-              <div className="relative overflow-hidden bg-night p-7 text-paper md:p-10">
-                <span className="hud flex items-center gap-2 text-clay">
-                  <span className="size-2 animate-pulse bg-clay" aria-hidden />
-                  {r.state === "soon" ? "Opening soon" : "Closed"} · Intake {r.intake}
-                </span>
-                <p className="mt-5 max-w-[18ch] font-display text-[clamp(2.25rem,1.6rem+2.6vw,3.75rem)] leading-[1.02]">
-                  {r.state === "soon" ? (opens ? `Applications open on ${opens}.` : "Opening date to be announced.") : "This intake is closed."}
-                </p>
-                <p className="mt-5 max-w-[46ch] font-serif text-lg leading-relaxed text-night-soft">
-                  {r.state === "soon"
-                    ? "The form will appear on this page when applications open. Join the WhatsApp group to hear the moment it does."
-                    : "Thanks to everyone who applied. Follow us to hear when the next intake opens."}
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  {r.whatsapp && (
-                    <a
-                      href={r.whatsapp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-12 items-center gap-2 bg-clay px-6 font-medium text-ink transition-colors duration-500 ease-flow hover:bg-paper"
-                    >
-                      Join the WhatsApp group
-                      <ArrowUpRight className="size-4" aria-hidden />
-                    </a>
-                  )}
-                  {instagram && (
-                    <a
-                      href={instagram.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-12 items-center gap-2 border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
-                    >
-                      Follow on Instagram
-                      <ArrowUpRight className="size-4" aria-hidden />
-                    </a>
-                  )}
-                  <a
-                    href={`mailto:${club.contactEmail}`}
-                    className="inline-flex h-12 items-center gap-2 border border-paper/40 px-6 font-medium transition-colors duration-500 ease-flow hover:border-paper hover:bg-paper/10"
-                  >
-                    <Mail className="size-4" aria-hidden />
-                    {club.contactEmail}
-                  </a>
-                </div>
-                {/* corner ticks */}
-                <span aria-hidden className="absolute right-4 top-4 size-3 border-r border-t border-paper/40" />
-                <span aria-hidden className="absolute bottom-4 right-4 size-3 border-b border-r border-paper/40" />
+            {r.state === "open" && (
+              <div id="apply" className="scroll-mt-24">
+                <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} teams={teams} nextSteps={after} />
               </div>
             )}
 
@@ -203,17 +216,6 @@ export default async function JoinPage() {
                   </details>
                 ))}
               </div>
-              {r.whatsapp && r.state === "open" && (
-                <a
-                  href={r.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 flex items-center justify-between border border-ink px-4 py-3 text-sm font-medium transition-colors duration-500 ease-flow hover:bg-ink hover:text-paper"
-                >
-                  Recruitment WhatsApp group
-                  <ArrowUpRight className="size-4" aria-hidden />
-                </a>
-              )}
               <p className="mt-4 text-sm text-ink-soft">
                 Anything else? Write to{" "}
                 <a href={`mailto:${club.contactEmail}`} className="underline underline-offset-4 transition-colors duration-500 ease-flow hover:text-clay-deep">
