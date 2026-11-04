@@ -22,6 +22,8 @@ export type Recruitment = {
   taskPrompt: string;
   /** True while the task wording is a stand-in the club has not approved. */
   taskIsPlaceholder?: boolean;
+  /** The intake's key dates, shown on /join in order. `when` is display text ("1–4 Dec"). */
+  timeline?: { when: string; title: string; detail: string }[];
 };
 
 export function recruitmentState(r: Pick<Recruitment, "status" | "opens" | "closes">, today: string): RecruitmentStatus {

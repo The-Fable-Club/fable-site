@@ -90,11 +90,14 @@ export function JoinForm({
   taskPrompt,
   taskIsPlaceholder,
   teams,
+  nextSteps,
 }: {
   contactEmail: string;
   taskPrompt: string;
   taskIsPlaceholder?: boolean;
   teams: Team[];
+  /** e.g. "online interviews 5–6 Dec, results 7 Dec", from the recruitment timeline */
+  nextSteps?: string;
 }) {
   const form = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Errors>({});
@@ -193,7 +196,7 @@ export function JoinForm({
         <h2 className="mt-5 font-display text-4xl leading-tight">{sent ? "Your application is in." : "Your application is ready."}</h2>
         <p className="mt-3 max-w-[52ch] font-serif text-lg text-ink-soft">
           {sent
-            ? "The core board reads every application, and you will hear from us by email within a week. The next step after that is a short chat."
+            ? `The core board reads every application and will email you${nextSteps ? ` (${nextSteps})` : ""}. The next step after that is a short chat.`
             : `${problem ?? "We could not save it."} You can email it to the club instead.`}
         </p>
         <pre className="mt-6 max-h-64 overflow-auto whitespace-pre-wrap border border-ink/20 bg-paper p-4 text-sm leading-relaxed">
@@ -409,7 +412,7 @@ export function JoinForm({
           >
             {sending ? "Sending…" : "Send my application"}
           </button>
-          <Hud className="text-ink-faint">One application per person. We reply by email within a week.</Hud>
+          <Hud className="text-ink-faint">One application per person. We reply by email.</Hud>
         </div>
       </div>
     </form>
