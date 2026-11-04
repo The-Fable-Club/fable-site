@@ -33,7 +33,7 @@ export default async function Home() {
 
       {/* About */}
       <div id="about">
-        <Banner label="About the club" title="About" art="/art/sprouts.svg" />
+        <Banner title="About" art="/art/sprouts.svg" />
         <section className="bg-paper">
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:px-12 md:py-24">
             <h2 className="max-w-[14ch] font-display text-[clamp(2.25rem,1.6rem+2.9vw,4.25rem)] leading-[1.02]">
@@ -65,7 +65,7 @@ export default async function Home() {
 
       {/* Events */}
       <div id="events">
-        <Banner label="Highlighted and upcoming" title="Events" art="/art/party.svg" tone="manilla" />
+        <Banner title="Events" art="/art/party.svg" tone="manilla" />
         <EventsStage events={open} />
         <section className="bg-paper-sunken pb-16 md:pb-24">
           <div className="mx-auto max-w-6xl px-6 md:px-12">
@@ -91,7 +91,7 @@ export default async function Home() {
 
       {/* People */}
       <div id="people">
-        <Banner label="Board and contacts" title="People" art="/art/hands-together.svg" tone="ink" />
+        <Banner title="People" art="/art/hands-together.svg" tone="ink" />
         <section className="bg-paper py-16 md:py-24">
           <div className="mx-auto max-w-6xl px-6 md:px-12">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
