@@ -18,7 +18,6 @@ const STROKE = "var(--color-paper)";
 // mark at the edge; it never snaps back to the centre.
 export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
   const stage = useRef<HTMLElement>(null);
-  const readout = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
@@ -33,7 +32,6 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
     const cur = { x: 0, y: 0 };
     let lastX = NaN;
     let lastY = NaN;
-    let lastReadout = 0;
     let raf = 0;
     let visible = true;
 
@@ -45,7 +43,7 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
       target.y = Math.max(-1, Math.min(1, y * 2));
     };
 
-    const tick = (now: number) => {
+    const tick = () => {
       raf = requestAnimationFrame(tick);
       if (!visible) return;
       // Immediate follow: the mark sits exactly where the cursor puts it.
@@ -59,10 +57,6 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
         l.el.setAttribute("transform", `translate(${(cur.x * l.d).toFixed(2)} ${(cur.y * l.d).toFixed(2)})`);
       }
       el.dataset.px = cur.x.toFixed(4); // exposed for tests / debugging
-      if (readout.current && now - lastReadout > 120) {
-        lastReadout = now;
-        readout.current.textContent = `X ${(cur.x * 100).toFixed(0).padStart(4, " ")}  Y ${(cur.y * 100).toFixed(0).padStart(4, " ")}`;
-      }
     };
     raf = requestAnimationFrame(tick);
 
@@ -100,9 +94,6 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
         <Hud className="text-night-faint">
           {club.institution} / {club.office}
         </Hud>
-        <Hud className="hidden text-night-faint md:inline">
-          <span ref={readout} className="whitespace-pre">X    0  Y    0</span>
-        </Hud>
       </div>
 
       <div className="grid flex-1 items-center gap-10 px-6 py-10 md:grid-cols-[1.1fr_0.9fr] md:px-12">
@@ -116,9 +107,6 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
             <br />
             Club
           </h1>
-          <p className="mt-8 max-w-[34ch] font-serif text-[clamp(1.25rem,1.1rem+0.6vw,1.65rem)] leading-snug text-night-soft">
-            {club.tagline}
-          </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             {/* Events is what most visitors want: it leads, in the strong colour. Joining is the quieter second action. */}
             <Link
