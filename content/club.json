@@ -26,12 +26,18 @@
     }
   ],
   "recruitment": {
-    "status": "soon",
+    "status": "open",
     "intake": "2026-27",
     "opens": null,
-    "closes": null,
+    "closes": "2026-12-04",
     "whatsapp": "https://chat.whatsapp.com/J16lN63W4rX93keObrgGNf",
     "taskPrompt": "Think of one small, boring task from your week, like notes, timetables, assignments or club work. How could an AI assistant like Claude help you with it?",
-    "taskIsPlaceholder": false
+    "taskIsPlaceholder": false,
+    "timeline": [
+      { "when": "1–4 Dec", "title": "Applications", "detail": "Fill in the form, including one short task. No code needed." },
+      { "when": "5–6 Dec", "title": "Online interviews", "detail": "A short online chat with the core board." },
+      { "when": "7 Dec", "title": "Results", "detail": "We announce the new members." },
+      { "when": "10 Dec", "title": "First event", "detail": "New members' first club event." }
+    ]
   }
 }

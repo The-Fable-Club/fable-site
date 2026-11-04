@@ -13,10 +13,11 @@ export const metadata: Metadata = pageMeta(
 );
 
 // Everything below comes from the club's answers (November 2026). Change it here.
-const steps = [
-  { t: "Apply", d: "Fill in the form, including one short task. No code needed." },
-  { t: "Hear back within a week", d: "The core board reads every application and replies by email." },
-  { t: "A short chat", d: "A quick conversation with the core board." },
+// Used only when content/club.json has no recruitment timeline.
+const defaultSteps = [
+  { t: "Apply", d: "Fill in the form, including one short task. No code needed.", when: "01" },
+  { t: "Hear back by email", d: "The core board reads every application and replies by email.", when: "02" },
+  { t: "A short chat", d: "A quick conversation with the core board.", when: "03" },
 ];
 const facts = [
   { t: "Who can apply", d: "Every VIT Chennai student, from any department. Beginners are welcome." },
@@ -38,6 +39,9 @@ export default async function JoinPage() {
   const closes = r.closes ? dayLabel(r.closes) : null;
   const instagram = club.socials.find((s) => s.label === "Instagram");
   const teams = readTeams();
+  const steps = r.timeline?.length ? r.timeline.map((x) => ({ t: x.title, d: x.detail, when: x.when })) : defaultSteps;
+  // what an applicant is told after sending: the steps after "apply"
+  const after = r.timeline?.slice(1, 3).map((x) => `${x.title.toLowerCase()} ${x.when}`).join(", ");
 
   const head = {
     open: {
@@ -60,8 +64,36 @@ export default async function JoinPage() {
       <section className="bg-paper">
         <div className="mx-auto grid max-w-6xl gap-14 px-6 py-14 md:grid-cols-[1fr_20rem] md:px-12 md:py-20">
           <div className="min-w-0">
+            {/* the teams first, so people find where they fit before anything else (the form shows the same text when a team is picked) */}
+            <div id="teams" className="mb-14 scroll-mt-24">
+              <Hud className="text-ink-faint">The teams</Hud>
+              <p className="mt-2 font-display text-3xl leading-tight">Find where you fit.</p>
+              <div className="mt-6 divide-y divide-ink/15 border-y border-ink/15">
+                {teams
+                  .filter((t) => t.lookingFor.length > 0)
+                  .map((t) => (
+                    <details key={t.name} className="group py-5">
+                      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                        <span>
+                          <span className="block font-display text-2xl leading-tight">{t.name}</span>
+                          <span className="mt-1 block text-sm text-ink-soft">{t.short}</span>
+                        </span>
+                        <span
+                          aria-hidden
+                          className="mt-2 block size-2.5 shrink-0 rotate-45 border-b-2 border-r-2 border-ink transition-transform duration-500 ease-flow group-open:translate-y-1 group-open:-rotate-[135deg]"
+                        />
+                      </summary>
+                      <div className="mt-3">
+                        <TeamDetail team={t} plain />
+                      </div>
+                    </details>
+                  ))}
+              </div>
+              <p className="mt-4 text-sm text-ink-soft">Not sure yet? That&rsquo;s an option on the form too, and we&rsquo;ll help you choose.</p>
+            </div>
+
             {r.state === "open" ? (
-              <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} teams={teams} />
+              <JoinForm contactEmail={club.contactEmail} taskPrompt={r.taskPrompt} taskIsPlaceholder={r.taskIsPlaceholder} teams={teams} nextSteps={after} />
             ) : (
               <div className="relative overflow-hidden bg-night p-7 text-paper md:p-10">
                 <span className="hud flex items-center gap-2 text-clay">
@@ -115,56 +147,26 @@ export default async function JoinPage() {
 
             {/* how it works: the big version while the form is not up */}
             {r.state !== "open" && (
-              <ol className="mt-12 grid gap-px border border-ink/15 bg-ink/15 md:grid-cols-3">
-                {steps.map((s, i) => (
+              <ol className="mt-12 grid gap-px border border-ink/15 bg-ink/15 md:grid-cols-2">
+                {steps.map((s) => (
                   <li key={s.t} className="bg-paper p-6">
-                    <Hud className="text-clay-deep">{String(i + 1).padStart(2, "0")}</Hud>
+                    <Hud className="text-clay-deep">{s.when}</Hud>
                     <p className="mt-3 font-display text-2xl leading-tight">{s.t}</p>
                     <p className="mt-2 text-sm text-ink-soft">{s.d}</p>
                   </li>
                 ))}
               </ol>
             )}
-
-            {/* the teams, so people can choose before the form opens (the form shows the same text when a team is picked) */}
-            {r.state !== "open" && (
-              <div className="mt-14">
-                <Hud className="text-ink-faint">The teams</Hud>
-                <p className="mt-2 font-display text-3xl leading-tight">Find where you fit.</p>
-                <div className="mt-6 divide-y divide-ink/15 border-y border-ink/15">
-                  {teams
-                    .filter((t) => t.lookingFor.length > 0)
-                    .map((t) => (
-                      <details key={t.name} className="group py-5">
-                        <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                          <span>
-                            <span className="block font-display text-2xl leading-tight">{t.name}</span>
-                            <span className="mt-1 block text-sm text-ink-soft">{t.short}</span>
-                          </span>
-                          <span
-                            aria-hidden
-                            className="mt-2 block size-2.5 shrink-0 rotate-45 border-b-2 border-r-2 border-ink transition-transform duration-500 ease-flow group-open:translate-y-1 group-open:-rotate-[135deg]"
-                          />
-                        </summary>
-                        <div className="mt-3">
-                          <TeamDetail team={t} plain />
-                        </div>
-                      </details>
-                    ))}
-                </div>
-                <p className="mt-4 text-sm text-ink-soft">Not sure yet? That&rsquo;s an option on the form too, and we&rsquo;ll help you choose.</p>
-              </div>
-            )}
           </div>
 
           <aside className="space-y-12 md:pt-2">
             {r.state === "open" && (
               <div>
-                <Hud className="text-ink-faint">How it works</Hud>
+                <Hud className="text-ink-faint">Key dates</Hud>
                 <ol className="mt-4 divide-y divide-ink/15 border-y border-ink/15">
-                  {steps.map((s, i) => (
+                  {steps.map((s) => (
                     <li key={s.t} className="flex gap-4 py-4">
-                      <Hud className="pt-1 text-clay-deep">{String(i + 1).padStart(2, "0")}</Hud>
+                      <Hud className="w-16 shrink-0 pt-1 text-clay-deep">{s.when}</Hud>
                       <div>
                         <p className="font-display text-xl leading-tight">{s.t}</p>
                         <p className="mt-1 text-sm text-ink-soft">{s.d}</p>
