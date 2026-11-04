@@ -5,7 +5,7 @@ import { MoveHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prefersReducedMotion } from "@/lib/motion";
 
-// The "What we're for" wheel, after Endfield's lore model viewer.
+// The "What we provide" wheel, after Endfield's lore model viewer.
 //
 // - A tick ring and a 3D point-cloud model share ONE rotation: they orbit
 //   together, and dragging either turns both.

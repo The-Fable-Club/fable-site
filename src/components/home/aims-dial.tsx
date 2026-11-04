@@ -60,13 +60,13 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
       }}
       onPointerLeave={() => setHover(false)}
       aria-roledescription="carousel"
-      aria-label="What the club is for"
+      aria-label="What the club provides"
       className="relative overflow-hidden bg-night-sunken text-paper"
     >
       <div className="mx-auto grid min-h-[min(46rem,90dvh)] max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto_1fr] md:px-12">
         {/* left: heading */}
         <div className="relative z-10 md:self-start md:pt-6">
-          <Hud className="text-night-faint">What we’re for</Hud>
+          <Hud className="text-night-faint">What we provide</Hud>
           <h3 className="mt-3 font-display text-4xl leading-none md:text-5xl">
             One assistant,
             <br />
