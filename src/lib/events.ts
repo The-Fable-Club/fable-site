@@ -39,6 +39,8 @@ export type ClubEvent = {
   highlights: string[];
   art: string; // path under /public
   photo?: string;
+  /** Uploaded media (schema 2): up to one loop video and two pictures, for the Events stage and the event page. */
+  media?: { video?: string; pics: string[] };
   apply: ApplyInfo;
   registration: RegistrationState;
   /** Outside form link when apply.mode is "link". */

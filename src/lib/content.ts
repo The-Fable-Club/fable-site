@@ -58,6 +58,16 @@ export function loadSnapshot(): Snapshot {
   return parsed.data;
 }
 
+/** The release's media in the shape the Events stage takes; a video-only event uses the clip's still as picture 1. */
+export function eventMediaInput(e: SnapshotEvent): ClubEvent["media"] {
+  const list = e.media ?? [];
+  if (!list.length) return undefined;
+  const video = list.find((m) => m.kind === "video");
+  const pics = list.filter((m) => m.kind === "image").map((m) => m.url);
+  if (!pics.length && video?.poster) pics.push(video.poster);
+  return { video: video?.url, pics };
+}
+
 export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
   const status = deriveStatus(e.date, today, e.status_override);
   const win = eventWindow(e.date);
@@ -97,6 +107,7 @@ export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
     highlights: e.highlights,
     art: art(e.art),
     photo: e.photo ?? undefined,
+    media: eventMediaInput(e),
     apply,
     registration: registrationState(apply, status, Boolean(e.eventhub)),
     applyUrl: apply.mode === "link" ? apply.url : undefined,
