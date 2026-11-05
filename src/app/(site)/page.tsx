@@ -82,8 +82,7 @@ export default async function Home() {
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
             </div>
-            {/* the scrubbing timeline is a desktop thing; phones get the button above (fable-site#27) */}
-            <div className="mt-24 hidden md:block">
+            <div className="mt-24">
               <Timeline events={events} bleed />
             </div>
           </div>
@@ -121,21 +120,7 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          {/* phones: a plain list of names and roles; the full stage is for larger screens (fable-site#27) */}
-          <ul className="grid grid-cols-2 gap-px border-y border-ink/15 bg-ink/15 md:hidden">
-            {people.map((m) => (
-              <li key={m.slug} className="flex items-center gap-2.5 bg-paper px-4 py-3">
-                <span aria-hidden className={cn("grid size-8 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-xs", groupTone[m.group])}>
-                  {initials(m.name)}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate font-display text-base leading-tight">{m.name}</span>
-                  <span className="block truncate text-xs text-ink-soft">{m.role}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="mx-auto hidden max-w-[90rem] px-6 md:block md:px-12">
+          <div className="mx-auto max-w-[90rem] px-6 md:px-12">
             <PeopleStage people={people} />
           </div>
           <p className="mx-auto mt-4 max-w-6xl px-6 md:px-12">
