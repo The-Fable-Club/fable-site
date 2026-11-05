@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
-import { motion } from "motion/react";
+import { useMemo, useState, type Ref } from "react";
+import { motion, useMotionValue, useTransform, type MotionValue } from "motion/react";
 import { cn } from "@/lib/utils";
 
 // Easing for things that answer the pointer: quick to start, long soft landing.
@@ -69,7 +69,15 @@ function seeded(text: string) {
   };
 }
 
-type Pt = [number, number];
+/** True from the first time `on` is true, and stays true: a drawing that has begun keeps
+ * going when the highlight moves on, and isn't started again when it comes back. */
+export function useStarted(on: boolean) {
+  const [started, setStarted] = useState(on);
+  if (on && !started) setStarted(true); // adjusting state from props during render, not in an effect
+  return started;
+}
+
+export type Pt = [number, number];
 const f1 = (n: number) => n.toFixed(1);
 
 /** Doodle segments laid along an edge: u runs along `t`, outward (-v) along `n`, scaled by k. */
@@ -87,12 +95,15 @@ function alongEdge(segs: Seg[], o: Pt, t: Pt, n: Pt, k: number): string {
     .join(" ");
 }
 
-const PF = 264; // design size of the frame's box; the photo sits at 20..244 inside it
+export const PF = 264; // design size of the frame's box; the photo sits at 20..244 inside it
 
 type Placed = { edge: number; pos: number; segs: Seg[]; w: number };
 
-/** The frame path and tilt for one member. Edges: 0 top, 1 right, 2 bottom, 3 left. */
-function photoFrameFor(slug: string): { d: string; tilt: number } {
+/** The frame path and tilt for one member. Edges: 0 top, 1 right, 2 bottom, 3 left.
+ * The loop starts (and ends) on `startEdge`, at a spot clear of doodles: that is where a line
+ * from the previous person's frame arrives, or leaves for the next one. `start` is that
+ * point, in the frame's design units. */
+export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: number; start: Pt } {
   const rnd = seeded(slug);
   const tilt = (rnd() < 0.5 ? -1 : 1) * (2.5 + rnd() * 3);
   const k = 1.35;
@@ -135,20 +146,33 @@ function photoFrameFor(slug: string): { d: string; tilt: number } {
     place(name);
   }
 
-  let d = `M${f1(c[0][0])} ${f1(c[0][1])}`;
-  for (let e = 0; e < 4; e++) {
+  // the part of edge e between `from` and `to` (distances along it), doodles included
+  const part = (e: number, from: number, to: number) => {
     const a = c[e];
     const b = c[(e + 1) % 4];
     const L = len(e);
     const t: Pt = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
     const n: Pt = [t[1], -t[0]]; // outward, for a clockwise loop on screen
-    for (const p of placed.filter((q) => q.edge === e).sort((x, y) => x.pos - y.pos)) {
+    let out = "";
+    for (const p of placed.filter((q) => q.edge === e && q.pos >= from && q.pos < to).sort((x, y) => x.pos - y.pos)) {
       const o: Pt = [a[0] + t[0] * p.pos, a[1] + t[1] * p.pos];
-      d += ` L${f1(o[0])} ${f1(o[1])} ${alongEdge(p.segs, o, t, n, k)}`;
+      out += ` L${f1(o[0])} ${f1(o[1])} ${alongEdge(p.segs, o, t, n, k)}`;
     }
-    d += ` L${f1(b[0])} ${f1(b[1])}`;
-  }
-  return { d, tilt };
+    const end: Pt = [a[0] + t[0] * to, a[1] + t[1] * to];
+    return out + ` L${f1(end[0])} ${f1(end[1])}`;
+  };
+  // where to start on that edge: the middle if it is free, else the nearest clear spot
+  const e0 = ((startEdge % 4) + 4) % 4;
+  const L0 = len(e0);
+  const busy = placed.filter((q) => q.edge === e0).map((q) => [q.pos - 6, q.pos + q.w * k + 6]);
+  const sPos = [0.5, 0.35, 0.65, 0.2, 0.8, 0.08].map((f) => f * L0).find((x) => !busy.some(([lo, hi]) => x > lo && x < hi)) ?? 0;
+  const a0 = c[e0];
+  const b0 = c[(e0 + 1) % 4];
+  const start: Pt = [a0[0] + ((b0[0] - a0[0]) * sPos) / L0, a0[1] + ((b0[1] - a0[1]) * sPos) / L0];
+  let d = `M${f1(start[0])} ${f1(start[1])}` + part(e0, sPos, L0);
+  for (let i = 1; i < 4; i++) d += part((e0 + i) % 4, 0, len((e0 + i) % 4));
+  d += part(e0, 0, sPos);
+  return { d, tilt, start };
 }
 
 /** The member's photo inside its hand-drawn frame. The line draws itself when `active`
@@ -166,6 +190,9 @@ export function FramedPhoto({
   drawInView = false,
   blend = false,
   sizes = "336px",
+  startEdge = 0,
+  progress,
+  svgRef,
   className,
 }: {
   slug: string;
@@ -174,9 +201,18 @@ export function FramedPhoto({
   drawInView?: boolean;
   blend?: boolean;
   sizes?: string;
+  /** where the line starts and ends (see photoFrameFor) */
+  startEdge?: number;
+  /** drive the drawing from outside: 0..1 is how much of the frame is drawn */
+  progress?: MotionValue<number>;
+  /** the frame's svg, for lining up a line that joins it */
+  svgRef?: Ref<SVGSVGElement>;
   className?: string;
 }) {
-  const { d, tilt } = useMemo(() => photoFrameFor(slug), [slug]);
+  const { d, tilt } = useMemo(() => photoFrameFor(slug, startEdge), [slug, startEdge]);
+  const started = useStarted(active);
+  const none = useMotionValue(0);
+  const driven = useTransform(progress ?? none, (v) => Math.min(1, Math.max(0, v)));
   const line = { duration: 2.8, delay: 0.25, ease: [0.45, 0, 0.25, 1] as const };
   const tone = blend ? "stroke-paper" : "stroke-ink";
   return (
@@ -190,18 +226,20 @@ export function FramedPhoto({
         </div>
       </div>
       {/* the frame box is PF wide with the photo at 20..PF-20: 118% of the photo, offset 9% */}
-      <svg aria-hidden viewBox={`0 0 ${PF} ${PF}`} className={cn("absolute -inset-[9%] size-[118%] overflow-visible", blend && "mix-blend-difference")}>
-        {drawInView ? (
+      <svg ref={svgRef} aria-hidden viewBox={`0 0 ${PF} ${PF}`} className={cn("absolute -inset-[9%] size-[118%] overflow-visible", blend && "mix-blend-difference")}>
+        {progress ? (
+          <motion.path d={d} {...stroke} className={cn(tone, "transition-opacity duration-700", !active && "opacity-40")} style={{ pathLength: driven }} />
+        ) : drawInView ? (
           <motion.path d={d} {...stroke} className={tone} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: 0.5 }} transition={line} />
         ) : (
+          // drawn once, the first time the card lights; dimming later doesn't stop or restart it
           <motion.path
-            key={String(active)}
             d={d}
             {...stroke}
             className={cn(tone, "transition-opacity duration-700", !active && "opacity-40")}
-            // keyframes rather than `initial`, so the draw runs even where a parent turns initial animations off
-            animate={{ pathLength: active ? [0, 1] : 1 }}
-            transition={active ? line : { duration: 0 }}
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: started ? 1 : 0 }}
+            transition={line}
           />
         )}
       </svg>

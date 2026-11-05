@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, type Variants } from "motion/react";
+import { useEffect, useMemo, useRef, useState, type Ref } from "react";
+import { animate, AnimatePresence, motion, useInView, useMotionValue, useTransform, type MotionValue, type Variants } from "motion/react";
 import {
   ArrowRight,
   Award,
@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { initials, type Member } from "@/lib/members";
-import { FramedPhoto } from "@/components/framed-photo";
+import { FramedPhoto, PF, photoFrameFor, useStarted } from "@/components/framed-photo";
 import { backdropFor, BackdropSvg } from "@/components/home/people-backdrops";
 import { ArrowBtn, Ph } from "@/components/hud";
 import { cn } from "@/lib/utils";
@@ -280,37 +280,18 @@ export function PeopleStage({ people }: { people: Member[] }) {
           {/* the people, side by side. No initial={false} here: it would also stop the frame
               drawings and the timer, which mount inside, from animating */}
           <AnimatePresence mode="wait">
-            <motion.ul
+            <TeamRow
               key={cat.label}
-              variants={stagger}
-              initial="hidden"
-              animate="show"
-              exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }}
-              onPointerLeave={() => setHeld(false)}
-              className={cn("grid max-w-5xl items-stretch gap-6 md:gap-8", n > 1 && "sm:grid-cols-2")}
-            >
-              {cat.people.map((m, i) => (
-                <motion.li
-                  key={m.slug}
-                  variants={rise}
-                  className="min-w-0"
-                  onPointerEnter={() => {
-                    setP(i);
-                    setHeld(true);
-                  }}
-                  onFocus={() => {
-                    setP(i);
-                    setHeld(true);
-                  }}
-                  onBlur={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHeld(false);
-                  }}
-                >
-                  {/* nothing is lit until the stage is on screen, so the frames draw when you get there */}
-                  <PersonCard member={m} index={i} active={inView && i === p} timing={auto && i === p} />
-                </motion.li>
-              ))}
-            </motion.ul>
+              people={cat.people}
+              lit={p}
+              inView={inView}
+              auto={auto}
+              onLight={(i) => {
+                setP(i);
+                setHeld(true);
+              }}
+              onRelease={() => setHeld(false)}
+            />
           </AnimatePresence>
         </div>
       </div>
@@ -396,32 +377,32 @@ function useSize<T extends HTMLElement>() {
 }
 
 function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: number; h: number }) {
+  // drawn once, the first time the card lights (reduced motion too: a line tracing itself is
+  // not the kind of motion that setting is about); dimming later doesn't stop or restart it
+  const draw = useStarted(active);
   if (!w || !h) return null;
   const { main, extra } = framePaths(w, h, MOTIFS[MOTIF_FOR[role] ?? "sprout"]);
-  // drawn with reduced motion too: a line tracing itself is not the kind of motion that setting is about
-  const draw = active;
   const common = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const };
   return (
     <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible" viewBox={`0 0 ${w} ${h}`}>
       <motion.path
-        key={`m-${draw}`}
         d={main}
         {...common}
         strokeWidth={2}
         className={active ? "stroke-clay-deep" : "stroke-ink"}
-        // keyframes (not `initial`), so the draw still runs inside an AnimatePresence with initial={false}
-        animate={{ pathLength: draw ? [0, 1] : 1, opacity: active ? 1 : 0.28 }}
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: draw ? 1 : 0, opacity: active ? 1 : 0.28 }}
         transition={{ pathLength: { duration: 2.2, ease: [0.45, 0, 0.25, 1] }, opacity: { duration: 0.9, ease: "easeOut" } }}
       />
       {extra && (
         <motion.path
-          key={`e-${draw}`}
           d={extra}
           {...common}
           strokeWidth={1.75}
           className={active ? "stroke-clay-deep" : "stroke-ink"}
-          animate={{ pathLength: draw ? [0, 1] : 1, opacity: draw ? [0, 1] : active ? 1 : 0.28 }}
-          transition={{ pathLength: { duration: 0.9, delay: draw ? 0.9 : 0, ease: "easeOut" }, opacity: { duration: 0.5, delay: draw ? 0.9 : 0 } }}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: draw ? 1 : 0, opacity: !draw ? 0 : active ? 1 : 0.28 }}
+          transition={{ pathLength: { duration: 0.9, delay: 0.9, ease: "easeOut" }, opacity: { duration: 0.5, delay: active ? 0.9 : 0 } }}
         />
       )}
     </svg>
@@ -431,12 +412,211 @@ function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: 
 // Easing for things that answer the pointer: quick to start, long soft landing.
 const SOFT = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
+// ---- one team's cards, with one line running through all their frames ---------------
+// The drawing is a single progress value for the whole team, from 0 to 2n-1: frame 0 is
+// 0..1, the line across to the next person is 1..2, frame 1 is 2..3, and so on. It only ever
+// moves forward, so nothing that has begun is stopped or drawn again. Left alone it runs at
+// a slow, even pace (one frame, then the line across, then the next frame). Lighting a card
+// whose turn hasn't come yet (hover, focus, the timer) runs quickly up to the start of its
+// frame and carries on at the normal pace from there.
+const FRAME_S = 3.2;
+const BRIDGE_S = 1.4;
+const CATCH_UP_S = 0.6;
+
+function useStacked() {
+  // the cards sit side by side from the sm breakpoint (sm:grid-cols-2)
+  const [stacked, setStacked] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639.98px)");
+    const on = () => setStacked(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return stacked;
+}
+
+/** Where each person's frame starts and ends: where the line comes in or goes out. Side by
+ * side the line leaves the first photo on its right edge and enters the next on its left;
+ * stacked, it runs down the right-hand margin, so both use the right edge. */
+const startEdgeFor = (i: number, n: number, stacked: boolean) => (stacked || (i === 0 && n > 1) ? 1 : 3);
+
+function Bridge({ d, prog, at }: { d: string; prog: MotionValue<number>; at: number }) {
+  const pathLength = useTransform(prog, [at, at + 1], [0, 1]);
+  const common = { d, fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  return (
+    <>
+      {/* a paper halo under the ink, so the line reads over the dark gap and the light cards alike */}
+      <motion.path {...common} strokeWidth={7} className="stroke-paper" style={{ pathLength }} />
+      <motion.path {...common} strokeWidth={2} className="stroke-ink" style={{ pathLength }} />
+    </>
+  );
+}
+
+function TeamRow({
+  people,
+  lit,
+  inView,
+  auto,
+  onLight,
+  onRelease,
+}: {
+  people: Member[];
+  lit: number;
+  inView: boolean;
+  auto: boolean;
+  onLight: (i: number) => void;
+  onRelease: () => void;
+}) {
+  const n = people.length;
+  const end = Math.max(1, 2 * n - 1);
+  const prog = useMotionValue(0);
+  const stacked = useStacked();
+  const box = useRef<HTMLDivElement>(null);
+  const svgs = useRef<(SVGSVGElement | null)[]>([]);
+  const [bridges, setBridges] = useState<string[]>([]);
+
+  // the sequencer: restarts its loop whenever the lit card changes, but never moves backwards
+  useEffect(() => {
+    if (!inView) return;
+    let alive = true;
+    let ctl: { stop: () => void } | undefined;
+    const go = async () => {
+      const target = Math.min(2 * lit, end);
+      if (prog.get() < target) {
+        const a = animate(prog, target, { duration: CATCH_UP_S, ease: "easeIn" });
+        ctl = a;
+        await a;
+      }
+      while (alive && prog.get() < end - 1e-4) {
+        const v = prog.get();
+        const seg = Math.floor(v + 1e-4);
+        const a = animate(prog, Math.min(seg + 1, end), { duration: (seg % 2 ? BRIDGE_S : FRAME_S) * (seg + 1 - v), ease: "linear" });
+        ctl = a;
+        await a;
+      }
+    };
+    void go();
+    return () => {
+      alive = false;
+      ctl?.stop();
+    };
+  }, [inView, lit, end, prog]);
+
+  // the joining lines, in this box's coordinates, from each frame's start point to the next
+  const anchors = useMemo(() => people.map((m, i) => photoFrameFor(m.slug, startEdgeFor(i, n, stacked)).start), [people, n, stacked]);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = () => {
+      const b = el.getBoundingClientRect();
+      const at = (i: number) => {
+        const s = svgs.current[i];
+        if (!s) return null;
+        const r = s.getBoundingClientRect();
+        return { x: r.left - b.left + (anchors[i][0] / PF) * r.width, y: r.top - b.top + (anchors[i][1] / PF) * r.height, card: s.closest("article")?.getBoundingClientRect() };
+      };
+      const out: string[] = [];
+      for (let i = 0; i < n - 1; i++) {
+        const A = at(i);
+        const B = at(i + 1);
+        if (!A || !B) continue;
+        if (stacked) {
+          // out to the right-hand margin, down it, and back in
+          const gx = Math.max(A.card ? A.card.right - b.left : A.x, B.card ? B.card.right - b.left : B.x) + 16;
+          out.push(`M${A.x} ${A.y} C${gx - 8} ${A.y} ${gx} ${A.y + 18} ${gx} ${A.y + 60} L${gx} ${B.y - 60} C${gx} ${B.y - 18} ${gx - 8} ${B.y} ${B.x} ${B.y}`);
+        } else {
+          // across the gap in a lazy S, with a small loop on the way
+          const mx = (A.x + B.x) / 2;
+          const my = (A.y + B.y) / 2;
+          out.push(`M${A.x} ${A.y} C${A.x + 60} ${A.y - 70} ${mx - 40} ${my - 50} ${mx} ${my} C${mx + 24} ${my + 30} ${mx - 14} ${my + 40} ${mx - 6} ${my + 14} C${mx + 2} ${my - 6} ${B.x - 70} ${B.y + 60} ${B.x} ${B.y}`);
+        }
+      }
+      setBridges(out);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    // again once the lit card has finished lifting (it moves 8px)
+    const t = setTimeout(measure, 1000);
+    return () => {
+      ro.disconnect();
+      clearTimeout(t);
+    };
+  }, [anchors, n, stacked, lit]);
+
+  return (
+    <motion.div
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+      exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }}
+      onPointerLeave={onRelease}
+      ref={box}
+      className="relative max-w-5xl"
+    >
+      <ul className={cn("grid items-stretch gap-6 md:gap-8", n > 1 && "sm:grid-cols-2")}>
+        {people.map((m, i) => (
+          <motion.li
+            key={m.slug}
+            variants={rise}
+            className="min-w-0"
+            onPointerEnter={() => onLight(i)}
+            onFocus={() => onLight(i)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onRelease();
+            }}
+          >
+            {/* nothing is lit until the stage is on screen, so the frames draw when you get there */}
+            <PersonCard
+              member={m}
+              index={i}
+              active={inView && i === lit}
+              timing={auto && i === lit}
+              prog={prog}
+              startEdge={startEdgeFor(i, n, stacked)}
+              svgRef={(s) => {
+                svgs.current[i] = s;
+              }}
+            />
+          </motion.li>
+        ))}
+      </ul>
+      {bridges.length > 0 && (
+        <svg aria-hidden className="pointer-events-none absolute inset-0 z-20 size-full overflow-visible">
+          {bridges.map((d, i) => (
+            <Bridge key={i} d={d} prog={prog} at={2 * i + 1} />
+          ))}
+        </svg>
+      )}
+    </motion.div>
+  );
+}
+
 /** One person: a white card with a black border, and the whole card opens the full
  * profile. The photo is kept near its real
  * size, since the originals are small, inside its own hand-drawn frame; a second line draws
  * the panel's frame with the role's motif. The lit card lifts, its tab turns black and the
  * timer runs along the bottom. */
-function PersonCard({ member: m, index, active, timing }: { member: Member; index: number; active: boolean; timing: boolean }) {
+function PersonCard({
+  member: m,
+  index,
+  active,
+  timing,
+  prog,
+  startEdge,
+  svgRef,
+}: {
+  member: Member;
+  index: number;
+  active: boolean;
+  timing: boolean;
+  prog: MotionValue<number>;
+  startEdge: number;
+  svgRef: Ref<SVGSVGElement>;
+}) {
+  // this person's share of the team's drawing (see TeamRow)
+  const frame = useTransform(prog, [2 * index, 2 * index + 1], [0, 1]);
   const tags = [m.department, m.year, ...m.focus].filter(Boolean);
   const [panel, size] = useSize<HTMLDivElement>();
   return (
@@ -473,6 +653,9 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
             src={m.photo}
             active={active}
             blend
+            progress={frame}
+            startEdge={startEdge}
+            svgRef={svgRef}
             sizes="270px"
             className="absolute inset-y-0 right-6 my-auto size-[13.2rem] sm:right-[8%] sm:size-[16.8rem]"
           />
