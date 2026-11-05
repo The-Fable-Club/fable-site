@@ -308,13 +308,9 @@ body {
   }
 }
 .backdrop-drift {
+  transform-box: view-box;
   transform-origin: 60% 50%;
-  will-change: transform; /* its own layer: the drift is composited, not repainted */
   animation: backdrop-drift 22s var(--ease-flow) infinite alternate;
-}
-/* a device that measured slow frames (useSlowFrames) keeps the artwork still */
-[data-lite] .backdrop-drift {
-  animation: none;
 }
 
 /* ------------------------------------------------------------------
