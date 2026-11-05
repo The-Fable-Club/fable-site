@@ -344,6 +344,7 @@ export function Dial3D({ model, label, caption, className }: Props) {
 
     let yaw = YAW0;
     let vDrag = 0; // rad/s from a drag release
+    let pull = 0; // drag turn not yet applied: eased in over the next frames
     let dragging = false;
     let lastX = 0;
     let lastT = 0;
@@ -410,7 +411,7 @@ export function Dial3D({ model, label, caption, className }: Props) {
       if (!dragging) return;
       const dx = e.clientX - lastX;
       const now = performance.now();
-      yaw += dx * 0.011;
+      pull += dx * 0.011;
       vDrag = Math.max(-14, Math.min(14, (dx * 0.011) / Math.max((now - lastT) / 1000, 0.008)));
       lastX = e.clientX;
       lastT = now;
@@ -503,9 +504,13 @@ export function Dial3D({ model, label, caption, className }: Props) {
         focus = 1 - ease(t);
       }
       if (reduce) spin = 0;
+      // the drag turn lands softly instead of snapping with every pointer event
+      const take = pull * (1 - Math.exp(-dt * 12));
+      yaw += take;
+      pull -= take;
       if (!dragging) {
         yaw += (spin + vDrag) * dt;
-        vDrag *= Math.exp(-dt * 3);
+        vDrag *= Math.exp(-dt * 2.2);
       }
 
       // ring follows the same rotation; it shrinks slightly at high speed
