@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowDown, ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
+import { ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
 import { HomeCrumb, Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
@@ -75,16 +75,6 @@ async function EventDetail({
                 >
                   Register on EventHub
                   <ArrowUpRight className="size-5" aria-hidden />
-                </a>
-              )}
-              {/* same for the on-site form: jump straight down to it (fable-site#27) */}
-              {!eventhub && open && e.registration === "open" && e.apply.mode === "form" && (
-                <a
-                  href="#signup"
-                  className="mt-8 flex h-14 items-center justify-between bg-clay px-5 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay-deep hover:text-paper md:hidden"
-                >
-                  Register
-                  <ArrowDown className="size-5" aria-hidden />
                 </a>
               )}
             </div>
@@ -249,7 +239,7 @@ async function EventDetail({
               </div>
             </div>
             {e.registration === "open" && e.apply.mode === "form" && (
-              <div id="signup" className="mt-6 scroll-mt-24">
+              <div className="mt-6">
                 <RegisterForm slug={e.slug} title={e.title} heading={e.eventhubUrl ? "On-spot / club sign-up" : undefined} />
               </div>
             )}
