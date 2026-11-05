@@ -85,7 +85,7 @@ export function SectionIndex() {
               >
                 <span
                   className={cn(
-                    "hud px-1.5 py-0.5 transition-[transform,opacity,background-color,color] duration-500 ease-flow",
+                    "hud px-1.5 py-0.5 transition-[translate,opacity,background-color,color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
                     onDark ? "bg-paper text-ink" : "bg-ink text-paper",
                     on
                       ? "translate-x-0 opacity-100"
