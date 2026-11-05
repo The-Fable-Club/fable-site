@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { initials, type Member } from "@/lib/members";
-import { FramedPhoto, PF, photoFrameFor, useStarted } from "@/components/framed-photo";
+import { alongEdge, FramedPhoto, PF, photoFrameFor, type Pt } from "@/components/framed-photo";
 import { backdropFor, BackdropSvg } from "@/components/home/people-backdrops";
 import { ArrowBtn, Ph } from "@/components/hud";
 import { cn } from "@/lib/utils";
@@ -74,6 +74,8 @@ const stagger: Variants = {
 
 /** How long each card stays highlighted before the next one takes over. */
 const DWELL = 4500;
+/** The last card of a team stays longer, so its frame finishes and there is time to read it. */
+const DWELL_LAST = 9000;
 
 // Endfield "Operators"-style stage, re-cut for small photos:
 //  - left: a strip of round portraits, one per category (portfolio)
@@ -138,7 +140,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
         setC((c + 1) % total);
         setP(0);
       } else setP(0);
-    }, DWELL);
+    }, p + 1 < n ? DWELL : DWELL_LAST);
     return () => clearTimeout(t);
   }, [auto, p, c, n, total]);
 
@@ -376,33 +378,29 @@ function useSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
-function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: number; h: number }) {
-  // drawn once, the first time the card lights (reduced motion too: a line tracing itself is
-  // not the kind of motion that setting is about); dimming later doesn't stop or restart it
-  const draw = useStarted(active);
+function DrawnFrame({ role, active, w, h, progress }: { role: string; active: boolean; w: number; h: number; progress: MotionValue<number> }) {
+  // driven by the same forward-only progress as the photo's frame (see TeamRow), so it draws
+  // alongside it and nothing (hovering out, the highlight moving on) can stop or restart it
+  const main = useTransform(progress, [0, 0.85], [0, 1]);
+  const extraLen = useTransform(progress, [0.7, 1], [0, 1]);
+  const extraShow = useTransform(progress, [0.68, 0.7], [0, 1]);
   if (!w || !h) return null;
-  const { main, extra } = framePaths(w, h, MOTIFS[MOTIF_FOR[role] ?? "sprout"]);
+  const paths = framePaths(w, h, MOTIFS[MOTIF_FOR[role] ?? "sprout"]);
   const common = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const };
   return (
-    <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible" viewBox={`0 0 ${w} ${h}`}>
-      <motion.path
-        d={main}
-        {...common}
-        strokeWidth={2}
-        className={active ? "stroke-clay-deep" : "stroke-ink"}
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: draw ? 1 : 0, opacity: active ? 1 : 0.28 }}
-        transition={{ pathLength: { duration: 2.2, ease: [0.45, 0, 0.25, 1] }, opacity: { duration: 0.9, ease: "easeOut" } }}
-      />
-      {extra && (
+    <svg
+      aria-hidden
+      className={cn("pointer-events-none absolute inset-0 size-full overflow-visible transition-opacity duration-[900ms]", !active && "opacity-30")}
+      viewBox={`0 0 ${w} ${h}`}
+    >
+      <motion.path d={paths.main} {...common} strokeWidth={2} className={cn("transition-colors duration-700", active ? "stroke-clay-deep" : "stroke-ink")} style={{ pathLength: main }} />
+      {paths.extra && (
         <motion.path
-          d={extra}
+          d={paths.extra}
           {...common}
           strokeWidth={1.75}
-          className={active ? "stroke-clay-deep" : "stroke-ink"}
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: draw ? 1 : 0, opacity: !draw ? 0 : active ? 1 : 0.28 }}
-          transition={{ pathLength: { duration: 0.9, delay: 0.9, ease: "easeOut" }, opacity: { duration: 0.5, delay: active ? 0.9 : 0 } }}
+          className={cn("transition-colors duration-700", active ? "stroke-clay-deep" : "stroke-ink")}
+          style={{ pathLength: extraLen, opacity: extraShow }}
         />
       )}
     </svg>
@@ -451,6 +449,62 @@ function Bridge({ d, prog, at }: { d: string; prog: MotionValue<number>; at: num
       <motion.path {...common} strokeWidth={2} className="stroke-ink" style={{ pathLength }} />
     </>
   );
+}
+
+// ---- the line from one person's frame to the next: a little drawing for each team ------
+// Same convention as the doodles: start (0, 0), end (w, 0), negative y is "up" (to the left
+// of the direction of travel). The line waves in, draws the motif, and waves out.
+const dot = (x: number, y: number, r: number): Seg[] => [["M", x, y], ["A", r, r, 0, 0, 1, x, y - 2 * r], ["A", r, r, 0, 0, 1, x, y]];
+const BRIDGE_MOTIFS: Record<string, { w: number; segs: Seg[] }> = {
+  // a crown with jewels
+  crown: { w: 90, segs: [["L", 8, 0], ["L", 14, -30], ["L", 28, -12], ["L", 45, -44], ["L", 62, -12], ["L", 76, -30], ["L", 82, 0], ["L", 90, 0], ...dot(45, -44, 3.5), ...dot(14, -30, 2.5), ...dot(76, -30, 2.5), ["M", 90, 0]] },
+  // a run of joined-up loops, like a signature
+  quill: { w: 80, segs: [0, 20, 40, 60].flatMap((x): Seg[] => [["C", x + 16, 0, x + 18, -24, x + 9, -24], ["C", x, -24, x + 2, 0, x + 20, 0]]) },
+  // a circuit trace with a via
+  code: { w: 80, segs: [["L", 0, -18], ["L", 22, -18], ["L", 22, 14], ["L", 44, 14], ["L", 44, -30], ["A", 4, 4, 0, 0, 1, 44, -38], ["A", 4, 4, 0, 0, 1, 44, -30], ["L", 66, -30], ["L", 66, 0], ["L", 80, 0]] },
+  // a zigzag through little nodes, like a network
+  robot: {
+    w: 84,
+    segs: ([[18, -24], [36, 12], [54, -28], [72, 8]] as Pt[])
+      .flatMap(([x, y]): Seg[] => [["L", x, y], ["A", 3.5, 3.5, 0, 0, 1, x, y - 7], ["A", 3.5, 3.5, 0, 0, 1, x, y]])
+      .concat([["L", 84, 0]]),
+  },
+  // a rocket taking off, with a porthole and a flame
+  cube: { w: 64, segs: [["L", 18, 0], ["L", 24, -10], ["L", 24, -32], ["Q", 24, -44, 32, -52], ["Q", 40, -44, 40, -32], ["L", 40, -10], ["L", 46, 0], ["L", 64, 0], ...dot(32, -27, 3.5), ["M", 27, 0], ["L", 32, 11], ["L", 37, 0], ["M", 64, 0]] },
+  // a conveyor of arrows
+  clipboard: { w: 80, segs: [["L", 80, 0], ...[14, 34, 54].flatMap((x): Seg[] => [["M", x, -10], ["L", x + 10, 0], ["L", x, 10]]), ["M", 80, 0]] },
+  // a chart going up, arrow at the top
+  coin: { w: 80, segs: [["L", 12, -8], ["L", 22, 2], ["L", 36, -20], ["L", 46, -12], ["L", 62, -40], ["L", 53, -39], ["M", 62, -40], ["L", 61, -31], ["M", 62, -40], ["C", 70, -30, 74, -8, 80, 0]] },
+  // a spiral, then a sparkle
+  star: { w: 80, segs: [["C", 0, -20, 24, -28, 28, -12], ["C", 30, -2, 16, 0, 16, -10], ["C", 16, -16, 24, -16, 22, -10], ["C", 20, -4, 30, 0, 40, 0], ["L", 56, 0], ["L", 60, -6], ["Q", 61, -14, 70, -16], ["Q", 61, -18, 60, -28], ["Q", 59, -18, 50, -16], ["Q", 59, -14, 60, -6], ["L", 64, 0], ["L", 80, 0]] },
+  // two hearts, for anyone else
+  sprout: {
+    w: 72,
+    segs: [0, 36]
+      .flatMap((x): Seg[] => [["L", x + 18, 0], ["C", x + 8, -8, x + 2, -16, x + 5, -24], ["C", x + 8, -31, x + 17, -31, x + 18, -24], ["C", x + 19, -31, x + 28, -31, x + 31, -24], ["C", x + 34, -16, x + 28, -8, x + 18, 0]])
+      .concat([["L", 72, 0]]),
+  },
+};
+
+/** Scale and shift motif segments along the baseline. */
+const shift = (segs: Seg[], dx: number, k: number): Seg[] =>
+  segs.map(([cmd, ...raw]) => {
+    const v = raw as number[];
+    if (cmd === "A") return ["A", v[0] * k, v[1] * k, v[2], v[3], v[4], v[5] * k + dx, v[6] * k];
+    return [cmd, ...v.map((n, i) => (i % 2 ? n * k : n * k + dx))];
+  });
+
+function bridgePath(A: Pt, B: Pt, motif: string): string {
+  const L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+  if (L < 1) return "";
+  const t: Pt = [(B[0] - A[0]) / L, (B[1] - A[1]) / L];
+  const n: Pt = [t[1], -t[0]];
+  const m = BRIDGE_MOTIFS[motif] ?? BRIDGE_MOTIFS.sprout;
+  const k = Math.max(0.5, Math.min(1.25, (L - 70) / m.w));
+  const x0 = (L - m.w * k) / 2;
+  const x1 = x0 + m.w * k;
+  const segs: Seg[] = [["C", x0 * 0.35, -26, x0 * 0.65, 22, x0, 0], ...shift(m.segs, x0, k), ["C", x1 + (L - x1) * 0.35, 22, x1 + (L - x1) * 0.65, -26, L, 0]];
+  return `M${A[0].toFixed(1)} ${A[1].toFixed(1)} ` + alongEdge(segs, A, t, n, 1);
 }
 
 function TeamRow({
@@ -526,10 +580,8 @@ function TeamRow({
           const gx = Math.max(A.card ? A.card.right - b.left : A.x, B.card ? B.card.right - b.left : B.x) + 16;
           out.push(`M${A.x} ${A.y} C${gx - 8} ${A.y} ${gx} ${A.y + 18} ${gx} ${A.y + 60} L${gx} ${B.y - 60} C${gx} ${B.y - 18} ${gx - 8} ${B.y} ${B.x} ${B.y}`);
         } else {
-          // across the gap in a lazy S, with a small loop on the way
-          const mx = (A.x + B.x) / 2;
-          const my = (A.y + B.y) / 2;
-          out.push(`M${A.x} ${A.y} C${A.x + 60} ${A.y - 70} ${mx - 40} ${my - 50} ${mx} ${my} C${mx + 24} ${my + 30} ${mx - 14} ${my + 40} ${mx - 6} ${my + 14} C${mx + 2} ${my - 6} ${B.x - 70} ${B.y + 60} ${B.x} ${B.y}`);
+          // across the gap, sketching the team's motif on the way (bridgePath)
+          out.push(bridgePath([A.x, A.y], [B.x, B.y], MOTIF_FOR[people[0]?.role ?? ""] ?? "sprout"));
         }
       }
       setBridges(out);
@@ -543,7 +595,7 @@ function TeamRow({
       ro.disconnect();
       clearTimeout(t);
     };
-  }, [anchors, n, stacked, lit]);
+  }, [anchors, n, stacked, lit, people]);
 
   return (
     <motion.div
@@ -644,7 +696,7 @@ function PersonCard({
         ref={panel}
         className="relative h-64 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-72"
       >
-        <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} />
+        <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} progress={frame} />
         {m.photo ? (
           // 1.2x the old photo, in the old-sized panel: the frame and doodles leak past it. Centred
           // with inset + auto margins, not a transform, so the line's blend still sees the card.
