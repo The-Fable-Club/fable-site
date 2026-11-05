@@ -9,6 +9,7 @@ This file is for the board: the teams applicants can choose on `/join`, what the
 | Team names (the form's choices, checked by the server) | `src/lib/submissions.ts` → `TEAMS` |
 | The same list in the CMS (Applications filter) | `fable-cms/src/lib/applications.ts` → `TEAMS` |
 | What applicants read: short line, description, "what we look for", "nice to have" | `content/teams.json` |
+| The questions each team asks (`questions`), and the one everyone answers (`everyone`) | `content/teams.json` |
 | The board's full wording and open questions | this file |
 
 The names must be identical in all three places, in the same order. A unit test (`tests/content.test.ts`) fails if `teams.json` and `TEAMS` drift apart. Renaming a team means updating all three, and the member rows in the CMS if board members carry that team as their role.
@@ -17,6 +18,7 @@ The names must be identical in all three places, in the same order. A unit test 
 
 - **Before recruitment opens** (`recruitment.status` is `soon` or `closed`): `/join` lists every team as a collapsible row. Each row shows the one-line summary, and opening it shows the full description. People can read up before the form appears.
 - **When recruitment is open:** the form shows the team buttons. Picking one slides in that team's description and requirements under the buttons, and picking another replaces it.
+- Picking a team also shows **its two questions**, then the one question everyone answers. Changing team swaps the team's questions; the shared answer stays.
 - An applicant picks **one** team. "Not sure yet" is always an option; the board suggests a team during the short chat.
 
 To change any text, edit `content/teams.json`, then commit. The site rebuilds on push, so this is a code change, not a CMS publish.
@@ -85,6 +87,42 @@ Renamed from **Technical** in November 2026. The site shows any member whose rol
 > Note: applicants should have some hands-on experience with at least one design tool such as Canva, Photoshop, Illustrator, or Figma. Video editing experience is an added advantage.
 
 **Suggestions:** the name says "Communications" but the notes only cover design and media. If this team also writes captions, runs Instagram or handles announcements, add that. Otherwise consider renaming it to "Creative". A portfolio link would help here too (see the open question under Agentic AI).
+
+## Application questions
+
+Added 5 Nov 2026 (fable-site#24). The board's brief: no coding test, but we want **responsible people** who will show up and do the work, and who know how to use AI and how tech stacks fit together. Not too many questions: two per team plus one for everyone.
+
+What every applicant answers, in order:
+
+1. Their team's **two questions** (below).
+2. **Everyone:** "Tell us about something you committed to and saw through, even when it got boring or hard. What was your part, and what did it take?" This is the main signal for "will they actually do things".
+3. **Why do you want to join?** The hint under it says members are expected to show up and take on work, and asks roughly how many hours a week they can give.
+4. The **short task** (`content/club.json` → `recruitment.taskPrompt`).
+
+The old "What would you like to build or learn?" box is gone: the team questions cover it (and "Not sure yet" asks it directly). Old applications keep their answer.
+
+| Team | Question 1 | Question 2 |
+|---|---|---|
+| Web Development | Pick a website or app you use a lot. How do you think it is put together: what runs in the browser, where the data lives, how it is hosted? Guesses are fine. | Have you built, set up or looked after a site, app or repo before, with or without AI? Tell us your part, and add a link if you have one. |
+| Agentic AI | Tell us about something you have made with AI tools: what it does, which tools you used and what broke along the way. Add a link if you have one. | Pick one repetitive job in a club or at college, like reminders, approvals or attendance. How would you automate it end to end, and how would you know it is working? |
+| Projects | Pitch one project the club could build, in a few lines. Who is it for, and why hasn't it been done (or done well) already? | How would you check that idea is doable in one semester? What would you look up or try first? |
+| Operations | The speaker cancels two hours before an event. Walk us through what you do next. | Tell us about an event, fest or team activity you helped run. What was your part? |
+| Finance | Pitch the club to a sponsor in three or four sentences. What do they get back? | A workshop for 60 people has ₹5,000. Roughly how would you split it, and what would you cut first if it dropped to ₹3,000? |
+| Creative & Communications | Share a poster, post, video or design you made (a link is best) and tell us which tool you used. | Pick a post or page from any club or brand. What is one thing you would change about how it looks, and why? |
+| Not sure yet | What would you like to build or learn in the club? | What are you already good at, in tech or outside it? |
+
+**Changing a question:** edit `content/teams.json` and push. Each saved application keeps the exact wording it was asked (stored with the answer), so editing is safe mid-intake. Keep each team at two (a unit test checks it). Answers must be 15–1,200 characters.
+
+**Where the board reads them:** the CMS Applications screen (full width under Team), the new-application email, and the CSV export (one `answers` column as text).
+
+**What each question is for:**
+- Web Development: understanding of how a stack fits together (no code asked), and evidence they have shipped or maintained something.
+- Agentic AI: real work with AI tools, and thinking about automation end to end, including how they'd know it works.
+- Projects: an idea and a plausibility check, which is the team's job.
+- Operations: a pressure scenario, and past experience running something.
+- Finance: a sponsor pitch and a budget trade-off.
+- Creative & Communications: their own work (link), and a design critique.
+- Not sure yet: what they want to do and what they're good at, so the board can suggest a team.
 
 ## Decided (board, 4 Nov 2026)
 - **No portfolio link field.** Applicants put links in their text answers.
