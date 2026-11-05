@@ -183,7 +183,8 @@ export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: n
     const [name, at] = pick.split("@");
     place(name as Pick, at === undefined ? undefined : Number(at));
   }
-  const names: Pick[] = [...(Object.keys(DOODLES) as DoodleName[]), "wings", "wings", "wingL", "wingR", "mascot"];
+  // wings are Harsha's (PICKS): they stay out of everyone else's random mix
+  const names: Pick[] = [...(Object.keys(DOODLES) as DoodleName[]), "mascot"];
   const used = new Set<string>((PICKS[slug] ?? []).map((x) => x.split("@")[0]));
   const want = rnd() < 0.5 ? 3 : 4;
   for (let tries = 0; placed.length < want && free.size && tries < 40; tries++) {
