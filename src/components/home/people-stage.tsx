@@ -72,6 +72,40 @@ const stagger: Variants = {
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
 };
 
+// ---- the change between teams: an orange panel, then a black one, sweep over the stage,
+// the new team goes in while it is covered, and both carry on off the other side (the
+// Endfield-style cover). Angled edges; the black panel carries the incoming team's name.
+const WIPE_S = 1.25;
+const WIPE_TIMES = [0, 0.4, 0.6, 1];
+/** When the black panel fully covers the stage: the moment to swap the team underneath. */
+const WIPE_COVERED_MS = 740;
+
+function TeamWipe({ dir, index, total, label }: { dir: number; index: number; total: number; label: string }) {
+  const from = dir > 0 ? "-112%" : "112%";
+  const to = dir > 0 ? "112%" : "-112%";
+  const x = [from, "0%", "0%", to];
+  const panel = "absolute inset-y-0 -left-[25%] w-[150%] -skew-x-12";
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+      <motion.div
+        className={cn(panel, "bg-clay bg-[repeating-linear-gradient(90deg,transparent_0_22px,rgb(177_88_58/0.35)_22px_26px)]")}
+        initial={{ x: from }}
+        animate={{ x }}
+        transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: FLOW }}
+      />
+      <motion.div className={cn(panel, "grid place-items-center bg-ink")} initial={{ x: from }} animate={{ x }} transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: FLOW, delay: 0.2 }}>
+        <div className="skew-x-12 text-center text-paper">
+          <p className="hud tracking-wider text-clay">
+            [ Team {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
+          </p>
+          <p className="mt-3 font-display text-[clamp(1.75rem,1.2rem+2vw,3rem)] leading-none">{label}</p>
+          <div className="mx-auto mt-4 h-[3px] w-28" style={{ background: "linear-gradient(90deg,#d97757 0 33%,#6a9bcc 33% 66%,#788c5d 66%)" }} />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 /** How long each card stays highlighted before the next one takes over. */
 const DWELL = 4500;
 /** The last card of a team stays longer, so its frame finishes and there is time to read it. */
@@ -107,7 +141,9 @@ export function PeopleStage({ people }: { people: Member[] }) {
     return out;
   }, [people]);
 
-  const [c, setC] = useState(0);
+  const [c, setC] = useState(0); // the chosen team (the strip shows it straight away)
+  const [view, setView] = useState(0); // the team on show: swapped while the wipe covers the stage
+  const [wipe, setWipe] = useState(0); // one per team change, to replay the wipe
   const [p, setP] = useState(0);
   const [dir, setDir] = useState(1);
   const [held, setHeld] = useState(false); // pointer or focus is on a card
@@ -116,36 +152,45 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const inView = useInView(root, { amount: 0.3 });
 
   const total = cats.length;
-  const n = cats[c]?.people.length ?? 0;
+  const n = cats[view]?.people.length ?? 0;
   // Runs with reduced motion too: it swaps content rather than moving things about, and the
   // pause button (plus hover and focus) stops it, so the rotation is always under the reader's control.
   const auto = !paused && !held && inView && total > 0;
 
+  // a team change: the wipe covers the stage, the new team goes in underneath, the wipe moves on
+  const switchTo = (next: number, d: number) => {
+    setDir(d);
+    setC(next);
+    setWipe((w) => w + 1);
+    setHeld(false); // the hovered card is going; don't stay stuck on hold
+  };
   const goCat = (i: number) => {
     const next = (i + total) % total;
     if (next === c) return;
-    setDir(next > c ? 1 : -1);
-    setC(next);
-    setP(0);
-    setHeld(false); // the hovered card is gone; don't stay stuck on hold
+    switchTo(next, next > c ? 1 : -1);
   };
+  useEffect(() => {
+    if (c === view) return;
+    const t = setTimeout(() => {
+      setView(c);
+      setP(0);
+    }, WIPE_COVERED_MS);
+    return () => clearTimeout(t);
+  }, [c, view]);
 
   // the timer: next card, then the first card of the next category
   useEffect(() => {
     if (!auto) return;
     const t = setTimeout(() => {
       if (p + 1 < n) setP(p + 1);
-      else if (total > 1) {
-        setDir(1);
-        setC((c + 1) % total);
-        setP(0);
-      } else setP(0);
+      else if (total > 1) switchTo((view + 1) % total, 1);
+      else setP(0);
     }, p + 1 < n ? DWELL : DWELL_LAST);
     return () => clearTimeout(t);
-  }, [auto, p, c, n, total]);
+  }, [auto, p, view, n, total]);
 
   if (!total) return null;
-  const cat = cats[c];
+  const cat = cats[view];
   const bd = backdropFor(cat.backdrop);
   const goPerson = (d: number) => setP((v) => (v + d + n) % n);
 
@@ -216,6 +261,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
 
       {/* stage */}
       <div className="relative overflow-hidden md:min-h-[44rem]">
+        {wipe > 0 && <TeamWipe key={wipe} dir={dir} index={c} total={total} label={cats[c].label} />}
         {/* backdrop slides between categories */}
         <AnimatePresence initial={false} custom={dir}>
           <motion.div
@@ -243,7 +289,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
               <div className="flex items-center gap-4">
                 <span className="hud tracking-wider">[ Team ]</span>
                 <span className="hud opacity-70">
-                  {String(c + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+                  {String(view + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
                 </span>
               </div>
               <AnimatePresence mode="wait" initial={false}>
