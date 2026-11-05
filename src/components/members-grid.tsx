@@ -58,7 +58,7 @@ export function MembersGrid({ members }: { members: Member[] }) {
   return (
     <>
       {/* type filter */}
-      <div role="tablist" aria-label="Filter by member type" className="mb-10 flex flex-wrap gap-x-6 gap-y-4 md:mb-14 md:gap-x-8">
+      <div role="tablist" aria-label="Filter by member type" className="mb-14 flex flex-wrap gap-x-8 gap-y-4">
         {filters.map((f) => {
           const on = filter === f.key;
           const Icon = f.icon;
@@ -104,7 +104,7 @@ export function MembersGrid({ members }: { members: Member[] }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.55, ease: FLOW }}
-          className="space-y-12 md:space-y-20"
+          className="space-y-20"
         >
           {groups.map((g) => {
             if (filter !== "All" && filter !== g) return null;
@@ -118,7 +118,7 @@ export function MembersGrid({ members }: { members: Member[] }) {
                   </h2>
                   <Hud className="text-ink-faint">{list.length}</Hud>
                 </div>
-                <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 md:mt-8 md:gap-x-6 md:gap-y-10 lg:grid-cols-3">
+                <ul className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((m) => (
                     <li key={m.slug}>
                       <button
@@ -144,7 +144,7 @@ export function MembersGrid({ members }: { members: Member[] }) {
                               className="absolute inset-0 m-auto size-3/5 object-contain transition-transform duration-[900ms] ease-flow group-hover:-translate-y-1 group-hover:rotate-[-3deg] group-hover:scale-110"
                             />
                           )}
-                          <span className="absolute left-0 top-0 grid size-9 place-items-center bg-ink font-display text-sm text-paper md:size-12 md:text-lg transition-colors duration-700 ease-flow group-hover:bg-clay-deep">
+                          <span className="absolute left-0 top-0 grid size-12 place-items-center bg-ink font-display text-lg text-paper transition-colors duration-700 ease-flow group-hover:bg-clay-deep">
                             {initials(m.name)}
                           </span>
                           <span
@@ -152,9 +152,9 @@ export function MembersGrid({ members }: { members: Member[] }) {
                             className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-clay transition-transform duration-700 ease-flow group-hover:scale-x-100"
                           />
                         </span>
-                        <span className="mt-3 block font-display text-lg leading-tight md:mt-4 md:text-2xl">{m.name}</span>
+                        <span className="mt-4 block font-display text-2xl leading-tight">{m.name}</span>
                         <span className="hud mt-1 block text-ink-faint">{m.role}</span>
-                        <span className="mt-3 hidden flex-wrap gap-1.5 md:flex">
+                        <span className="mt-3 flex flex-wrap gap-1.5">
                           {m.focus.map((f) => (
                             <span key={f} className="border border-ink/25 px-2 py-0.5 text-xs text-ink-soft">
                               {f}
