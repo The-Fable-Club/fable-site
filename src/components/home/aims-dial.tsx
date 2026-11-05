@@ -53,6 +53,20 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
   const a = aims[i];
 
   return (
+    <>
+    {/* phones: the aims as a plain list; no 3D model, no carousel (fable-site#27) */}
+    <section aria-label="What the club provides" className="bg-night-sunken px-6 py-14 text-paper md:hidden">
+      <h3 className="font-display text-4xl leading-none">What we provide</h3>
+      <ol className="mt-8 divide-y divide-paper/15 border-y border-paper/15">
+        {aims.map((x, k) => (
+          <li key={x.title} className="py-5">
+            <Hud className="text-clay">{String(k + 1).padStart(2, "0")}</Hud>
+            <p className="mt-2 font-display text-2xl leading-tight">{x.title}</p>
+            <p className="mt-2 font-serif leading-relaxed text-night-soft">{x.body}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
     <section
       ref={root}
       onPointerEnter={(e) => {
@@ -61,7 +75,7 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
       onPointerLeave={() => setHover(false)}
       aria-roledescription="carousel"
       aria-label="What the club provides"
-      className="relative overflow-hidden bg-night-sunken text-paper"
+      className="relative hidden overflow-hidden bg-night-sunken text-paper md:block"
     >
       <div className="mx-auto grid min-h-[min(46rem,90dvh)] max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto_1fr] md:px-12">
         {/* left: heading */}
@@ -139,5 +153,6 @@ export function AimsDial({ aims }: { aims: Aim[] }) {
         </div>
       </div>
     </section>
+    </>
   );
 }
