@@ -126,16 +126,19 @@ export function MembersGrid({ members }: { members: Member[] }) {
                         className="group block w-full text-left"
                         aria-haspopup="dialog"
                       >
-                        <span className="relative block aspect-[4/3] overflow-hidden bg-paper-raised">
-                          {m.photo ? (
+                        {m.photo ? (
+                          // a tilted snapshot with its own frame (cut out onto transparency): no card around it
+                          <span className="relative block aspect-[4/3]">
                             <Image
                               src={m.photo}
                               alt=""
                               fill
-                              sizes="(min-width:1024px) 33vw, 50vw"
-                              className="object-cover transition-transform duration-[900ms] ease-flow group-hover:scale-105"
+                              sizes="(min-width:1024px) 300px, 50vw"
+                              className="object-contain object-left drop-shadow-[6px_8px_0_rgb(20_20_19/0.18)] transition-transform duration-[900ms] ease-flow group-hover:-translate-y-1.5 group-hover:scale-[1.04]"
                             />
-                          ) : (
+                          </span>
+                        ) : (
+                          <span className="relative block aspect-[4/3] overflow-hidden bg-paper-raised">
                             <Image
                               src={m.art}
                               alt=""
@@ -143,15 +146,15 @@ export function MembersGrid({ members }: { members: Member[] }) {
                               height={240}
                               className="absolute inset-0 m-auto size-3/5 object-contain transition-transform duration-[900ms] ease-flow group-hover:-translate-y-1 group-hover:rotate-[-3deg] group-hover:scale-110"
                             />
-                          )}
-                          <span className="absolute left-0 top-0 grid size-12 place-items-center bg-ink font-display text-lg text-paper transition-colors duration-700 ease-flow group-hover:bg-clay-deep">
-                            {initials(m.name)}
+                            <span className="absolute left-0 top-0 grid size-12 place-items-center bg-ink font-display text-lg text-paper transition-colors duration-700 ease-flow group-hover:bg-clay-deep">
+                              {initials(m.name)}
+                            </span>
+                            <span
+                              aria-hidden
+                              className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-clay transition-transform duration-700 ease-flow group-hover:scale-x-100"
+                            />
                           </span>
-                          <span
-                            aria-hidden
-                            className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-clay transition-transform duration-700 ease-flow group-hover:scale-x-100"
-                          />
-                        </span>
+                        )}
                         <span className="mt-4 block font-display text-2xl leading-tight">{m.name}</span>
                         <span className="hud mt-1 block text-ink-faint">{m.role}</span>
                         <span className="mt-3 flex flex-wrap gap-1.5">
@@ -179,19 +182,23 @@ export function MembersGrid({ members }: { members: Member[] }) {
             <div className="grid md:grid-cols-[0.8fr_1.2fr]">
               <div className="relative grid min-h-56 place-items-center overflow-hidden bg-clay p-8">
                 {current.photo ? (
-                  <Image src={current.photo} alt="" fill sizes="320px" className="object-cover" />
+                  <span className="relative block aspect-square w-full max-w-64">
+                    <Image src={current.photo} alt="" fill sizes="256px" className="object-contain drop-shadow-[6px_8px_0_rgb(20_20_19/0.35)]" />
+                  </span>
                 ) : (
-                  <Image
-                    src={current.art}
-                    alt=""
-                    width={260}
-                    height={260}
-                    className="size-44 object-contain mix-blend-multiply md:size-56"
-                  />
+                  <>
+                    <Image
+                      src={current.art}
+                      alt=""
+                      width={260}
+                      height={260}
+                      className="size-44 object-contain mix-blend-multiply md:size-56"
+                    />
+                    <span className="absolute left-0 top-0 grid size-14 place-items-center bg-ink font-display text-xl text-paper">
+                      {initials(current.name)}
+                    </span>
+                  </>
                 )}
-                <span className="absolute left-0 top-0 grid size-14 place-items-center bg-ink font-display text-xl text-paper">
-                  {initials(current.name)}
-                </span>
               </div>
               <div className="p-6 md:p-9">
                 <Hud className="text-ink-faint">{current.role}</Hud>
