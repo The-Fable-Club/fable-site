@@ -322,8 +322,25 @@ export function PeopleStage({ people }: { people: Member[] }) {
   );
 }
 
-/** Generic person card: silhouette placeholder until real photos arrive. */
+/** A person in the deck. A photo is a tilted snapshot with its own frame (cut out onto
+ * transparency), so it is shown on its own; the name is beside the deck already.
+ * Without a photo: our card with a silhouette. */
 function PersonCard({ member: m, front }: { member: Member; front: boolean }) {
+  if (m.photo)
+    return (
+      <div className="relative size-full">
+        <Image
+          src={m.photo}
+          alt=""
+          fill
+          sizes="304px"
+          className={cn(
+            "object-contain drop-shadow-[8px_10px_0_rgb(20_20_19/0.55)] transition-[filter] duration-700 ease-flow",
+            !front && "brightness-90",
+          )}
+        />
+      </div>
+    );
   return (
     <div className="relative size-full overflow-hidden border-2 border-ink bg-paper shadow-[10px_10px_0_0_rgb(20_20_19/0.9)]">
       <div className="relative h-[78%] bg-[linear-gradient(160deg,#ebdbbc,#d4a27f)]">
