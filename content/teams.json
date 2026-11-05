@@ -1,5 +1,5 @@
 {
-  "_note": "What applicants see when they pick a team on /join. Full board wording, open questions and suggestions are in docs/TEAMS.md. The names must match TEAMS in src/lib/submissions.ts and fable-cms src/lib/applications.ts.",
+  "_note": "What applicants see when they pick a team on /join, and the questions that team asks (plus `everyone`, asked of every applicant). Full board wording, open questions and suggestions are in docs/TEAMS.md. The names must match TEAMS in src/lib/submissions.ts and fable-cms src/lib/applications.ts.",
   "teams": [
     {
       "name": "Web Development",
@@ -11,7 +11,14 @@
         "Looking after the club's GitHub repositories",
         "Interest in security: testing and hardening what we build"
       ],
-      "niceToHave": ["UI design or Figma skills, for the artwork on our sites and apps", "Coding experience (helpful, not required)"]
+      "niceToHave": [
+        "UI design or Figma skills, for the artwork on our sites and apps",
+        "Coding experience (helpful, not required)"
+      ],
+      "questions": [
+        "Pick a website or app you use a lot. How do you think it is put together: what runs in the browser, where the data lives, how it is hosted? Guesses are fine.",
+        "Have you built, set up or looked after a site, app or repo before, with or without AI? Tell us your part, and add a link if you have one."
+      ]
     },
     {
       "name": "Agentic AI",
@@ -23,7 +30,14 @@
         "Automating workflows end to end, including CI/CD and basic DevOps",
         "Python or TypeScript fundamentals, enough to debug what the AI writes"
       ],
-      "niceToHave": ["RAG, vector databases or context engineering", "Frameworks such as LangGraph or the Claude Agent SDK"]
+      "niceToHave": [
+        "RAG, vector databases or context engineering",
+        "Frameworks such as LangGraph or the Claude Agent SDK"
+      ],
+      "questions": [
+        "Tell us about something you have made with AI tools: what it does, which tools you used and what broke along the way. Add a link if you have one.",
+        "Pick one repetitive job in a club or at college, like reminders, approvals or attendance. How would you automate it end to end, and how would you know it is working?"
+      ]
     },
     {
       "name": "Projects",
@@ -35,7 +49,13 @@
         "Turning an idea into a plan with clear steps for the other teams",
         "Curiosity about what is new in AI"
       ],
-      "niceToHave": ["Experience running or planning a project, in college or outside it"]
+      "niceToHave": [
+        "Experience running or planning a project, in college or outside it"
+      ],
+      "questions": [
+        "Pitch one project the club could build, in a few lines. Who is it for, and why hasn't it been done (or done well) already?",
+        "How would you check that idea is doable in one semester? What would you look up or try first?"
+      ]
     },
     {
       "name": "Operations",
@@ -49,7 +69,13 @@
         "Keeping documentation, reports and records up to date",
         "Strong organisation, communication and time management"
       ],
-      "niceToHave": ["Experience in event management, team coordination or running operations"]
+      "niceToHave": [
+        "Experience in event management, team coordination or running operations"
+      ],
+      "questions": [
+        "The speaker cancels two hours before an event. Walk us through what you do next.",
+        "Tell us about an event, fest or team activity you helped run. What was your part?"
+      ]
     },
     {
       "name": "Finance",
@@ -62,7 +88,13 @@
         "Handling event registrations with the Operations team",
         "Being careful and reliable with numbers"
       ],
-      "niceToHave": ["Sponsorship, fundraising or treasury experience"]
+      "niceToHave": [
+        "Sponsorship, fundraising or treasury experience"
+      ],
+      "questions": [
+        "Pitch the club to a sponsor in three or four sentences. What do they get back?",
+        "A workshop for 60 people has ₹5,000. Roughly how would you split it, and what would you cut first if it dropped to ₹3,000?"
+      ]
     },
     {
       "name": "Creative & Communications",
@@ -75,14 +107,28 @@
         "Basic photo and video editing",
         "Willingness to pick up new tools"
       ],
-      "niceToHave": ["Video editing in Premiere Pro, CapCut or DaVinci Resolve", "Basic UI design in Figma"]
+      "niceToHave": [
+        "Video editing in Premiere Pro, CapCut or DaVinci Resolve",
+        "Basic UI design in Figma"
+      ],
+      "questions": [
+        "Share a poster, post, video or design you made (a link is best) and tell us which tool you used.",
+        "Pick a post or page from any club or brand. What is one thing you would change about how it looks, and why?"
+      ]
     },
     {
       "name": "Not sure yet",
       "short": "Pick this if you'd like us to help you choose.",
       "about": "That's fine. Tell us below what you'd like to build or learn, and we'll suggest a team during the short chat.",
       "lookingFor": [],
-      "niceToHave": []
+      "niceToHave": [],
+      "questions": [
+        "What would you like to build or learn in the club?",
+        "What are you already good at, in tech or outside it?"
+      ]
     }
+  ],
+  "everyone": [
+    "Tell us about something you committed to and saw through, even when it got boring or hard. What was your part, and what did it take?"
   ]
 }

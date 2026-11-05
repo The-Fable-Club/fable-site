@@ -1,6 +1,7 @@
 // Validation and the database insert for the two live forms (join application,
 // event registration). Pure where possible so it can be tested without a network.
 import { z } from "zod";
+import { questionsFor } from "@/lib/team-questions";
 
 // No compiled validators: they need eval, which the site's CSP forbids (zod would only probe for it, but the probe is reported as a violation).
 z.config({ jitless: true });
@@ -29,20 +30,27 @@ const person = {
   website: z.string().max(0).optional(),
 };
 
-export const ApplicationInput = z.object({
-  ...person,
-  email: z
-    .string()
-    .trim()
-    .max(200)
-    .regex(VIT_EMAIL, "Use your VIT student email (it ends in @vitstudent.ac.in).")
-    .transform((v) => v.toLowerCase()),
-  phone: z.string().trim().regex(PHONE, "Enter your phone or WhatsApp number."),
-  team: z.enum(TEAMS, { message: "Pick a team, or “Not sure yet”." }),
-  build: text(10, 2000, "Tell us what you would like to build or learn (a sentence is enough)."),
-  why: text(20, 2000, "Tell us a little more (at least a sentence)."),
-  task: text(20, 3000, "Answer the short task in a few sentences."),
-});
+/** One answer to a team question (fable-site#24): the questions themselves come from content/teams.json. */
+export const ANSWER_MAX = 1200;
+
+export const ApplicationInput = z
+  .object({
+    ...person,
+    email: z
+      .string()
+      .trim()
+      .max(200)
+      .regex(VIT_EMAIL, "Use your VIT student email (it ends in @vitstudent.ac.in).")
+      .transform((v) => v.toLowerCase()),
+    phone: z.string().trim().regex(PHONE, "Enter your phone or WhatsApp number."),
+    team: z.enum(TEAMS, { message: "Pick a team, or “Not sure yet”." }),
+    why: text(20, 2000, "Tell us a little more (at least a sentence)."),
+    task: text(20, 3000, "Answer the short task in a few sentences."),
+    // in the order questionsFor(team) lists them
+    answers: z.array(text(15, ANSWER_MAX, "Answer this in a sentence or two.")).max(6).default([]),
+  })
+  // only a hand-made request gets this wrong: the form always sends one answer per question
+  .refine((v) => v.answers.length === questionsFor(v.team).length, { path: ["answers"], message: "Answer each of your team’s questions." });
 export type ApplicationInput = z.infer<typeof ApplicationInput>;
 
 export const RegistrationInput = z.object({
@@ -77,7 +85,11 @@ export const questionRow = (v: QuestionInput) => ({ event_slug: v.event_slug, qu
 export type FieldErrors = Record<string, string>;
 export function fieldErrors(error: z.ZodError): FieldErrors {
   const out: FieldErrors = {};
-  for (const i of error.issues) out[String(i.path[0] ?? "form")] ??= i.message;
+  for (const i of error.issues) {
+    // a team answer is reported as a0, a1, …: one message per box
+    const k = i.path[0] === "answers" && typeof i.path[1] === "number" ? `a${i.path[1]}` : String(i.path[0] ?? "form");
+    out[k] ??= i.message;
+  }
   return out;
 }
 
@@ -91,9 +103,10 @@ export function applicationRow(v: ApplicationInput, intake: string) {
     department: v.department,
     year: v.year,
     team: v.team,
-    build: v.build,
     why: v.why,
     task: v.task,
+    // kept with the wording asked, so the CMS shows the right question even after teams.json changes
+    answers: questionsFor(v.team).map((q, i) => ({ q, a: v.answers[i] })),
     intake,
   };
 }

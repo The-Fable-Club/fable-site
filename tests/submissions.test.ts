@@ -7,6 +7,7 @@ import { ApplicationInput, QuestionInput, RegistrationInput, fieldErrors, guardR
 import { POST as postQuestion } from "@/app/api/questions/route";
 import { POST as postRegistration } from "@/app/api/registrations/route";
 import { POST as postApplication } from "@/app/api/applications/route";
+import { questionsFor } from "@/lib/team-questions";
 
 const person = { name: "Ada Lovelace", reg_no: "25abc1234", email: "ada@vit.ac.in", department: "CSE", year: "2nd", consent: true };
 const reg = (o: Record<string, unknown> = {}) => ({ ...person, event_slug: "some-event", ...o });
@@ -15,7 +16,7 @@ const app = (o: Record<string, unknown> = {}) => ({
   email: "Ada.Lovelace2025@VITstudent.ac.in",
   phone: "+91 98765 43210",
   team: "Agentic AI",
-  build: "An agent that plans my week.",
+  answers: ["I built a Discord bot with Claude Code that triages issues.", "A reminder agent reading the event sheet, checked by a daily test run.", "I ran my hostel's fest stall for three days when the lead dropped out."],
   why: "I want to build agents with Claude.",
   task: "I would hand it my lab-record formatting, with read access to my notes only.",
   ...o,
@@ -72,7 +73,12 @@ describe("validation", () => {
     expect(bad({ phone: "" })?.phone).toBeTruthy();
     expect(bad({ phone: "call me" })?.phone).toBeTruthy();
     expect(bad({ team: "Marketing" })?.team).toBeTruthy();
-    expect(bad({ build: "x" })?.build).toBeTruthy();
+    // team answers: one per question, each a sentence or two; the error names the box
+    expect(bad({ answers: ["A real first answer, long enough.", "short", "A real third answer, long enough."] })?.a1).toBeTruthy();
+    expect(bad({ answers: ["Only one answer, though it is long enough."] })?.answers).toBeTruthy();
+    expect(bad({ answers: undefined })?.answers).toBeTruthy();
+    expect(bad({ answers: ["x".repeat(1201), "A real second answer, long enough.", "A real third answer, long enough."] })?.a0).toBeTruthy();
+    expect(bad({ team: "Finance" })).toBeNull(); // every team asks three
     expect(bad({ why: "short" })?.why).toBeTruthy();
     expect(bad({ why: "x".repeat(2001) })?.why).toBeTruthy();
     expect(bad({ task: "too short" })?.task).toBeTruthy();
@@ -174,9 +180,9 @@ describe("API routes", () => {
       department: "CSE",
       year: "2nd",
       team: "Agentic AI",
-      build: "An agent that plans my week.",
       why: "I want to build agents with Claude.",
       task: "I would hand it my lab-record formatting, with read access to my notes only.",
+      answers: questionsFor("Agentic AI").map((q, i) => ({ q, a: (app().answers as string[])[i] })),
       intake: "2026-27",
     });
   });

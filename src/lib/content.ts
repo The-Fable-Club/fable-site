@@ -163,7 +163,7 @@ export async function getContent(): Promise<Content> {
 }
 
 /** A team applicants can pick on /join, with what it does and looks for (content/teams.json). */
-export type Team = { name: string; short: string; about: string; lookingFor: string[]; niceToHave: string[] };
+export type Team = { name: string; short: string; about: string; lookingFor: string[]; niceToHave: string[]; questions: string[] };
 
 /** The team descriptions shown on /join. Edit content/teams.json; docs/TEAMS.md has the board's full wording. */
 export function readTeams(): Team[] {
