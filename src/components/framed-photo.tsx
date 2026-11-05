@@ -19,7 +19,7 @@ const stroke = { fill: "none", strokeWidth: 2, strokeLinecap: "round" as const, 
 // points away from the photo. "M" moves without drawing (for eyes, antennae, a halo).
 // Paths are traced in drawing order, so the line really does go out into the doodle and
 // come back to carry on round the frame.
-type Seg = (string | number)[];
+export type Seg = (string | number)[];
 type Doodle = { w: number; segs: Seg[]; edges?: number[] };
 
 const DOODLES = {
@@ -47,14 +47,48 @@ const DOODLES = {
 } satisfies Record<string, Doodle>;
 type DoodleName = keyof typeof DOODLES;
 
-// A wing on each side edge, mirrored, at the same height: tip up on both.
-const WING_UP_AT_END: Seg[] = [["C", 0, -22, 22, -42, 52, -46], ["C", 46, -38, 48, -33, 42, -31], ["C", 46, -27, 44, -22, 37, -21], ["C", 41, -17, 38, -12, 31, -12], ["C", 33, -7, 29, -2, 22, 0], ["L", 56, 0]];
-const WING_UP_AT_START: Seg[] = [["L", 34, 0], ["C", 27, -2, 23, -7, 25, -12], ["C", 18, -12, 15, -17, 19, -21], ["C", 12, -22, 10, -27, 14, -31], ["C", 8, -33, 10, -38, 4, -46], ["C", 34, -42, 56, -22, 56, 0]];
-const WING_W = 56;
+// A bird's wing, raised: the trailing edge fans out into five primary feathers from the
+// lower attachment to the tip, the leading edge curves back to the upper attachment, and
+// three covert lines suggest the feather layers. Drawn with the tip toward the end of the
+// edge (u = WING_W); the mirror puts it at the start, for the other side.
+const WING_W = 52;
+const WING_OUTLINE: Seg[] = [
+  ["Q", -8, -10, -2, -20], ["Q", 4, -22, 6, -18],
+  ["Q", 0, -30, 6, -36], ["Q", 12, -38, 14, -32],
+  ["Q", 10, -46, 18, -52], ["Q", 24, -54, 26, -46],
+  ["Q", 26, -60, 36, -64], ["Q", 42, -64, 42, -56],
+  ["Q", 46, -70, 58, -74],
+  ["C", 58, -50, 60, -22, 52, 0],
+];
+const WING_COVERTS: Seg[] = [["M", 10, -8], ["Q", 22, -18, 24, -34], ["M", 24, -6], ["Q", 36, -18, 40, -44], ["M", 38, -4], ["Q", 48, -14, 50, -34]];
 
-/** Hand-picked doodles for some people (the rest are seeded from the slug). */
-const PICKS: Record<string, (DoodleName | "wings")[]> = {
-  "harsha-vardan-m-sakamuri": ["catEars", "heart"],
+/** The same outline drawn the other way round and flipped along the edge (L, Q and C only). */
+function mirrored(segs: Seg[], w: number): Seg[] {
+  const fx = (x: number) => w - x;
+  const ends: Pt[] = [[0, 0]];
+  for (const sg of segs) ends.push([sg[sg.length - 2] as number, sg[sg.length - 1] as number]);
+  const out: Seg[] = [];
+  for (let i = segs.length - 1; i >= 0; i--) {
+    const [cmd, ...v] = segs[i] as [string, ...number[]];
+    const to = ends[i];
+    if (cmd === "Q") out.push(["Q", fx(v[0]), v[1], fx(to[0]), to[1]]);
+    else if (cmd === "C") out.push(["C", fx(v[2]), v[3], fx(v[0]), v[1], fx(to[0]), to[1]]);
+    else out.push(["L", fx(to[0]), to[1]]);
+  }
+  return out;
+}
+const flipM = (segs: Seg[], w: number): Seg[] => segs.map(([cmd, ...v]) => [cmd, ...(v as number[]).map((n, i) => (i % 2 ? n : w - n))]);
+const WING_TIP_AT_END: Seg[] = [...WING_OUTLINE, ...WING_COVERTS, ["M", WING_W, 0]];
+const WING_TIP_AT_START: Seg[] = [...mirrored(WING_OUTLINE, WING_W), ...flipM(WING_COVERTS, WING_W), ["M", WING_W, 0]];
+
+// The left edge is drawn bottom to top and the right edge top to bottom, so "tip at the end"
+// raises a wing on the left and "tip at the start" raises one on the right.
+type Pick = DoodleName | "wings" | "wingL" | "wingR";
+
+/** Hand-picked doodles for some people, optionally on a given edge ("heart@1"); the rest are
+ * seeded from the slug. Edges: 0 top, 1 right, 2 bottom, 3 left. */
+const PICKS: Record<string, `${Pick}${"" | `@${0 | 1 | 2 | 3}`}`[]> = {
+  "harsha-vardan-m-sakamuri": ["catEars@0", "heart@1", "wingL@3"],
 };
 
 /** A small seeded random generator, so a member's frame is the same on every visit. */
@@ -81,7 +115,7 @@ export type Pt = [number, number];
 const f1 = (n: number) => n.toFixed(1);
 
 /** Doodle segments laid along an edge: u runs along `t`, outward (-v) along `n`, scaled by k. */
-function alongEdge(segs: Seg[], o: Pt, t: Pt, n: Pt, k: number): string {
+export function alongEdge(segs: Seg[], o: Pt, t: Pt, n: Pt, k: number): string {
   const at = (u: number, v: number) => `${f1(o[0] + u * k * t[0] - v * k * n[0])} ${f1(o[1] + u * k * t[1] - v * k * n[1])}`;
   const turn = (Math.atan2(t[1], t[0]) * 180) / Math.PI;
   return segs
@@ -118,18 +152,26 @@ export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: n
   // choose: the hand-picked ones first, then seeded picks until 3-4 doodles are placed
   const placed: Placed[] = [];
   const free = new Set([0, 1, 2, 3]);
-  const place = (name: DoodleName | "wings") => {
+  const wingAt = (edge: number) => (edge === 3 ? WING_TIP_AT_END : WING_TIP_AT_START);
+  const place = (name: Pick, onEdge?: number) => {
     if (name === "wings") {
       if (!free.has(1) || !free.has(3)) return false;
-      const L1 = len(1);
-      const pos = 18 + rnd() * (L1 * 0.35);
-      placed.push({ edge: 1, pos, segs: WING_UP_AT_START, w: WING_W }, { edge: 3, pos: len(3) - pos - WING_W * k, segs: WING_UP_AT_END, w: WING_W });
+      const pos = 18 + rnd() * (len(1) * 0.3);
+      placed.push({ edge: 1, pos, segs: wingAt(1), w: WING_W }, { edge: 3, pos: len(3) - pos - WING_W * k, segs: wingAt(3), w: WING_W });
       free.delete(1);
       free.delete(3);
       return true;
     }
+    if (name === "wingL" || name === "wingR") {
+      const edge = name === "wingL" ? 3 : 1;
+      if (!free.has(edge)) return false;
+      const pos = edge === 3 ? len(3) * (0.42 + rnd() * 0.2) : 18 + rnd() * len(1) * 0.3; // tip up near the top either way
+      placed.push({ edge, pos, segs: wingAt(edge), w: WING_W });
+      free.delete(edge);
+      return true;
+    }
     const dd: Doodle = DOODLES[name];
-    const options = [...free].filter((e) => !dd.edges || dd.edges.includes(e));
+    const options = [...free].filter((e) => (onEdge === undefined || e === onEdge) && (!dd.edges || dd.edges.includes(e)));
     if (!options.length) return false;
     const edge = options[Math.floor(rnd() * options.length)];
     const span = dd.w * k;
@@ -137,14 +179,19 @@ export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: n
     free.delete(edge);
     return true;
   };
-  for (const p of PICKS[slug] ?? []) place(p);
-  const names = [...(Object.keys(DOODLES) as DoodleName[]), "wings", "wings", "mascot"] as (DoodleName | "wings")[];
+  for (const pick of PICKS[slug] ?? []) {
+    const [name, at] = pick.split("@");
+    place(name as Pick, at === undefined ? undefined : Number(at));
+  }
+  const names: Pick[] = [...(Object.keys(DOODLES) as DoodleName[]), "wings", "wings", "wingL", "wingR", "mascot"];
+  const used = new Set<string>((PICKS[slug] ?? []).map((x) => x.split("@")[0]));
   const want = rnd() < 0.5 ? 3 : 4;
   for (let tries = 0; placed.length < want && free.size && tries < 40; tries++) {
     const name = names[Math.floor(rnd() * names.length)];
-    if (placed.some((p) => p.segs === (name === "wings" ? WING_UP_AT_START : (DOODLES as Record<string, Doodle>)[name]?.segs))) continue;
-    place(name);
+    if (used.has(name) || (name.startsWith("wing") && [...used].some((u) => u.startsWith("wing")))) continue;
+    if (place(name)) used.add(name);
   }
+
 
   // the part of edge e between `from` and `to` (distances along it), doodles included
   const part = (e: number, from: number, to: number) => {
