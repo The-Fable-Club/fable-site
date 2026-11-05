@@ -5,7 +5,8 @@ import { Check, Copy, Mail } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Hud, Ph } from "@/components/hud";
 import type { Team } from "@/lib/content";
-import { ApplicationInput, TEAMS, YEARS, fieldErrors } from "@/lib/submissions";
+import { ANSWER_MAX, ApplicationInput, TEAMS, YEARS, fieldErrors } from "@/lib/submissions";
+import { questionsFor } from "@/lib/team-questions";
 import { cn } from "@/lib/utils";
 
 type Errors = Record<string, string>;
@@ -75,7 +76,6 @@ const labels: Record<string, string> = {
   department: "Department",
   year: "Year",
   team: "Preferred team",
-  build: "Wants to build or learn",
   why: "Why I want to join",
   task: "Short task",
 };
@@ -109,6 +109,8 @@ export function JoinForm({
   const [taskLen, setTaskLen] = useState(0);
   const [team, setTeam] = useState<string | null>(null);
   const picked = teams.find((t) => t.name === team);
+  const questions = team ? questionsFor(team) : [];
+  const own = picked?.questions.length ?? 0; // the rest are the ones everyone answers
   const status = useRef<HTMLDivElement>(null);
 
   // The confirmation is much shorter than the form it replaces: bring it into view, or people are left looking at the footer.
@@ -133,9 +135,9 @@ export function JoinForm({
       department: g("department"),
       year: g("year"),
       team: g("team"),
-      build: g("build"),
       why: g("why"),
       task: g("task"),
+      answers: questionsFor(g("team")).map((_, i) => g(`a${i}`)),
       consent: f.get("consent") === "on",
       website: g("website"),
     };
@@ -148,11 +150,10 @@ export function JoinForm({
     setErrors({});
     const summary = [
       ...Object.entries(labels)
-        .filter(([k]) => !["build", "why", "task"].includes(k))
+        .filter(([k]) => !["why", "task"].includes(k))
         .map(([k, l]) => `${l}: ${payload[k as keyof typeof payload]}`),
       "",
-      `What I'd like to build or learn:\n${payload.build}`,
-      "",
+      ...questionsFor(payload.team).flatMap((q, i) => [`${q}\n${payload.answers[i]}`, ""]),
       `Why I want to join:\n${payload.why}`,
       "",
       `Short task: ${taskPrompt}\n${payload.task}`,
@@ -306,7 +307,7 @@ export function JoinForm({
         </div>
       </Part>
 
-      <Part n="02" title="What you want from the club">
+      <Part n="02" title="Your team">
         <div role="radiogroup" aria-labelledby="team-label" aria-describedby={errors.team ? "e-team" : undefined}>
           <span id="team-label" className="hud text-ink-faint">
             Which team would you like to be part of?
@@ -349,19 +350,45 @@ export function JoinForm({
             </AnimatePresence>
           </div>
         </div>
-        <label className="block">
-          <span className="hud text-ink-faint">What would you like to build or learn?</span>
-          <textarea name="build" rows={3} className={area} {...field("build")} />
-          <Err errors={errors} k="build" />
-        </label>
+        {/* the picked team's questions, then the one everyone answers. Boxes are keyed by the question, so the shared one keeps its text when the team changes. */}
+        {questions.length > 0 ? (
+          <div className="grid gap-6">
+            {questions.map((q, i) => (
+              <motion.label
+                key={q}
+                layout="position"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.65, 0, 0.35, 1] }}
+                className="block"
+              >
+                <span className="hud text-clay-deep">{i < own ? `${team} · question ${i + 1}` : "Everyone answers this"}</span>
+                <span className="mt-1.5 block max-w-[62ch] font-serif text-lg leading-snug">{q}</span>
+                <textarea name={`a${i}`} rows={4} maxLength={ANSWER_MAX} className={area} {...field(`a${i}`)} />
+                <Err errors={errors} k={`a${i}`} />
+              </motion.label>
+            ))}
+            <Err errors={errors} k="answers" />
+          </div>
+        ) : (
+          <p className="border border-dashed border-ink/30 p-5 text-sm text-ink-faint">
+            Pick a team and its questions appear here: two of its own, and one we ask everyone.
+          </p>
+        )}
+      </Part>
+
+      <Part n="03" title="You and the club">
         <label className="block">
           <span className="hud text-ink-faint">Why do you want to join?</span>
+          <span className="mt-1.5 block max-w-[62ch] text-sm text-ink-soft">
+            Members are expected to show up and take on work. Tell us why you want in, and roughly how many hours a week you can give the club.
+          </span>
           <textarea name="why" rows={4} className={area} {...field("why")} />
           <Err errors={errors} k="why" />
         </label>
       </Part>
 
-      <Part n="03" title="A short task">
+      <Part n="04" title="A short task">
         <div className="border-l-2 border-clay bg-paper-raised p-5">
           <p className="font-serif text-lg leading-relaxed">{taskPrompt}</p>
           {taskIsPlaceholder && <Ph className="mt-3">Placeholder task: wording not final</Ph>}
