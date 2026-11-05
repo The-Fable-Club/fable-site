@@ -32,14 +32,7 @@ export function BootScreen({ institution }: { institution: string }) {
     } catch {
       /* private mode: just show the full version */
     }
-    // phones and reduced motion get the short version every time: people there want the page (fable-site#27)
-    let quick = false;
-    try {
-      quick = matchMedia("(max-width: 767px), (prefers-reduced-motion: reduce)").matches;
-    } catch {
-      /* old browser: the full version */
-    }
-    const minMs = seen || quick ? BOOT_REPEAT_MS : BOOT_FIRST_MS;
+    const minMs = seen ? BOOT_REPEAT_MS : BOOT_FIRST_MS;
 
     let ready = false;
     const done = () => (ready = true);
