@@ -8,6 +8,7 @@ import { Compass, ExternalLink, GraduationCap, Landmark, LayoutGrid, Mail, Users
 import { initials, type Member } from "@/lib/members";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Hud, Ph } from "@/components/hud";
+import { FramedPhoto } from "@/components/framed-photo";
 import { cn } from "@/lib/utils";
 
 const FLOW = [0.65, 0, 0.35, 1] as const;
@@ -127,15 +128,11 @@ export function MembersGrid({ members }: { members: Member[] }) {
                         aria-haspopup="dialog"
                       >
                         {m.photo ? (
-                          // a tilted snapshot with its own frame (cut out onto transparency): no card around it
+                          // the photo in its own hand-drawn frame (drawn as it scrolls into view): no card around it
                           <span className="relative block aspect-[4/3]">
-                            <Image
-                              src={m.photo}
-                              alt=""
-                              fill
-                              sizes="(min-width:1024px) 300px, 50vw"
-                              className="object-contain object-left drop-shadow-[6px_8px_0_rgb(20_20_19/0.18)] transition-transform duration-[900ms] ease-flow group-hover:-translate-y-1.5 group-hover:scale-[1.04]"
-                            />
+                            <span className="absolute left-[9%] top-1/2 block h-[76%] -translate-y-1/2 transition-[translate,scale] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-[calc(50%+6px)] group-hover:scale-[1.03]">
+                              <FramedPhoto slug={m.slug} src={m.photo} drawInView sizes="240px" className="relative block aspect-square h-full" />
+                            </span>
                           </span>
                         ) : (
                           <span className="relative block aspect-[4/3] overflow-hidden bg-paper-raised">
@@ -182,9 +179,7 @@ export function MembersGrid({ members }: { members: Member[] }) {
             <div className="grid md:grid-cols-[0.8fr_1.2fr]">
               <div className="relative grid min-h-56 place-items-center overflow-hidden bg-clay p-8">
                 {current.photo ? (
-                  <span className="relative block aspect-square w-full max-w-64">
-                    <Image src={current.photo} alt="" fill sizes="256px" className="object-contain drop-shadow-[6px_8px_0_rgb(20_20_19/0.35)]" />
-                  </span>
+                  <FramedPhoto slug={current.slug} src={current.photo} drawInView sizes="224px" className="relative my-6 size-48 md:size-56" />
                 ) : (
                   <>
                     <Image
