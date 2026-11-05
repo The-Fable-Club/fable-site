@@ -7,7 +7,10 @@ import { cn } from "@/lib/utils";
 
 // Easing for things that answer the pointer: quick to start, long soft landing.
 const SOFT = "ease-[cubic-bezier(0.22,1,0.36,1)]";
-const stroke = { fill: "none", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const };
+// No vector-effect="non-scaling-stroke": the frame's svg is scaled (a 264-unit viewBox shown
+// at ~200-320px), and with that setting browsers miscompute the dash a pathLength draw uses,
+// so a half-drawn line showed gaps and jumped. 1.7 units comes out at about 2px.
+const stroke = { fill: "none", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
 // ---- the photo's own frame: hand-drawn, different for every member ------------------
 // One line draws a slightly wobbly rectangle round the photo and, on its way, grows
