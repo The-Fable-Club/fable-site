@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion, type Variants } from "motion/react";
@@ -23,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { initials, type Member } from "@/lib/members";
+import { FramedPhoto } from "@/components/framed-photo";
 import { backdropFor, BackdropSvg } from "@/components/home/people-backdrops";
 import { ArrowBtn, Ph } from "@/components/hud";
 import { cn } from "@/lib/utils";
@@ -257,8 +257,9 @@ export function PeopleStage({ people }: { people: Member[] }) {
             <Ph className={bd.dark ? "border-clay text-clay" : undefined}>Placeholder bios</Ph>
           </div>
 
-          {/* the people, side by side */}
-          <AnimatePresence mode="wait" initial={false}>
+          {/* the people, side by side. No initial={false} here: it would also stop the frame
+              drawings and the timer, which mount inside, from animating */}
+          <AnimatePresence mode="wait">
             <motion.ul
               key={cat.label}
               variants={stagger}
@@ -285,7 +286,8 @@ export function PeopleStage({ people }: { people: Member[] }) {
                     if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHeld(false);
                   }}
                 >
-                  <PersonCard member={m} index={i} active={i === p} timing={auto && i === p} />
+                  {/* nothing is lit until the stage is on screen, so the frames draw when you get there */}
+                  <PersonCard member={m} index={i} active={inView && i === p} timing={auto && i === p} />
                 </motion.li>
               ))}
             </motion.ul>
@@ -385,8 +387,8 @@ function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: 
         {...common}
         strokeWidth={2}
         className={active ? "stroke-clay-deep" : "stroke-ink"}
-        initial={{ pathLength: draw ? 0 : 1, opacity: draw ? 1 : 0.9 }}
-        animate={{ pathLength: 1, opacity: active ? 1 : 0.28 }}
+        // keyframes (not `initial`), so the draw still runs inside an AnimatePresence with initial={false}
+        animate={{ pathLength: draw ? [0, 1] : 1, opacity: active ? 1 : 0.28 }}
         transition={{ pathLength: { duration: 2.2, ease: [0.45, 0, 0.25, 1] }, opacity: { duration: 0.9, ease: "easeOut" } }}
       />
       {extra && (
@@ -396,8 +398,7 @@ function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: 
           {...common}
           strokeWidth={1.75}
           className={active ? "stroke-clay-deep" : "stroke-ink"}
-          initial={{ pathLength: draw ? 0 : 1, opacity: draw ? 0 : 0.9 }}
-          animate={{ pathLength: 1, opacity: active ? 1 : 0.28 }}
+          animate={{ pathLength: draw ? [0, 1] : 1, opacity: draw ? [0, 1] : active ? 1 : 0.28 }}
           transition={{ pathLength: { duration: 0.9, delay: draw ? 0.9 : 0, ease: "easeOut" }, opacity: { duration: 0.5, delay: draw ? 0.9 : 0 } }}
         />
       )}
@@ -409,9 +410,9 @@ function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: 
 const SOFT = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 /** One person: a white card with a black border, and the whole card opens the full
- * profile. The snapshot (a tilted photo, cut out onto transparency) is kept near its real
- * size, since the originals are small, and spills over the top of its panel; a line draws
- * the frame round it with the role's motif. The lit card lifts, its tab turns black and the
+ * profile. The photo is kept near its real
+ * size, since the originals are small, inside its own hand-drawn frame; a second line draws
+ * the panel's frame with the role's motif. The lit card lifts, its tab turns black and the
  * timer runs along the bottom. */
 function PersonCard({ member: m, index, active, timing }: { member: Member; index: number; active: boolean; timing: boolean }) {
   const tags = [m.department, m.year, ...m.focus].filter(Boolean);
@@ -427,33 +428,28 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
       {/* tab: number and role */}
       <div
         className={cn(
-          "flex items-center border-b-2 border-ink py-2 pl-4 pr-[52%] transition-colors duration-700 sm:pr-[48%]",
+          "flex items-center justify-between gap-3 border-b-2 border-ink px-4 py-2 transition-colors duration-700",
           SOFT,
           active ? "bg-ink text-paper" : "bg-paper text-ink",
         )}
       >
-        {/* kept on the left: the snapshot spills over the right of this bar */}
-        <span className="hud truncate">
-          {String(index + 1).padStart(2, "0")} <span className="opacity-60">·</span> {m.role}
-        </span>
+        <span className="hud">{String(index + 1).padStart(2, "0")}</span>
+        <span className="hud truncate">{m.role}</span>
       </div>
 
-      {/* photo panel: faint grid, self-drawing frame, the snapshot spilling over the top */}
+      {/* photo panel: faint grid, the role motif along the bottom, the framed photo */}
       <div
         ref={panel}
-        className="relative h-56 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-60"
+        className="relative h-64 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-72"
       >
         <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} />
         {m.photo ? (
-          <div
-            className={cn(
-              "pointer-events-none absolute -top-7 right-4 z-10 size-44 transition-[scale,rotate,filter] duration-[1100ms] sm:right-[7%] sm:size-52",
-              SOFT,
-              active ? "rotate-0 scale-105 grayscale-0" : "-rotate-2 scale-95 grayscale-[0.6]",
-            )}
-          >
-            <Image src={m.photo} alt="" fill sizes="208px" className="object-contain drop-shadow-[5px_7px_0_rgb(20_20_19/0.3)]" />
-          </div>
+          <FramedPhoto
+            slug={m.slug}
+            src={m.photo}
+            active={active}
+            className={cn("absolute right-6 top-1/2 size-44 -translate-y-1/2 sm:right-[9%] sm:size-56", active ? "scale-100" : "scale-95")}
+          />
         ) : (
           <>
             <svg viewBox="0 0 200 240" aria-hidden className="absolute bottom-0 right-[10%] h-48">
