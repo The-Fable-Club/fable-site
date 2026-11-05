@@ -399,7 +399,8 @@ export function BackdropSvg({ role }: { role: string }) {
       className="absolute inset-0 size-full"
       style={{ background: b.bg }}
     >
-      <g className="backdrop-drift">{b.art}</g>
+      {/* still on purpose: a drifting backdrop repainted the whole artwork every frame */}
+      <g>{b.art}</g>
     </svg>
   );
 }
