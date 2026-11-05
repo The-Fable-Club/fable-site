@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, useReducedMotion, type Variants } from "motion/react";
+import { AnimatePresence, motion, useInView, type Variants } from "motion/react";
 import {
   ArrowRight,
   Award,
@@ -16,7 +16,9 @@ import {
   Megaphone,
   MessageSquare,
   Monitor,
+  Pause,
   PenLine,
+  Play,
   User,
   Wallet,
   type LucideIcon,
@@ -107,13 +109,15 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const [p, setP] = useState(0);
   const [dir, setDir] = useState(1);
   const [held, setHeld] = useState(false); // pointer or focus is on a card
+  const [paused, setPaused] = useState(false); // the pause button
   const root = useRef<HTMLDivElement>(null);
-  const inView = useInView(root, { amount: 0.35 });
-  const reduce = useReducedMotion();
+  const inView = useInView(root, { amount: 0.3 });
 
   const total = cats.length;
   const n = cats[c]?.people.length ?? 0;
-  const auto = !reduce && !held && inView && total > 0;
+  // Runs with reduced motion too: it swaps content rather than moving things about, and the
+  // pause button (plus hover and focus) stops it, so the rotation is always under the reader's control.
+  const auto = !paused && !held && inView && total > 0;
 
   const goCat = (i: number) => {
     const next = (i + total) % total;
@@ -121,6 +125,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
     setDir(next > c ? 1 : -1);
     setC(next);
     setP(0);
+    setHeld(false); // the hovered card is gone; don't stay stuck on hold
   };
 
   // the timer: next card, then the first card of the next category
@@ -161,6 +166,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
         if (e.key === "ArrowRight") goPerson(1);
         if (e.key === "ArrowLeft") goPerson(-1);
       }}
+      onPointerLeave={() => setHeld(false)}
       className="relative grid overflow-hidden border-y border-ink/20 bg-paper outline-offset-[-4px] md:grid-cols-[5.5rem_1fr]"
     >
       {/* category portraits */}
@@ -254,7 +260,21 @@ export function PeopleStage({ people }: { people: Member[] }) {
               </AnimatePresence>
               <div aria-hidden className="mt-4 h-[3px] w-40" style={{ background: "linear-gradient(90deg,#d97757 0 33%,#6a9bcc 33% 66%,#788c5d 66%)" }} />
             </div>
-            <Ph className={bd.dark ? "border-clay text-clay" : undefined}>Placeholder bios</Ph>
+            <div className="flex items-center gap-3">
+              <Ph className={bd.dark ? "border-clay text-clay" : undefined}>Placeholder bios</Ph>
+              <button
+                type="button"
+                onClick={() => setPaused((v) => !v)}
+                aria-pressed={paused}
+                aria-label={paused ? "Play the people slideshow" : "Pause the people slideshow"}
+                className={cn(
+                  "grid size-9 place-items-center border-2 transition-colors duration-500",
+                  bd.dark ? "border-paper/60 text-paper hover:bg-paper hover:text-ink" : "border-ink/60 text-ink hover:bg-ink hover:text-paper",
+                )}
+              >
+                {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+              </button>
+            </div>
           </div>
 
           {/* the people, side by side. No initial={false} here: it would also stop the frame
@@ -366,7 +386,9 @@ function useSize<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
+    // the padding box (not contentRect): the frame is drawn over the padding too, and a viewBox
+    // smaller than the drawn area would scale the line, which breaks the dash-based drawing
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -374,10 +396,10 @@ function useSize<T extends HTMLElement>() {
 }
 
 function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: number; h: number }) {
-  const reduce = useReducedMotion();
   if (!w || !h) return null;
   const { main, extra } = framePaths(w, h, MOTIFS[MOTIF_FOR[role] ?? "sprout"]);
-  const draw = active && !reduce;
+  // drawn with reduced motion too: a line tracing itself is not the kind of motion that setting is about
+  const draw = active;
   const common = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const };
   return (
     <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible" viewBox={`0 0 ${w} ${h}`}>
@@ -440,19 +462,14 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
       {/* photo panel: faint grid, the role motif along the bottom, the framed photo */}
       <div
         ref={panel}
-        className="relative h-64 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-72"
+        className="relative border-b-2 border-ink bg-paper-raised px-[7%] pb-24 pt-16 bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px]"
       >
         <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} />
         {m.photo ? (
-          <FramedPhoto
-            slug={m.slug}
-            src={m.photo}
-            active={active}
-            className={cn("absolute right-6 top-1/2 size-44 -translate-y-1/2 sm:right-[9%] sm:size-56", active ? "scale-100" : "scale-95")}
-          />
+          <FramedPhoto slug={m.slug} src={m.photo} active={active} blend className="relative ml-auto aspect-square w-[min(21rem,76%)]" />
         ) : (
           <>
-            <svg viewBox="0 0 200 240" aria-hidden className="absolute bottom-0 right-[10%] h-48">
+            <svg viewBox="0 0 200 240" aria-hidden className="relative ml-auto block aspect-[5/6] w-[min(17rem,62%)]">
               <circle cx="100" cy="92" r="42" fill="#faf9f5" />
               <path d="M20 240c0-56 36-92 80-92s80 36 80 92Z" fill="#faf9f5" />
               <circle cx="100" cy="92" r="42" fill="none" stroke="#141413" strokeWidth="3" />
