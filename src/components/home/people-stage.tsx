@@ -71,7 +71,7 @@ const stagger: Variants = {
 };
 
 /** How long each card stays highlighted before the next one takes over. */
-const DWELL = 6500;
+const DWELL = 4500;
 
 // Endfield "Operators"-style stage, re-cut for small photos:
 //  - left: a strip of round portraits, one per category (portfolio)
@@ -183,7 +183,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
               <span
                 aria-hidden
                 className={cn(
-                  "absolute -inset-1.5 rounded-full border-2 border-dotted border-clay-deep transition-[opacity,transform] duration-500 ease-flow",
+                  "absolute -inset-1.5 rounded-full border-2 border-dotted border-clay-deep transition-[opacity,scale] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   on ? "scale-100 opacity-100" : "scale-90 opacity-0",
                 )}
               />
@@ -296,44 +296,167 @@ export function PeopleStage({ people }: { people: Member[] }) {
   );
 }
 
-/** One person: a white card with a black border. The snapshot (a tilted photo, cut out
- * onto transparency) is kept near its real size, since the originals are small; without a
- * photo, a silhouette. The lit card lifts, its tab turns black and the timer runs along
- * the bottom. */
+// ---- self-drawing frame ------------------------------------------------------------
+// A line runs along the bottom of the photo panel, sketches a small motif for the role
+// (crown, quill, </>, ...), then carries on round the frame. Motifs are drawn in a 72 x 50
+// box on the baseline: they start at (0, 0) and end at (72, 0); negative y is up.
+type Seg = (string | number)[];
+type Motif = { main: Seg[]; extra?: Seg[] };
+const MW = 72;
+
+const star = (): Seg[] => {
+  const pt = (k: number): [number, number] => {
+    const a = -Math.PI / 2 + (k * 2 * Math.PI) / 5;
+    return [36 + 22 * Math.cos(a), -26 + 22 * Math.sin(a)];
+  };
+  return [["L", 36, 0], ["L", ...pt(3)], ["L", ...pt(0)], ["L", ...pt(2)], ["L", ...pt(4)], ["L", ...pt(1)], ["L", ...pt(3)], ["L", 36, 0], ["L", MW, 0]];
+};
+
+const MOTIFS: Record<string, Motif> = {
+  crown: { main: [["L", 8, 0], ["L", 8, -30], ["L", 22, -16], ["L", 36, -42], ["L", 50, -16], ["L", 64, -30], ["L", 64, 0], ["L", MW, 0]], extra: [["M", 20, -6], ["L", 52, -6]] },
+  quill: { main: [["L", 10, 0], ["C", 16, -24, 34, -46, 62, -54], ["C", 56, -30, 42, -14, 22, -8], ["L", 30, -2], ["L", MW, 0]], extra: [["M", 24, -10], ["L", 50, -38]] },
+  code: { main: [["L", 18, -12], ["L", 4, -26], ["L", 18, -40], ["L", 30, -8], ["L", 42, -44], ["L", 54, -40], ["L", 68, -26], ["L", 54, -12], ["L", MW, 0]] },
+  robot: { main: [["L", 14, 0], ["L", 14, -30], ["L", 36, -30], ["L", 36, -44], ["L", 36, -30], ["L", 58, -30], ["L", 58, 0], ["L", MW, 0]], extra: [["M", 25, -18], ["L", 29, -18], ["M", 43, -18], ["L", 47, -18], ["M", 31, -46], ["L", 41, -46]] },
+  cube: { main: [["L", 14, -12], ["L", 14, -36], ["L", 36, -48], ["L", 58, -36], ["L", 58, -12], ["L", 36, 0], ["L", MW, 0]], extra: [["M", 14, -36], ["L", 36, -24], ["L", 58, -36], ["M", 36, -24], ["L", 36, 0], ["M", 14, -12], ["L", 36, 0]] },
+  clipboard: { main: [["L", 12, 0], ["L", 12, -44], ["L", 26, -44], ["L", 26, -50], ["L", 46, -50], ["L", 46, -44], ["L", 60, -44], ["L", 60, 0], ["L", MW, 0]], extra: [["M", 22, -24], ["L", 30, -16], ["L", 48, -34]] },
+  coin: { main: [["L", 36, 0], ["A", 24, 24, 0, 0, 1, 36, -48], ["A", 24, 24, 0, 0, 1, 36, 0], ["L", MW, 0]], extra: [["M", 29, -34], ["L", 43, -34], ["M", 29, -28], ["L", 43, -28], ["M", 32, -34], ["C", 44, -34, 44, -21, 32, -21], ["L", 43, -12]] },
+  star: { main: star() },
+  sprout: { main: [["L", 36, 0], ["L", 36, -26], ["C", 36, -44, 18, -48, 8, -42], ["C", 14, -30, 28, -26, 36, -26], ["C", 44, -40, 60, -44, 66, -36], ["C", 58, -26, 46, -24, 36, -26], ["L", 36, 0], ["L", MW, 0]] },
+};
+
+const MOTIF_FOR: Record<string, keyof typeof MOTIFS> = {
+  Chairperson: "crown",
+  "Vice-Chairperson": "crown",
+  Secretary: "quill",
+  "Co-Secretary": "quill",
+  "Web Development": "code",
+  "Agentic AI": "robot",
+  Projects: "cube",
+  Operations: "clipboard",
+  Finance: "coin",
+  "Creative & Communications": "star",
+};
+
+/** Motif segments as absolute path commands, scaled by k, with their baseline start at (ox, oy). */
+function place(segs: Seg[], ox: number, oy: number, k: number): string {
+  return segs
+    .map(([cmd, ...n]) => {
+      const v = n as number[];
+      if (cmd === "A") return `A${v[0] * k} ${v[1] * k} ${v[2]} ${v[3]} ${v[4]} ${(v[5] * k + ox).toFixed(1)} ${(v[6] * k + oy).toFixed(1)}`;
+      return cmd + v.map((x, i) => (x * k + (i % 2 ? oy : ox)).toFixed(1)).join(" ");
+    })
+    .join(" ");
+}
+
+function framePaths(w: number, h: number, motif: Motif) {
+  const i = 12; // inset from the panel edge
+  const x0 = i + 22; // where the motif starts on the bottom edge
+  const b = h - i;
+  const k = w >= 400 ? 1.55 : 1.25; // bigger motif on wide cards
+  const main = `M${i} ${b} L${x0} ${b} ${place(motif.main, x0, b, k)} L${w - i} ${b} L${w - i} ${i} L${i} ${i} L${i} ${b}`;
+  const extra = motif.extra ? place(motif.extra, x0, b, k) : null;
+  return { main, extra };
+}
+
+function useSize<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, size] as const;
+}
+
+function DrawnFrame({ role, active, w, h }: { role: string; active: boolean; w: number; h: number }) {
+  const reduce = useReducedMotion();
+  if (!w || !h) return null;
+  const { main, extra } = framePaths(w, h, MOTIFS[MOTIF_FOR[role] ?? "sprout"]);
+  const draw = active && !reduce;
+  const common = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const };
+  return (
+    <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible" viewBox={`0 0 ${w} ${h}`}>
+      <motion.path
+        key={`m-${draw}`}
+        d={main}
+        {...common}
+        strokeWidth={2}
+        className={active ? "stroke-clay-deep" : "stroke-ink"}
+        initial={{ pathLength: draw ? 0 : 1, opacity: draw ? 1 : 0.9 }}
+        animate={{ pathLength: 1, opacity: active ? 1 : 0.28 }}
+        transition={{ pathLength: { duration: 2.2, ease: [0.45, 0, 0.25, 1] }, opacity: { duration: 0.9, ease: "easeOut" } }}
+      />
+      {extra && (
+        <motion.path
+          key={`e-${draw}`}
+          d={extra}
+          {...common}
+          strokeWidth={1.75}
+          className={active ? "stroke-clay-deep" : "stroke-ink"}
+          initial={{ pathLength: draw ? 0 : 1, opacity: draw ? 0 : 0.9 }}
+          animate={{ pathLength: 1, opacity: active ? 1 : 0.28 }}
+          transition={{ pathLength: { duration: 0.9, delay: draw ? 0.9 : 0, ease: "easeOut" }, opacity: { duration: 0.5, delay: draw ? 0.9 : 0 } }}
+        />
+      )}
+    </svg>
+  );
+}
+
+// Easing for things that answer the pointer: quick to start, long soft landing.
+const SOFT = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
+/** One person: a white card with a black border, and the whole card opens the full
+ * profile. The snapshot (a tilted photo, cut out onto transparency) is kept near its real
+ * size, since the originals are small, and spills over the top of its panel; a line draws
+ * the frame round it with the role's motif. The lit card lifts, its tab turns black and the
+ * timer runs along the bottom. */
 function PersonCard({ member: m, index, active, timing }: { member: Member; index: number; active: boolean; timing: boolean }) {
   const tags = [m.department, m.year, ...m.focus].filter(Boolean);
+  const [panel, size] = useSize<HTMLDivElement>();
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col border-2 border-ink bg-paper text-ink transition-[transform,box-shadow,opacity] duration-700 ease-flow",
-        active ? "-translate-y-2 shadow-[10px_10px_0_0_#d97757]" : "shadow-[6px_6px_0_0_rgb(20_20_19/0.85)]",
+        "relative flex h-full flex-col border-2 border-ink bg-paper text-ink transition-[translate,box-shadow] duration-[900ms]",
+        SOFT,
+        active ? "-translate-y-2 shadow-[10px_10px_0_0_#d97757]" : "translate-y-0 shadow-[6px_6px_0_0_rgb(20_20_19/0.85)]",
       )}
     >
       {/* tab: number and role */}
       <div
         className={cn(
-          "flex items-center justify-between gap-3 border-b-2 border-ink px-4 py-2 transition-colors duration-700 ease-flow",
+          "flex items-center border-b-2 border-ink py-2 pl-4 pr-[52%] transition-colors duration-700 sm:pr-[48%]",
+          SOFT,
           active ? "bg-ink text-paper" : "bg-paper text-ink",
         )}
       >
-        <span className="hud">{String(index + 1).padStart(2, "0")}</span>
-        <span className="hud truncate">{m.role}</span>
+        {/* kept on the left: the snapshot spills over the right of this bar */}
+        <span className="hud truncate">
+          {String(index + 1).padStart(2, "0")} <span className="opacity-60">·</span> {m.role}
+        </span>
       </div>
 
-      {/* snapshot on a faint grid */}
-      <div className="relative grid h-60 place-items-center overflow-hidden border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
+      {/* photo panel: faint grid, self-drawing frame, the snapshot spilling over the top */}
+      <div
+        ref={panel}
+        className="relative h-56 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-60"
+      >
+        <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} />
         {m.photo ? (
           <div
             className={cn(
-              "relative size-52 transition-[transform,filter] duration-700 ease-flow",
-              active ? "scale-105 grayscale-0" : "scale-95 grayscale-[0.6]",
+              "pointer-events-none absolute -top-7 right-4 z-10 size-44 transition-[scale,rotate,filter] duration-[1100ms] sm:right-[7%] sm:size-52",
+              SOFT,
+              active ? "rotate-0 scale-105 grayscale-0" : "-rotate-2 scale-95 grayscale-[0.6]",
             )}
           >
             <Image src={m.photo} alt="" fill sizes="208px" className="object-contain drop-shadow-[5px_7px_0_rgb(20_20_19/0.3)]" />
           </div>
         ) : (
           <>
-            <svg viewBox="0 0 200 240" aria-hidden className="h-52">
+            <svg viewBox="0 0 200 240" aria-hidden className="absolute bottom-0 right-[10%] h-48">
               <circle cx="100" cy="92" r="42" fill="#faf9f5" />
               <path d="M20 240c0-56 36-92 80-92s80 36 80 92Z" fill="#faf9f5" />
               <circle cx="100" cy="92" r="42" fill="none" stroke="#141413" strokeWidth="3" />
@@ -347,7 +470,7 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
       </div>
 
       {/* details and bio */}
-      <div className={cn("flex flex-1 flex-col p-5 transition-opacity duration-700 ease-flow", !active && "opacity-60")}>
+      <div className={cn("flex flex-1 flex-col p-5 transition-opacity duration-700", SOFT, !active && "opacity-60")}>
         <h4 className="font-display text-2xl leading-tight md:text-[1.7rem]">{m.name}</h4>
         {tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -360,13 +483,18 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
         )}
         <p className="mt-4 line-clamp-5 font-serif leading-relaxed text-ink-soft">{m.bio}</p>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5 text-sm">
-          <a href={`mailto:${m.email}`} className="inline-flex min-w-0 items-center gap-2 hover:text-clay-deep">
+          {/* sits above the card-wide link, so the address still opens mail */}
+          <a href={`mailto:${m.email}`} className="relative z-20 inline-flex min-w-0 items-center gap-2 hover:text-clay-deep">
             <Mail className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{m.email}</span>
           </a>
-          <Link href={`/members?m=${m.slug}`} className="group/l inline-flex items-center gap-1.5 font-medium hover:text-clay-deep">
-            Full profile
-            <ArrowRight className="size-4 transition-transform duration-500 ease-flow group-hover/l:translate-x-1" aria-hidden />
+          {/* the whole card is this link (its ::after covers the card) */}
+          <Link
+            href={`/members?m=${m.slug}`}
+            className="group/l inline-flex items-center gap-1.5 font-medium outline-none after:absolute after:inset-0 after:z-[5] after:content-[''] hover:text-clay-deep focus-visible:after:outline-2 focus-visible:after:outline-offset-4 focus-visible:after:outline-clay-deep"
+          >
+            Full profile<span className="sr-only">: {m.name}</span>
+            <ArrowRight className={cn("size-4 transition-[translate] duration-700", SOFT, active && "translate-x-1")} aria-hidden />
           </Link>
         </div>
       </div>
