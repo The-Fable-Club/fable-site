@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type Ref } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { animate, AnimatePresence, motion, useInView, useMotionValue, useTransform, type Easing, type MotionValue, type Variants } from "motion/react";
 import {
   ArrowRight,
@@ -343,6 +343,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
                 setHeld(true);
               }}
               onRelease={() => setHeld(false)}
+              dark={bd.dark}
             />
           </AnimatePresence>
         </div>
@@ -564,6 +565,7 @@ function TeamRow({
   auto,
   onLight,
   onRelease,
+  dark,
 }: {
   people: Member[];
   lit: number;
@@ -571,6 +573,8 @@ function TeamRow({
   auto: boolean;
   onLight: (i: number) => void;
   onRelease: () => void;
+  /** the stage backdrop is dark (frame lines outside the cards are drawn pale) */
+  dark: boolean;
 }) {
   const n = people.length;
   const end = Math.max(1, 2 * n - 1);
@@ -688,6 +692,7 @@ function TeamRow({
               timing={auto && i === lit}
               prog={prog}
               startEdge={startEdgeFor(i, n, stacked)}
+              outsideTone={dark ? "stroke-paper" : "stroke-ink"}
               svgRef={(s) => {
                 svgs.current[i] = s;
               }}
@@ -719,6 +724,7 @@ function PersonCard({
   prog,
   startEdge,
   svgRef,
+  outsideTone,
 }: {
   member: Member;
   index: number;
@@ -726,7 +732,8 @@ function PersonCard({
   timing: boolean;
   prog: MotionValue<number>;
   startEdge: number;
-  svgRef: Ref<SVGSVGElement>;
+  svgRef: (el: SVGSVGElement | null) => void;
+  outsideTone: string;
 }) {
   // this person's share of the team's drawing (see TeamRow)
   const frame = useTransform(prog, [2 * index, 2 * index + 1], [0, 1]);
@@ -769,6 +776,7 @@ function PersonCard({
             progress={frame}
             startEdge={startEdge}
             svgRef={svgRef}
+            outsideTone={outsideTone}
             sizes="270px"
             className="absolute inset-y-0 right-6 my-auto size-[13.2rem] sm:right-[8%] sm:size-[16.8rem]"
           />

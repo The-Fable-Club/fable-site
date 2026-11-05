@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, type Ref } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { motion, useMotionValue, useTransform, type MotionValue } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -244,6 +244,7 @@ export function FramedPhoto({
   startEdge = 0,
   progress,
   svgRef,
+  outsideTone,
   className,
 }: {
   slug: string;
@@ -257,7 +258,10 @@ export function FramedPhoto({
   /** drive the drawing from outside: 0..1 is how much of the frame is drawn */
   progress?: MotionValue<number>;
   /** the frame's svg, for lining up a line that joins it */
-  svgRef?: Ref<SVGSVGElement>;
+  svgRef?: (el: SVGSVGElement | null) => void;
+  /** with `blend`: the stroke class for the parts of the line outside the card, where the
+   * difference blend has nothing of the card under it (pale on dark backdrops, ink on light) */
+  outsideTone?: string;
   className?: string;
 }) {
   const { d, tilt } = useMemo(() => photoFrameFor(slug, startEdge), [slug, startEdge]);
@@ -266,6 +270,41 @@ export function FramedPhoto({
   const driven = useTransform(progress ?? none, (v) => Math.min(1, Math.max(0, v)));
   const line = { duration: 2.8, delay: 0.25, ease: [0.45, 0, 0.25, 1] as const };
   const tone = blend ? "stroke-paper" : "stroke-ink";
+
+  // The blend only sees the card (the card is its own stacking context), so beyond the card's
+  // edge the blended line comes out pale whatever is behind it, and vanishes on a light
+  // backdrop. So the line is drawn twice: blended and clipped to the card, and plain in
+  // `outsideTone` and clipped to everything outside it. The card's box is measured in the
+  // frame's units (it moves with the frame when the card lifts, so only resizes change it).
+  const [svgEl, setSvgEl] = useState<SVGSVGElement | null>(null);
+  const setRef = useCallback(
+    (el: SVGSVGElement | null) => {
+      setSvgEl(el);
+      svgRef?.(el);
+    },
+    [svgRef],
+  );
+  const split = Boolean(blend && outsideTone && progress);
+  const [card, setCard] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  useEffect(() => {
+    const svg = svgEl;
+    const art = svg?.closest("article");
+    if (!split || !svg || !art) return;
+    const measure = () => {
+      const r = svg.getBoundingClientRect();
+      const a = art.getBoundingClientRect();
+      if (!r.width) return;
+      const k = PF / r.width;
+      setCard({ x: (a.left - r.left) * k, y: (a.top - r.top) * k, w: a.width * k, h: a.height * k });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(art);
+    return () => ro.disconnect();
+  }, [split, svgEl]);
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const inId = `fin-${uid}`;
+  const outId = `fout-${uid}`;
   return (
     <div className={cn("pointer-events-none", className)}>
       <div
@@ -277,9 +316,22 @@ export function FramedPhoto({
         </div>
       </div>
       {/* the frame box is PF wide with the photo at 20..PF-20: 118% of the photo, offset 9% */}
-      <svg ref={svgRef} aria-hidden viewBox={`0 0 ${PF} ${PF}`} className={cn("absolute -inset-[9%] size-[118%] overflow-visible", blend && "mix-blend-difference")}>
+      <svg ref={setRef} aria-hidden viewBox={`0 0 ${PF} ${PF}`} className={cn("absolute -inset-[9%] size-[118%] overflow-visible", blend && "mix-blend-difference")}>
+        {split && card && (
+          <defs>
+            <clipPath id={inId}>
+              <rect x={card.x} y={card.y} width={card.w} height={card.h} />
+            </clipPath>
+          </defs>
+        )}
         {progress ? (
-          <motion.path d={d} {...stroke} className={cn(tone, "transition-opacity duration-700", !active && "opacity-40")} style={{ pathLength: driven }} />
+          <motion.path
+            d={d}
+            {...stroke}
+            clipPath={split && card ? `url(#${inId})` : undefined}
+            className={cn(tone, "transition-opacity duration-700", !active && "opacity-40")}
+            style={{ pathLength: driven }}
+          />
         ) : drawInView ? (
           <motion.path d={d} {...stroke} className={tone} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: 0.5 }} transition={line} />
         ) : (
@@ -294,6 +346,23 @@ export function FramedPhoto({
           />
         )}
       </svg>
+      {split && card && (
+        <svg aria-hidden viewBox={`0 0 ${PF} ${PF}`} className="absolute -inset-[9%] size-[118%] overflow-visible">
+          <defs>
+            <clipPath id={outId}>
+              {/* everything except the card: a huge box with the card cut out of it */}
+              <path clipRule="evenodd" d={`M-4000 -4000H4000V4000H-4000Z M${card.x} ${card.y}h${card.w}v${card.h}h${-card.w}Z`} />
+            </clipPath>
+          </defs>
+          <motion.path
+            d={d}
+            {...stroke}
+            clipPath={`url(#${outId})`}
+            className={cn(outsideTone, "transition-opacity duration-700", !active && "opacity-40")}
+            style={{ pathLength: driven }}
+          />
+        </svg>
+      )}
     </div>
   );
 }
