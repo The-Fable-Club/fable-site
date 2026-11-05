@@ -392,14 +392,15 @@ export function backdropFor(role: string): Backdrop {
 export function BackdropSvg({ role }: { role: string }) {
   const b = backdropFor(role);
   return (
-    <svg
-      viewBox="0 0 1200 760"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden
-      className="absolute inset-0 size-full"
-      style={{ background: b.bg }}
-    >
-      <g className="backdrop-drift">{b.art}</g>
-    </svg>
+    // The drift moves an HTML wrapper, not a group inside the SVG: the browser can then slide
+    // the already-painted picture on the GPU, instead of repainting the whole artwork on the
+    // CPU every frame (which took a slow machine from ~20 to ~11 fps).
+    <div aria-hidden className="absolute inset-0 overflow-hidden" style={{ background: b.bg }}>
+      <div className="backdrop-drift absolute inset-0">
+        <svg viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" className="size-full">
+          {b.art}
+        </svg>
+      </div>
+    </div>
   );
 }

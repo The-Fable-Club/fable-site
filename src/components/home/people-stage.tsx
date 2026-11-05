@@ -106,6 +106,30 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
   );
 }
 
+/** True when this device is struggling: the first second on screen is timed, and if frames
+ * average slower than ~36 fps the stage drops its background drift (data-lite in globals.css).
+ * The drawings, the lines and the wipe stay: they are cheap; the drift was the heavy part. */
+function useSlowFrames(start: boolean) {
+  const [slow, setSlow] = useState(false);
+  const done = useRef(false);
+  useEffect(() => {
+    if (!start || done.current) return;
+    done.current = true;
+    let raf = 0;
+    let frames = 0;
+    let first = 0;
+    const tick = (t: number) => {
+      if (!first) first = t;
+      frames++;
+      if (t - first < 1000) raf = requestAnimationFrame(tick);
+      else if ((t - first) / frames > 28) setSlow(true);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [start]);
+  return slow;
+}
+
 /** How long each card stays highlighted before the next one takes over. */
 const DWELL = 4500;
 /** The last card of a team: the same as the others (a longer stay felt too slow). */
@@ -150,6 +174,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const [paused, setPaused] = useState(false); // the pause button
   const root = useRef<HTMLDivElement>(null);
   const inView = useInView(root, { amount: 0.3 });
+  const lite = useSlowFrames(inView);
 
   const total = cats.length;
   const n = cats[view]?.people.length ?? 0;
@@ -214,6 +239,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
         if (e.key === "ArrowLeft") goPerson(-1);
       }}
       onPointerLeave={() => setHeld(false)}
+      data-lite={lite || undefined}
       className="relative grid overflow-hidden border-y border-ink/20 bg-paper outline-offset-[-4px] md:grid-cols-[5.5rem_1fr]"
     >
       {/* category portraits */}
