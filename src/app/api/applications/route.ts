@@ -11,5 +11,7 @@ export function POST(req: Request) {
     table: "applications",
     toRow: (v) => applicationRow(v, r.intake),
     closed: () => closedReason(recruitmentState(r, todayIST())),
+    // the longest answers in full, written in a script that takes 3 bytes a character, still fit
+    maxBytes: 32_000,
   });
 }

@@ -12,15 +12,17 @@ export async function handleSubmission<S extends z.ZodType>(
     toRow: (v: z.infer<S>) => object;
     /** Refuse before reading the body, e.g. when applications are not open: the reason, or null to go ahead. */
     closed?: () => string | null;
+    /** Largest body accepted, in bytes (default 10 kB). */
+    maxBytes?: number;
   },
 ) {
-  const guard = guardRequest(req);
+  const guard = guardRequest(req, opts.maxBytes);
   if (!guard.ok) return json({ ok: false, message: guard.message }, guard.status);
   const shut = opts.closed?.();
   if (shut) return json({ ok: false, code: "closed", message: shut }, 403);
 
   // The Content-Length check above can be skipped by a chunked upload: the limit also holds while reading.
-  const read = await readJsonLimited(req);
+  const read = await readJsonLimited(req, opts.maxBytes);
   if (!read.ok) return read.tooLarge ? json({ ok: false, message: "That request is too large." }, 413) : json({ ok: false, message: "That request could not be read." }, 400);
   const body = read.body;
   // Bots fill the hidden field: say thanks and store nothing.

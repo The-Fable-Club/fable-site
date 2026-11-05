@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SnapshotEvent } from "@/lib/contract";
 import { eventMediaInput, readTeams, toClubEvent, toMember } from "@/lib/content";
 import { TEAMS } from "@/lib/submissions";
+import { questionsFor } from "@/lib/team-questions";
 import { resolveEventMedia } from "@/lib/event-media";
 import { heroStrips, openEvents, pastEvents } from "@/lib/events";
 
@@ -140,6 +141,14 @@ describe("team descriptions (content/teams.json)", () => {
       expect(t.short.length, t.name).toBeGreaterThan(10);
       expect(t.about.length, t.name).toBeGreaterThan(40);
       expect(t.lookingFor.length, t.name).toBeGreaterThan(0);
+    }
+  });
+  it("each team asks two questions of its own, and everyone gets the shared one (2-3 per person, the board's limit)", () => {
+    for (const t of teams) {
+      expect(t.questions, t.name).toHaveLength(2);
+      const asked = questionsFor(t.name);
+      expect(asked.length, t.name).toBeLessThanOrEqual(3);
+      expect(new Set(asked).size, `${t.name}: a question is repeated`).toBe(asked.length);
     }
   });
 });
