@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/meta";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Mail } from "lucide-react";
 import { Hud, PageHead } from "@/components/hud";
 import { JoinForm, TeamDetail } from "@/components/join-form";
 import { getContent, readTeams } from "@/lib/content";
@@ -62,7 +62,7 @@ export default async function JoinPage() {
     <>
       <PageHead crumb="Join" title={head.title} lede={head.lede} art="/art/sprouts.svg" />
       <section className="bg-paper">
-        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-14 md:grid-cols-[1fr_20rem] md:px-12 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-10 md:grid-cols-[1fr_20rem] md:px-12 md:py-14">
           <div className="min-w-0">
             {/* status, dates and the ways to follow the club */}
             <div className="relative mb-14 overflow-hidden bg-night p-7 text-paper md:p-10">
@@ -88,6 +88,24 @@ export default async function JoinPage() {
                   }[r.state]
                 }
               </p>
+              {r.state === "open" && (
+                <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <a
+                    href="#apply"
+                    className="inline-flex h-14 items-center gap-2 bg-paper px-7 text-lg font-medium text-ink transition-colors duration-500 ease-flow hover:bg-clay"
+                  >
+                    Apply now
+                    <ArrowDown className="size-5" aria-hidden />
+                  </a>
+                  <p className="max-w-[34ch] text-sm text-night-soft">
+                    Read{" "}
+                    <a href="#teams" className="underline underline-offset-4 transition-colors duration-500 ease-flow hover:text-paper">
+                      Find where you fit
+                    </a>{" "}
+                    first, so you know which team to pick.
+                  </p>
+                </div>
+              )}
               <div className="mt-8 flex flex-wrap gap-3">
                 {r.whatsapp && (
                   <a
