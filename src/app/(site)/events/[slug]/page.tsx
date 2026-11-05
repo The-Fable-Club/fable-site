@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
-import { Hud, Ph } from "@/components/hud";
+import { ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
+import { HomeCrumb, Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
 import { bySlug, dateLabel, eventhubTarget, isOpen } from "@/lib/events";
@@ -48,14 +48,9 @@ async function EventDetail({
   return (
     <>
       <header className="border-b border-ink/15 bg-paper">
-        <div className="mx-auto max-w-6xl px-6 pb-14 pt-8 md:px-12 md:pb-20">
-          <Link
-            href="/events"
-            className="inline-flex h-11 items-center gap-2 bg-ink px-5 font-medium text-paper transition-colors duration-500 ease-flow hover:bg-clay-deep"
-          >
-            <ArrowLeft className="size-4" aria-hidden /> All events
-          </Link>
-          <div className="mt-10 grid items-end gap-10 md:grid-cols-[1fr_auto]">
+        <div className="mx-auto max-w-6xl px-6 py-8 md:px-12 md:py-10">
+          <HomeCrumb crumb="Event" parent={{ href: "/events", label: "All events" }} />
+          <div className="mt-6 grid items-end gap-6 md:grid-cols-[1fr_auto]">
             <div>
               <div className="flex items-center gap-3">
                 <StatusDot status={e.status} />
@@ -64,10 +59,10 @@ async function EventDetail({
                   {e.phase > 0 && ` · Phase ${e.phase}`}
                 </Hud>
               </div>
-              <h1 className="mt-4 max-w-[18ch] font-display text-[clamp(2.75rem,1.7rem+4.6vw,5.5rem)] leading-[0.98] tracking-tight">
+              <h1 className="mt-4 max-w-[22ch] font-display text-[clamp(2.25rem,1.6rem+2.6vw,3.75rem)] leading-[1] tracking-tight">
                 {e.title}
               </h1>
-              <p className="mt-6 max-w-[56ch] font-serif text-xl leading-relaxed text-ink-soft">
+              <p className="mt-3 max-w-[60ch] font-serif text-base leading-relaxed text-ink-soft md:text-lg">
                 {e.summary}
               </p>
               {/* Phones: the register button would otherwise sit below the whole page; repeat it up here. */}
@@ -86,9 +81,9 @@ async function EventDetail({
             <Image
               src={e.art}
               alt=""
-              width={240}
-              height={240}
-              className="hidden size-48 object-contain md:block"
+              width={140}
+              height={140}
+              className="hidden size-28 object-contain md:block lg:size-32"
             />
           </div>
         </div>

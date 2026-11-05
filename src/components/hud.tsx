@@ -1,5 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** Marks content that is not final. Visible on purpose so it gets replaced. */
@@ -82,6 +84,29 @@ export function Banner({
   );
 }
 
+/** "← Home / Join": the way back to the home page from any inner page. */
+export function HomeCrumb({ crumb, parent }: { crumb: string; parent?: { href: string; label: string } }) {
+  const link =
+    "inline-flex h-9 items-center gap-1.5 border border-ink/30 px-3 font-medium transition-colors duration-500 ease-flow hover:border-ink hover:bg-ink hover:text-paper";
+  return (
+    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm">
+      <Link href="/" className={link}>
+        <ArrowLeft className="size-4" aria-hidden /> Home
+      </Link>
+      {parent && (
+        <>
+          <span aria-hidden className="text-ink-faint">/</span>
+          <Link href={parent.href} className={link}>
+            {parent.label}
+          </Link>
+        </>
+      )}
+      <span aria-hidden className="text-ink-faint">/</span>
+      <span aria-current="page" className="hud text-ink-faint">{crumb}</span>
+    </nav>
+  );
+}
+
 /** Header block for inner pages. */
 export function PageHead({
   crumb,
@@ -98,14 +123,14 @@ export function PageHead({
 }) {
   return (
     <header className="relative border-b border-ink/15 bg-paper">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 md:grid-cols-[1fr_auto] md:items-end md:px-12 md:py-20">
+      <div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 md:grid-cols-[1fr_auto] md:items-end md:px-12 md:py-10">
         <div>
-          <Hud className="text-ink-faint">The Fable Club / {crumb}</Hud>
-          <h1 className="mt-4 max-w-[18ch] font-display text-[clamp(2.75rem,1.7rem+4.6vw,5.5rem)] leading-[0.98] tracking-tight">
+          <HomeCrumb crumb={crumb} />
+          <h1 className="mt-4 max-w-[22ch] font-display text-[clamp(2.25rem,1.6rem+2.6vw,3.75rem)] leading-[1] tracking-tight">
             {title}
           </h1>
           {lede && (
-            <p className="mt-6 max-w-[56ch] font-serif text-lg leading-relaxed text-ink-soft">
+            <p className="mt-3 max-w-[60ch] font-serif text-base leading-relaxed text-ink-soft md:text-lg">
               {lede}
             </p>
           )}
@@ -114,9 +139,9 @@ export function PageHead({
         <Image
           src={art}
           alt=""
-          width={220}
-          height={220}
-          className="hidden size-44 object-contain md:block lg:size-56"
+          width={140}
+          height={140}
+          className="hidden size-28 object-contain md:block lg:size-32"
         />
       </div>
     </header>
