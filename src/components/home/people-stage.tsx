@@ -634,18 +634,29 @@ function TeamRow({
           out.push(bridgePath([A.x, A.y], [B.x, B.y], MOTIF_FOR[people[0]?.role ?? ""] ?? "sprout"));
         }
       }
-      setBridges(out);
+      const next = out.join("|");
+      if (next !== last) {
+        last = next;
+        setBridges(out);
+      }
     };
-    measure();
+    // Follow the cards every frame while they move (the entry rise, the lit card's 8px lift),
+    // so the line always meets the frames exactly; then only on resize.
+    let last = "";
+    let raf = 0;
+    const until = performance.now() + 1400;
+    const follow = () => {
+      measure();
+      if (performance.now() < until) raf = requestAnimationFrame(follow);
+    };
+    follow();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    // again once the lit card has finished lifting (it moves 8px)
-    const t = setTimeout(measure, 1000);
     return () => {
       ro.disconnect();
-      clearTimeout(t);
+      cancelAnimationFrame(raf);
     };
-  }, [anchors, n, stacked, lit, people]);
+  }, [anchors, n, stacked, lit, people, inView]);
 
   return (
     <motion.div
