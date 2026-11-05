@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type Ref } from "react";
-import { animate, AnimatePresence, motion, useInView, useMotionValue, useTransform, type MotionValue, type Variants } from "motion/react";
+import { animate, AnimatePresence, motion, useInView, useMotionValue, useTransform, type Easing, type MotionValue, type Variants } from "motion/react";
 import {
   ArrowRight,
   Award,
@@ -77,8 +77,10 @@ const stagger: Variants = {
 // Endfield-style cover). Angled edges; the black panel carries the incoming team's name.
 const WIPE_S = 1.25;
 const WIPE_TIMES = [0, 0.4, 0.6, 1];
+// in quickly (no slow start, so it is moving the moment the timer bar fills), hold, then off
+const WIPE_EASE: Easing[] = [[0.22, 1, 0.36, 1], "linear", [0.65, 0, 0.35, 1]];
 /** When the black panel fully covers the stage: the moment to swap the team underneath. */
-const WIPE_COVERED_MS = 740;
+const WIPE_COVERED_MS = 640;
 
 function TeamWipe({ dir, index, total, label }: { dir: number; index: number; total: number; label: string }) {
   const from = dir > 0 ? "-112%" : "112%";
@@ -91,9 +93,9 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
         className={cn(panel, "bg-clay bg-[repeating-linear-gradient(90deg,transparent_0_22px,rgb(177_88_58/0.35)_22px_26px)]")}
         initial={{ x: from }}
         animate={{ x }}
-        transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: FLOW }}
+        transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: WIPE_EASE }}
       />
-      <motion.div className={cn(panel, "grid place-items-center bg-ink")} initial={{ x: from }} animate={{ x }} transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: FLOW, delay: 0.2 }}>
+      <motion.div className={cn(panel, "grid place-items-center bg-ink")} initial={{ x: from }} animate={{ x }} transition={{ duration: WIPE_S, times: WIPE_TIMES, ease: WIPE_EASE, delay: 0.12 }}>
         <div className="skew-x-12 text-center text-paper">
           <p className="hud tracking-wider text-clay">
             [ Team {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
@@ -110,6 +112,8 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
 const DWELL = 4500;
 /** The last card of a team: the same as the others (a longer stay felt too slow). */
 const DWELL_LAST = DWELL;
+/** The wipe sets off this much before the last card's timer bar fills, so it arrives as the bar ends. */
+const WIPE_LEAD_MS = 250;
 
 // Endfield "Operators"-style stage, re-cut for small photos:
 //  - left: a strip of round portraits, one per category (portfolio)
@@ -185,7 +189,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
       if (p + 1 < n) setP(p + 1);
       else if (total > 1) switchTo((view + 1) % total, 1);
       else setP(0);
-    }, p + 1 < n ? DWELL : DWELL_LAST);
+    }, p + 1 < n ? DWELL : DWELL_LAST - WIPE_LEAD_MS);
     return () => clearTimeout(t);
   }, [auto, p, view, n, total]);
 
