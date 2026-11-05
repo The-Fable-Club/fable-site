@@ -462,14 +462,23 @@ function PersonCard({ member: m, index, active, timing }: { member: Member; inde
       {/* photo panel: faint grid, the role motif along the bottom, the framed photo */}
       <div
         ref={panel}
-        className="relative border-b-2 border-ink bg-paper-raised px-[7%] pb-24 pt-16 bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px]"
+        className="relative h-64 border-b-2 border-ink bg-paper-raised bg-[linear-gradient(rgb(20_20_19/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(20_20_19/0.06)_1px,transparent_1px)] bg-[size:24px_24px] sm:h-72"
       >
         <DrawnFrame role={m.role} active={active} w={size.w} h={size.h} />
         {m.photo ? (
-          <FramedPhoto slug={m.slug} src={m.photo} active={active} blend className="relative ml-auto aspect-square w-[min(21rem,76%)]" />
+          // 1.2x the old photo, in the old-sized panel: the frame and doodles leak past it. Centred
+          // with inset + auto margins, not a transform, so the line's blend still sees the card.
+          <FramedPhoto
+            slug={m.slug}
+            src={m.photo}
+            active={active}
+            blend
+            sizes="270px"
+            className="absolute inset-y-0 right-6 my-auto size-[13.2rem] sm:right-[8%] sm:size-[16.8rem]"
+          />
         ) : (
           <>
-            <svg viewBox="0 0 200 240" aria-hidden className="relative ml-auto block aspect-[5/6] w-[min(17rem,62%)]">
+            <svg viewBox="0 0 200 240" aria-hidden className="absolute bottom-0 right-[10%] h-48">
               <circle cx="100" cy="92" r="42" fill="#faf9f5" />
               <path d="M20 240c0-56 36-92 80-92s80 36 80 92Z" fill="#faf9f5" />
               <circle cx="100" cy="92" r="42" fill="none" stroke="#141413" strokeWidth="3" />
