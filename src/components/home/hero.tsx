@@ -46,9 +46,11 @@ export function Hero({ club, strips }: { club: Club; strips: HeroStrip[] }) {
     const tick = () => {
       raf = requestAnimationFrame(tick);
       if (!visible) return;
-      // Immediate follow: the mark sits exactly where the cursor puts it.
-      cur.x = target.x;
-      cur.y = target.y;
+      // Eased follow: the mark glides after the cursor rather than snapping to it.
+      cur.x += (target.x - cur.x) * 0.07;
+      cur.y += (target.y - cur.y) * 0.07;
+      if (Math.abs(target.x - cur.x) < 0.0005) cur.x = target.x;
+      if (Math.abs(target.y - cur.y) < 0.0005) cur.y = target.y;
       // Unchanged since the last frame: nothing to write, so idle frames are free.
       if (cur.x === lastX && cur.y === lastY) return;
       lastX = cur.x;
