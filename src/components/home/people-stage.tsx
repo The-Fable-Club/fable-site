@@ -108,8 +108,8 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
 
 /** How long each card stays highlighted before the next one takes over. */
 const DWELL = 4500;
-/** The last card of a team stays longer, so its frame finishes and there is time to read it. */
-const DWELL_LAST = 9000;
+/** The last card of a team: the same as the others (a longer stay felt too slow). */
+const DWELL_LAST = DWELL;
 
 // Endfield "Operators"-style stage, re-cut for small photos:
 //  - left: a strip of round portraits, one per category (portfolio)
