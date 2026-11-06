@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
+import { animate, motion } from "motion/react";
 import {
   CalendarDays,
   House,
@@ -49,9 +49,38 @@ export function Rail({ name }: { name: string }) {
   // After a pick the rail folds away at once (otherwise the pointer resting on it, or the focus
   // left on the link, keeps it open over the page); it opens again on the next hover.
   const [shut, setShut] = useState(false);
-  const pick = (e: React.MouseEvent<HTMLElement>) => {
+  const glide = useRef<{ stop: () => void } | null>(null);
+  const pick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     setShut(true);
     e.currentTarget.blur();
+    // On the home page, scroll to the section ourselves, at the same time as the rail folds:
+    // one smooth glide timed to the distance (the browser's own smooth scroll is a quick jump).
+    const id = e.currentTarget.getAttribute("href")?.startsWith("#") ? e.currentTarget.getAttribute("href")!.slice(1) : null;
+    const el = id ? document.getElementById(id) : null;
+    if (!el) return;
+    e.preventDefault();
+    const from = window.scrollY;
+    const to = Math.max(0, el.getBoundingClientRect().top + from);
+    const dist = Math.abs(to - from);
+    glide.current?.stop();
+    const root = document.documentElement;
+    root.style.scrollBehavior = "auto"; // we drive every frame; the CSS smoothing would fight it
+    const stopOnInput = () => glide.current?.stop();
+    window.addEventListener("wheel", stopOnInput, { once: true, passive: true });
+    window.addEventListener("touchstart", stopOnInput, { once: true, passive: true });
+    const done = () => {
+      root.style.scrollBehavior = "";
+      window.removeEventListener("wheel", stopOnInput);
+      window.removeEventListener("touchstart", stopOnInput);
+    };
+    glide.current = animate(from, to, {
+      duration: Math.min(1.5, 0.7 + dist / 5000),
+      ease: [0.65, 0, 0.35, 1],
+      onUpdate: (v) => window.scrollTo(0, v),
+      onComplete: done,
+      onStop: done,
+    });
+    history.replaceState(null, "", `#${id}`);
   };
   const section = useActiveSection(ids, pathname);
 
@@ -74,7 +103,7 @@ export function Rail({ name }: { name: string }) {
         "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-[var(--rail-w)] md:flex-col md:overflow-hidden md:border-r md:border-t-0",
         "md:transition-[width,box-shadow] md:duration-300 md:ease-[ease]",
         "md:hover:w-64 md:hover:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)] md:focus-within:w-64 md:focus-within:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)]",
-        "md:data-[shut]:!w-[var(--rail-w)] md:data-[shut]:!shadow-none",
+        "md:data-[shut]:!w-[var(--rail-w)] md:data-[shut]:!shadow-none md:data-[shut]:duration-700 md:data-[shut]:ease-[cubic-bezier(0.65,0,0.35,1)]",
       )}
     >
       {/* brand */}
