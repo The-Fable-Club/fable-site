@@ -113,6 +113,7 @@ export function toClubEvent(e: SnapshotEvent, today: string): ClubEvent {
     eventhubUrl: e.eventhub ?? undefined,
     faq: e.faq,
     hub,
+    odSlots: e.od_slots ?? [],
   };
 }
 

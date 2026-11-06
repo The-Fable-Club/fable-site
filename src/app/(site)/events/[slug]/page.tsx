@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Clock, Lock, MapPin, Users } from "lucide-react";
+import { ArrowUpRight, Clock, GraduationCap, Lock, MapPin, Users } from "lucide-react";
 import { HomeCrumb, Hud, Ph } from "@/components/hud";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
@@ -177,6 +177,22 @@ async function EventDetail({
                       Who
                       </dt>
                     <dd className="mt-1">{e.seats}</dd>
+                  </div>
+                )}
+                {e.odSlots && e.odSlots.length > 0 && (
+                  <div className="relative p-5 pl-[3.25rem]">
+                    <dt className="hud text-ink-faint">
+                      <GraduationCap className="absolute left-5 top-[1.375rem] size-5 text-clay-deep" aria-hidden />
+                      On-Duty (OD)
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium">Approved time slots:</dd>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {e.odSlots.map((s) => (
+                        <span key={s} className="border border-ink/40 bg-paper px-2 py-0.5 font-mono text-xs text-ink/80">
+                          {s}
+                        </span>
+                      ))}
+                    </dd>
                   </div>
                 )}
               </dl>

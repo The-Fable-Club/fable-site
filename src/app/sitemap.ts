@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getContent } from "@/lib/content";
 import { SITE_URL } from "@/lib/meta";
 
-// Public pages only: the hub and attendance pages stay out (and are noindex).
+// Public pages only: the hub pages stay out (and are noindex).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { events } = await getContent();
   return [
