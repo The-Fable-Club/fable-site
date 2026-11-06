@@ -8,6 +8,7 @@ import { PeopleStage } from "@/components/home/people-stage";
 import { ParallaxStrip } from "@/components/home/parallax-strip";
 import { SectionIndex } from "@/components/home/section-index";
 import { Timeline } from "@/components/timeline";
+import { SocialIcon } from "@/components/social-icon";
 import { getContent } from "@/lib/content";
 import { heroStrips, openEvents } from "@/lib/events";
 import { initials } from "@/lib/members";
@@ -30,36 +31,6 @@ export default async function Home() {
     <>
       <SectionIndex />
       <Hero club={club} strips={heroStrips(events)} />
-
-      {/* About */}
-      <div id="about">
-        <Banner title="About" art="/art/sprouts.svg" />
-        <section className="bg-paper">
-          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:px-12 md:py-24">
-            <h2 className="max-w-[14ch] font-display text-[clamp(2.25rem,1.6rem+2.9vw,4.25rem)] leading-[1.02]">
-              A structured path to actually building with AI.
-            </h2>
-            <div className="space-y-5 font-serif leading-relaxed text-ink-soft">
-              <p className="text-xl">{club.description}</p>
-              <p className="text-lg">{club.why}</p>
-            </div>
-          </div>
-          {/* the session photo strip goes above this row once the inauguration photos arrive */}
-          <ul className="mx-auto grid max-w-6xl border-y border-ink/20 md:grid-cols-3 md:border-x">
-            {club.highlights.map((h, i) => (
-              <li
-                key={h}
-                className="border-b border-ink/20 px-6 py-8 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"
-              >
-                <Hud className="text-clay-deep">{String(i + 1).padStart(2, "0")}</Hud>
-                <p className="mt-3 max-w-[16ch] font-display text-3xl leading-tight">{h}</p>
-              </li>
-            ))}
-          </ul>
-          <div className="h-16 md:h-24" />
-        </section>
-        <AimsDial aims={aims} />
-      </div>
 
       <ParallaxStrip />
 
@@ -129,6 +100,12 @@ export default async function Home() {
         </section>
       </div>
 
+      {/* About: just the 3D model of the aims for now (the intro text and highlights went; to be enhanced) */}
+      <div id="about">
+        <Banner title="About" art="/art/sprouts.svg" />
+        <AimsDial aims={aims} />
+      </div>
+
       {/* Join: follows the recruitment state in content/club.json */}
       <section id="join" className="relative overflow-hidden bg-clay text-ink">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 py-20 md:grid-cols-[1fr_auto] md:px-12 md:py-28">
@@ -187,7 +164,10 @@ export default async function Home() {
                       rel="noopener noreferrer"
                       className="group flex items-center justify-between py-4 font-display text-2xl transition-colors duration-500 ease-flow hover:text-clay-deep"
                     >
-                      {s.label}
+                      <span className="flex items-center gap-4">
+                        <SocialIcon label={s.label} className="size-6" aria-hidden />
+                        {s.label}
+                      </span>
                       <ArrowRight className="size-5 transition-transform duration-500 ease-flow group-hover:translate-x-1" aria-hidden />
                     </a>
                   </li>
