@@ -113,8 +113,8 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
 const DWELL = 4500;
 /** The last card of a team: the same as the others (a longer stay felt too slow). */
 const DWELL_LAST = DWELL;
-/** After the pointer leaves a card, the timer waits this long, then carries on (no restart). */
-const RESUME_AFTER_MS = 2000;
+/** When a card's bar filled while it was hovered: how long after the pointer leaves to move on. */
+const AFTER_HOVER_MS = 1750;
 /** The wipe sets off this much before the last card's timer bar fills, so it arrives as the bar ends. */
 const WIPE_LEAD_MS = 250;
 
@@ -155,34 +155,43 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const [dir, setDir] = useState(1);
   const [held, setHeld] = useState(false); // pointer or focus is on a card
   const [paused, setPaused] = useState(false); // the pause button
-  const [cool, setCool] = useState(false); // the 2 s after the pointer leaves a card
-  const coolTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const root = useRef<HTMLDivElement>(null);
   // runs only while enough of it is on screen; the cards (and their photos) are only built once
   // the section gets near the screen at all
   const inView = useInView(root, { amount: 0.35 });
   const near = useInView(root, { once: true, margin: "600px 0px" });
-  // how far the lit card's timer has run, 0..1: kept while paused, so it carries on, not restarts
+  // how far the lit card's timer has run, 0..1
   const bar = useMotionValue(0);
 
   const total = cats.length;
   const n = cats[view]?.people.length ?? 0;
-  // Runs with reduced motion too: it swaps content rather than moving things about, and the
-  // pause button (plus hover and focus) stops it, so the rotation is always under the reader's control.
-  const auto = !paused && !held && !cool && inView && total > 0;
+  // The bar always runs (hovering doesn't stop it; only the pause button and being off screen
+  // do). When it fills, the stage moves on, unless a card is hovered: then it waits, and moves
+  // on AFTER_HOVER_MS after the pointer leaves. Moving on only ever happens off the bar, so the
+  // two can't drift apart. Runs with reduced motion too: it swaps content rather than moving
+  // things about, and pause, hover and focus keep it under the reader's control.
+  const auto = !paused && inView && total > 0;
+  const heldRef = useRef(false);
+  const waiting = useRef(false); // the bar filled while a card was hovered
+  const waitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const advance = useRef<() => void>(() => {});
   const hold = () => {
-    clearTimeout(coolTimer.current);
-    setCool(false);
+    heldRef.current = true;
+    clearTimeout(waitTimer.current);
     setHeld(true);
   };
-  // after the pointer leaves: wait 2 s, then carry on from where the bar was
   const release = () => {
+    heldRef.current = false;
     setHeld(false);
-    setCool(true);
-    clearTimeout(coolTimer.current);
-    coolTimer.current = setTimeout(() => setCool(false), RESUME_AFTER_MS);
+    clearTimeout(waitTimer.current);
+    if (waiting.current)
+      waitTimer.current = setTimeout(() => {
+        if (heldRef.current) return;
+        waiting.current = false;
+        advance.current();
+      }, AFTER_HOVER_MS);
   };
-  useEffect(() => () => clearTimeout(coolTimer.current), []);
+  useEffect(() => () => clearTimeout(waitTimer.current), []);
 
   // a team change: the wipe covers the stage, the new team goes in underneath, the wipe moves on
   const switchTo = (next: number, d: number) => {
@@ -190,6 +199,9 @@ export function PeopleStage({ people }: { people: Member[] }) {
     setC(next);
     setWipe((w) => w + 1);
     setHeld(false); // the hovered card is going; don't stay stuck on hold
+    heldRef.current = false;
+    waiting.current = false;
+    clearTimeout(waitTimer.current);
   };
   const goCat = (i: number) => {
     const next = (i + total) % total;
@@ -205,32 +217,38 @@ export function PeopleStage({ people }: { people: Member[] }) {
     return () => clearTimeout(t);
   }, [c, view]);
 
-  // the timer: next card, then the first card of the next category. Each new card starts its
-  // bar at 0; holding stops the bar where it is and the next run continues from there.
+  // the timer: next card, then the first card of the next category
+  const last = p + 1 >= n;
   useEffect(() => {
-    bar.set(0);
-  }, [p, view, bar]);
-  useEffect(() => {
-    if (!auto) return;
-    const last = p + 1 >= n;
-    // the last card hands over a little early, so the wipe arrives as its bar fills
-    const handOver = last ? 1 - WIPE_LEAD_MS / DWELL_LAST : 1;
-    let fired = false;
-    const next = () => {
-      if (fired) return;
-      fired = true;
+    advance.current = () => {
       if (!last) setP(p + 1);
       else if (total > 1) switchTo((view + 1) % total, 1);
       else setP(0);
     };
+  });
+  useEffect(() => {
+    bar.set(0); // each new card starts its bar from empty
+    waiting.current = false;
+  }, [p, view, bar]);
+  useEffect(() => {
+    if (!auto) return;
+    // the last card hands over a little early, so the wipe arrives as its bar fills
+    const handOver = last ? 1 - WIPE_LEAD_MS / DWELL_LAST : 1;
+    let done = false;
+    const due = () => {
+      if (done) return;
+      done = true;
+      if (heldRef.current) waiting.current = true; // moves on after the pointer leaves
+      else advance.current();
+    };
     const ctl = animate(bar, 1, {
       duration: (1 - bar.get()) * ((last ? DWELL_LAST : DWELL) / 1000),
       ease: "linear",
-      onUpdate: (v) => v >= handOver && next(),
-      onComplete: next,
+      onUpdate: (v) => v >= handOver && due(),
+      onComplete: due,
     });
     return () => ctl.stop();
-  }, [auto, p, view, n, total, bar]);
+  }, [auto, p, view, last, bar]);
 
   if (!total) return null;
   const cat = cats[view];
