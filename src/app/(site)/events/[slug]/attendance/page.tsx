@@ -5,32 +5,30 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Hud } from "@/components/hud";
 import { getContent } from "@/lib/content";
-import { bySlug, isOpen } from "@/lib/events";
-
-// UI ONLY. Where a student marks attendance at the event: registration number + the code shown on the
-// organiser's screen. Nothing is sent yet (every control is disabled) and nothing links here.
-// The backend is being built separately; see the CMS repo's docs/ATTENDANCE-FEASIBILITY.md.
+import { bySlug } from "@/lib/events";
+import { AttendanceForm } from "@/components/attendance-form";
 
 export async function generateStaticParams() {
   const { events } = await getContent();
-  const slugs = events.filter(isOpen).map((e) => ({ slug: e.slug }));
-  return slugs.length ? slugs : [{ slug: "_none" }];
+  return events.length ? events.map((e) => ({ slug: e.slug })) : [{ slug: "_none" }];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const { events } = await getContent();
   const e = bySlug(events, slug);
-  return e ? { title: `${e.title}: attendance`, robots: { index: false } } : {};
+  return e ? { title: `${e.title}: Attendance Check-in`, robots: { index: false } } : {};
 }
-
-const input = "mt-1.5 h-14 w-full cursor-not-allowed border border-ink/30 bg-paper px-4 font-mono text-2xl tracking-widest text-ink-faint";
 
 async function AttendanceDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { events } = await getContent();
   const e = bySlug(events, slug);
-  if (!e || !isOpen(e)) notFound();
+  if (!e) notFound();
 
   return (
     <section className="min-h-[80dvh] bg-paper">
@@ -42,29 +40,22 @@ async function AttendanceDetail({ params }: { params: Promise<{ slug: string }> 
           <ArrowLeft className="size-4" aria-hidden /> {e.title}
         </Link>
 
-        <Hud className="mt-10 block text-ink-faint">Attendance</Hud>
-        <h1 className="mt-2 font-display text-5xl leading-[1.02]">Mark your attendance</h1>
+        <Hud className="mt-10 block text-ink-faint">Live Event Check-in</Hud>
+        <h1 className="mt-2 font-display text-4xl leading-[1.05] sm:text-5xl">
+          Mark your attendance
+        </h1>
         <p className="mt-4 font-serif text-lg text-ink-soft">
-          At the event, enter your registration number and the code on the organisers&apos; screen. Each check-in is only open for a short time.
+          At the event, enter your registration number and the 6-digit rolling code shown on the organisers&apos; presenter screen.
         </p>
 
-        <div role="status" className="mt-8 border border-dashed border-clay-deep p-4 text-sm text-clay-deep">
-          Attendance is not open yet. This page will work during the event.
-        </div>
+        {e.venue && (
+          <div className="mt-4 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-ink/70">
+            <span>Venue: {e.venue}</span>
+            {e.dateText && <span>· {e.dateText}</span>}
+          </div>
+        )}
 
-        <form aria-disabled className="mt-8 grid gap-6" action="#">
-          <label className="block">
-            <span className="hud text-ink-faint">Registration number</span>
-            <input disabled placeholder="25ABC1234" className={input} />
-          </label>
-          <label className="block">
-            <span className="hud text-ink-faint">Code on the screen</span>
-            <input disabled inputMode="numeric" placeholder="••••••" className={input} />
-          </label>
-          <button type="button" disabled className="h-14 cursor-not-allowed bg-ink/30 px-10 text-lg font-medium text-paper">
-            Mark me present
-          </button>
-        </form>
+        <AttendanceForm eventSlug={e.slug} />
       </div>
     </section>
   );
