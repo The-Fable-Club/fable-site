@@ -11,7 +11,7 @@ const base: SnapshotEvent = {
   slug: "e", title: "E", kind: "Workshop", phase: 1, status_override: null,
   date: { mode: "exact", start: "2026-11-20", end: null },
   time: { mode: "text", text: "4 pm" }, venue: { mode: "text", text: "Lab" }, seats: { mode: "open" },
-  apply: { mode: "form" }, summary: "s", description: ["d"], highlights: [], art: "pointer", photo: null, hub: [], eventhub: null, faq: [], media: [],
+  apply: { mode: "form" }, summary: "s", description: ["d"], highlights: [], art: "pointer", photo: null, hub: [], eventhub: null, faq: [], media: [], od_slots: [],
 };
 const ev = (o: Partial<SnapshotEvent>) => toClubEvent({ ...base, ...o }, TODAY);
 

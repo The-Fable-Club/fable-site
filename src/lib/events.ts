@@ -50,6 +50,8 @@ export type ClubEvent = {
   /** Answered questions the club chose to show. */
   faq: { question: string; answer: string }[];
   hub: HubItem[];
+  /** Approved VIT On-Duty (OD) time slots. */
+  odSlots?: string[];
 };
 
 export const bySlug = (events: ClubEvent[], slug: string) => events.find((e) => e.slug === slug);
