@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Club } from "@/lib/content";
 import { Hud, Ph } from "@/components/hud";
+import { SocialIcon } from "@/components/social-icon";
 
 const cols = [
   {
@@ -59,7 +60,8 @@ export function Footer({ club }: { club: Club }) {
             </li>
             {club.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} target="_blank" rel="noopener noreferrer" className="transition-colors duration-500 ease-flow hover:text-paper">
+                <a href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition-colors duration-500 ease-flow hover:text-paper">
+                  <SocialIcon label={s.label} className="size-4" aria-hidden />
                   {s.label}
                 </a>
               </li>
