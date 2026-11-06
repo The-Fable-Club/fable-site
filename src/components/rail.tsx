@@ -63,6 +63,14 @@ export function Rail({ name }: { name: string }) {
     const to = Math.max(0, el.getBoundingClientRect().top + from);
     const dist = Math.abs(to - from);
     glide.current?.stop();
+    const duration = Math.min(1.5, 0.7 + dist / 5000);
+    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2); // ease-in-out
+    // with smooth wheel scrolling on (SmoothScroll), let it do the glide so the two don't fight
+    if (window.__lenis) {
+      window.__lenis.scrollTo(to, { duration, easing: ease });
+      history.replaceState(null, "", `#${id}`);
+      return;
+    }
     const root = document.documentElement;
     root.style.scrollBehavior = "auto"; // we drive every frame; the CSS smoothing would fight it
     const stopOnInput = () => glide.current?.stop();
@@ -74,8 +82,8 @@ export function Rail({ name }: { name: string }) {
       window.removeEventListener("touchstart", stopOnInput);
     };
     glide.current = animate(from, to, {
-      duration: Math.min(1.5, 0.7 + dist / 5000),
-      ease: [0.65, 0, 0.35, 1],
+      duration,
+      ease,
       onUpdate: (v) => window.scrollTo(0, v),
       onComplete: done,
       onStop: done,
