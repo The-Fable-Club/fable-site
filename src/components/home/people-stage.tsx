@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Monitor,
   Pause,
+  SkipForward,
   PenLine,
   Play,
   User,
@@ -112,6 +113,8 @@ function TeamWipe({ dir, index, total, label }: { dir: number; index: number; to
 const DWELL = 4500;
 /** The last card of a team: the same as the others (a longer stay felt too slow). */
 const DWELL_LAST = DWELL;
+/** After the pointer leaves a card, the timer waits this long, then carries on (no restart). */
+const RESUME_AFTER_MS = 2000;
 /** The wipe sets off this much before the last card's timer bar fills, so it arrives as the bar ends. */
 const WIPE_LEAD_MS = 250;
 
@@ -152,14 +155,34 @@ export function PeopleStage({ people }: { people: Member[] }) {
   const [dir, setDir] = useState(1);
   const [held, setHeld] = useState(false); // pointer or focus is on a card
   const [paused, setPaused] = useState(false); // the pause button
+  const [cool, setCool] = useState(false); // the 2 s after the pointer leaves a card
+  const coolTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const root = useRef<HTMLDivElement>(null);
-  const inView = useInView(root, { amount: 0.3 });
+  // runs only while enough of it is on screen; the cards (and their photos) are only built once
+  // the section gets near the screen at all
+  const inView = useInView(root, { amount: 0.35 });
+  const near = useInView(root, { once: true, margin: "600px 0px" });
+  // how far the lit card's timer has run, 0..1: kept while paused, so it carries on, not restarts
+  const bar = useMotionValue(0);
 
   const total = cats.length;
   const n = cats[view]?.people.length ?? 0;
   // Runs with reduced motion too: it swaps content rather than moving things about, and the
   // pause button (plus hover and focus) stops it, so the rotation is always under the reader's control.
-  const auto = !paused && !held && inView && total > 0;
+  const auto = !paused && !held && !cool && inView && total > 0;
+  const hold = () => {
+    clearTimeout(coolTimer.current);
+    setCool(false);
+    setHeld(true);
+  };
+  // after the pointer leaves: wait 2 s, then carry on from where the bar was
+  const release = () => {
+    setHeld(false);
+    setCool(true);
+    clearTimeout(coolTimer.current);
+    coolTimer.current = setTimeout(() => setCool(false), RESUME_AFTER_MS);
+  };
+  useEffect(() => () => clearTimeout(coolTimer.current), []);
 
   // a team change: the wipe covers the stage, the new team goes in underneath, the wipe moves on
   const switchTo = (next: number, d: number) => {
@@ -182,16 +205,32 @@ export function PeopleStage({ people }: { people: Member[] }) {
     return () => clearTimeout(t);
   }, [c, view]);
 
-  // the timer: next card, then the first card of the next category
+  // the timer: next card, then the first card of the next category. Each new card starts its
+  // bar at 0; holding stops the bar where it is and the next run continues from there.
+  useEffect(() => {
+    bar.set(0);
+  }, [p, view, bar]);
   useEffect(() => {
     if (!auto) return;
-    const t = setTimeout(() => {
-      if (p + 1 < n) setP(p + 1);
+    const last = p + 1 >= n;
+    // the last card hands over a little early, so the wipe arrives as its bar fills
+    const handOver = last ? 1 - WIPE_LEAD_MS / DWELL_LAST : 1;
+    let fired = false;
+    const next = () => {
+      if (fired) return;
+      fired = true;
+      if (!last) setP(p + 1);
       else if (total > 1) switchTo((view + 1) % total, 1);
       else setP(0);
-    }, p + 1 < n ? DWELL : DWELL_LAST - WIPE_LEAD_MS);
-    return () => clearTimeout(t);
-  }, [auto, p, view, n, total]);
+    };
+    const ctl = animate(bar, 1, {
+      duration: (1 - bar.get()) * ((last ? DWELL_LAST : DWELL) / 1000),
+      ease: "linear",
+      onUpdate: (v) => v >= handOver && next(),
+      onComplete: next,
+    });
+    return () => ctl.stop();
+  }, [auto, p, view, n, total, bar]);
 
   if (!total) return null;
   const cat = cats[view];
@@ -217,7 +256,7 @@ export function PeopleStage({ people }: { people: Member[] }) {
         if (e.key === "ArrowRight") goPerson(1);
         if (e.key === "ArrowLeft") goPerson(-1);
       }}
-      onPointerLeave={() => setHeld(false)}
+      onPointerLeave={() => held && release()}
       className="relative grid overflow-hidden border-y border-ink/20 bg-paper outline-offset-[-4px] md:grid-cols-[5.5rem_1fr]"
     >
       {/* category portraits */}
@@ -326,25 +365,38 @@ export function PeopleStage({ people }: { people: Member[] }) {
               >
                 {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
               </button>
+              <button
+                type="button"
+                onClick={() => goCat(c + 1)}
+                aria-label="Next team"
+                className={cn(
+                  "grid size-9 place-items-center border-2 transition-colors duration-500",
+                  bd.dark ? "border-paper/60 text-paper hover:bg-paper hover:text-ink" : "border-ink/60 text-ink hover:bg-ink hover:text-paper",
+                )}
+              >
+                <SkipForward className="size-4" aria-hidden />
+              </button>
             </div>
           </div>
 
           {/* the people, side by side. No initial={false} here: it would also stop the frame
               drawings and the timer, which mount inside, from animating */}
           <AnimatePresence mode="wait">
-            <TeamRow
-              key={cat.label}
-              people={cat.people}
-              lit={p}
-              inView={inView}
-              auto={auto}
-              onLight={(i) => {
-                setP(i);
-                setHeld(true);
-              }}
-              onRelease={() => setHeld(false)}
-              dark={bd.dark}
-            />
+            {near && (
+              <TeamRow
+                key={cat.label}
+                people={cat.people}
+                lit={p}
+                inView={inView}
+                bar={bar}
+                onLight={(i) => {
+                  if (i !== p) setP(i);
+                  hold();
+                }}
+                onRelease={release}
+                dark={bd.dark}
+              />
+            )}
           </AnimatePresence>
         </div>
       </div>
@@ -562,7 +614,7 @@ function TeamRow({
   people,
   lit,
   inView,
-  auto,
+  bar,
   onLight,
   onRelease,
   dark,
@@ -570,7 +622,7 @@ function TeamRow({
   people: Member[];
   lit: number;
   inView: boolean;
-  auto: boolean;
+  bar: MotionValue<number>;
   onLight: (i: number) => void;
   onRelease: () => void;
   /** the stage backdrop is dark (frame lines outside the cards are drawn pale) */
@@ -689,7 +741,7 @@ function TeamRow({
               member={m}
               index={i}
               active={inView && i === lit}
-              timing={auto && i === lit}
+              bar={i === lit ? bar : undefined}
               prog={prog}
               startEdge={startEdgeFor(i, n, stacked)}
               outsideTone={dark ? "stroke-paper" : "stroke-ink"}
@@ -720,7 +772,7 @@ function PersonCard({
   member: m,
   index,
   active,
-  timing,
+  bar,
   prog,
   startEdge,
   svgRef,
@@ -729,7 +781,8 @@ function PersonCard({
   member: Member;
   index: number;
   active: boolean;
-  timing: boolean;
+  /** the lit card's timer, 0..1 */
+  bar?: MotionValue<number>;
   prog: MotionValue<number>;
   startEdge: number;
   svgRef: (el: SVGSVGElement | null) => void;
@@ -827,15 +880,7 @@ function PersonCard({
 
       {/* timer */}
       <span aria-hidden className="absolute inset-x-0 -bottom-0.5 h-1 overflow-hidden">
-        {active && (
-          <motion.span
-            key={String(timing)}
-            className="block h-full origin-left bg-clay-deep"
-            initial={{ scaleX: timing ? 0 : 1 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: timing ? DWELL / 1000 : 0, ease: "linear" }}
-          />
-        )}
+        {active && bar && <motion.span className="block h-full origin-left bg-clay-deep" style={{ scaleX: bar }} />}
       </span>
     </article>
   );
