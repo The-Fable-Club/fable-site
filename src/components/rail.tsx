@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,9 +27,9 @@ type Item = {
 
 const items: Item[] = [
   { id: "top", label: "Home", icon: House },
-  { id: "about", label: "About", icon: Sprout },
   { id: "events", label: "Events", icon: CalendarDays, page: "/events" },
   { id: "people", label: "People", icon: Users, page: "/members" },
+  { id: "about", label: "About", icon: Sprout },
   { id: "join", label: "Join", icon: UserPlus, page: "/join" },
   { id: "contact", label: "Contact", icon: Mail },
 ];
@@ -37,7 +38,7 @@ const ids = items.map((i) => i.id);
 // Timings measured on the Endfield reference: everything moves in parallel
 // at 0.3s `ease`; labels fade in over 0.2s while sliding in ~9px from the left.
 const label =
-  "opacity-0 -translate-x-2 [transition:opacity_.2s_ease,transform_.3s_ease] group-hover/rail:translate-x-0 group-hover/rail:opacity-100 group-focus-within/rail:translate-x-0 group-focus-within/rail:opacity-100";
+  "opacity-0 -translate-x-2 [transition:opacity_.2s_ease,transform_.3s_ease] group-hover/rail:translate-x-0 group-hover/rail:opacity-100 group-focus-within/rail:translate-x-0 group-focus-within/rail:opacity-100 group-data-[shut]/rail:!-translate-x-2 group-data-[shut]/rail:!opacity-0";
 
 // Endfield-style rail: icons only until hovered or focused, then it slides
 // open over the page with labels. On the home page it follows the section
@@ -45,6 +46,13 @@ const label =
 export function Rail({ name }: { name: string }) {
   const pathname = usePathname();
   const onHome = pathname === "/";
+  // After a pick the rail folds away at once (otherwise the pointer resting on it, or the focus
+  // left on the link, keeps it open over the page); it opens again on the next hover.
+  const [shut, setShut] = useState(false);
+  const pick = (e: React.MouseEvent<HTMLElement>) => {
+    setShut(true);
+    e.currentTarget.blur();
+  };
   const section = useActiveSection(ids, pathname);
 
   const active = (i: Item) =>
@@ -56,6 +64,8 @@ export function Rail({ name }: { name: string }) {
   return (
     <nav
       aria-label="Primary"
+      data-shut={shut || undefined}
+      onPointerLeave={() => setShut(false)}
       className={cn(
         "group/rail fixed z-50 bg-paper text-ink",
         // mobile: bottom bar
@@ -64,6 +74,7 @@ export function Rail({ name }: { name: string }) {
         "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-[var(--rail-w)] md:flex-col md:overflow-hidden md:border-r md:border-t-0",
         "md:transition-[width,box-shadow] md:duration-300 md:ease-[ease]",
         "md:hover:w-64 md:hover:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)] md:focus-within:w-64 md:focus-within:shadow-[12px_0_40px_-12px_rgb(20_20_19/0.25)]",
+        "md:data-[shut]:!w-[var(--rail-w)] md:data-[shut]:!shadow-none",
       )}
     >
       {/* brand */}
@@ -86,6 +97,7 @@ export function Rail({ name }: { name: string }) {
             <li key={i.id} className="flex-1 md:flex-none">
               <Link
                 href={href(i)}
+                onClick={pick}
                 aria-current={on ? "page" : undefined}
                 className={cn(
                   "relative flex h-full w-full flex-col items-center justify-center gap-1 transition-colors duration-300 ease-[ease] md:h-12 md:flex-row md:justify-start md:gap-0",
