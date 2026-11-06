@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "@/lib/meta";
 import { ArrowDown, ArrowUpRight, Mail } from "lucide-react";
 import { Hud, PageHead } from "@/components/hud";
-import { JoinForm, TeamDetail } from "@/components/join-form";
+import { JoinForm } from "@/components/join-form";
 import { getContent, readTeams } from "@/lib/content";
 import { dayLabel } from "@/lib/recruitment";
 
@@ -97,13 +97,6 @@ export default async function JoinPage() {
                     Apply now
                     <ArrowDown className="size-5" aria-hidden />
                   </a>
-                  <p className="max-w-[34ch] text-sm text-night-soft">
-                    Read{" "}
-                    <a href="#teams" className="underline underline-offset-4 transition-colors duration-500 ease-flow hover:text-paper">
-                      Find where you fit
-                    </a>{" "}
-                    first, so you know which team to pick.
-                  </p>
                 </div>
               )}
               <div className="mt-8 flex flex-wrap gap-3">
@@ -140,34 +133,6 @@ export default async function JoinPage() {
               {/* corner ticks */}
               <span aria-hidden className="absolute right-4 top-4 size-3 border-r border-t border-paper/40" />
               <span aria-hidden className="absolute bottom-4 right-4 size-3 border-b border-r border-paper/40" />
-            </div>
-
-            {/* the teams first, so people find where they fit before anything else (the form shows the same text when a team is picked) */}
-            <div id="teams" className="mb-14 scroll-mt-24">
-              <Hud className="text-ink-faint">The teams</Hud>
-              <p className="mt-2 font-display text-3xl leading-tight">Find where you fit.</p>
-              <div className="mt-6 divide-y divide-ink/15 border-y border-ink/15">
-                {teams
-                  .filter((t) => t.lookingFor.length > 0)
-                  .map((t) => (
-                    <details key={t.name} className="group py-5">
-                      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                        <span>
-                          <span className="block font-display text-2xl leading-tight">{t.name}</span>
-                          <span className="mt-1 block text-sm text-ink-soft">{t.short}</span>
-                        </span>
-                        <span
-                          aria-hidden
-                          className="mt-2 block size-2.5 shrink-0 rotate-45 border-b-2 border-r-2 border-ink transition-transform duration-500 ease-flow group-open:translate-y-1 group-open:-rotate-[135deg]"
-                        />
-                      </summary>
-                      <div className="mt-3">
-                        <TeamDetail team={t} plain />
-                      </div>
-                    </details>
-                  ))}
-              </div>
-              <p className="mt-4 text-sm text-ink-soft">Not sure yet? That&rsquo;s an option on the form too, and we&rsquo;ll help you choose.</p>
             </div>
 
             {r.state === "open" && (
