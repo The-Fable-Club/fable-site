@@ -19,7 +19,7 @@ The public website of The Fable Club (a student club at VIT Chennai), www.thefab
 ## Map
 | Path | What |
 |---|---|
-| `src/app/(site)/*` | Pages: home, events (+ `[slug]`, hub, attendance), members, join |
+| `src/app/(site)/*` | Pages: home, events (+ `[slug]`, hub), members, join |
 | `src/app/api/{applications,registrations,questions}` | The only runtime database access: insert-only form routes through `src/lib/submit-route.ts` |
 | `src/lib/contract.ts`, `event-logic.ts` | **Byte-identical copies** of the CMS files |
 | `src/lib/content.ts` | Release file → page data (`getContent()`, `'use cache'`) |
