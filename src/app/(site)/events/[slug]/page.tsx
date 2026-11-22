@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "@/lib/meta";
 import { Suspense } from "react";
 import Image from "next/image";
+import { FramedPhoto } from "@/components/framed-photo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, Clock, GraduationCap, Lock, MapPin, Users } from "lucide-react";
@@ -95,8 +96,11 @@ async function EventDetail({
         if (media.placeholder) return null;
         return (
           <div className="border-b border-ink/15 bg-paper">
-            <div className="mx-auto max-w-6xl px-6 py-8 md:px-12">
-              <EventMediaFigure media={media} title={e.title} />
+            {/* room around it for the frame's doodles to reach out (#46) */}
+            <div className="mx-auto max-w-6xl px-10 py-16 md:px-20 md:py-20">
+              <FramedPhoto slug={e.slug} doodles="events" aspect={16 / 9} width={720} drawInView className="relative aspect-video w-full">
+                <EventMediaFigure media={media} title={e.title} />
+              </FramedPhoto>
             </div>
           </div>
         );

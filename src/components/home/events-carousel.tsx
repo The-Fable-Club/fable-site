@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FramedPhoto } from "@/components/framed-photo";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { motion, useInView, type Variants } from "motion/react";
@@ -437,13 +438,14 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       <div className={cn("py-1 font-display leading-none tabular-nums", small ? "py-3 text-3xl" : "text-5xl")}>{day}</div>
                     </div>
                     <div
-                      className="relative grid size-[17rem] place-items-center overflow-hidden bg-paper"
+                      className={cn("relative grid size-[17rem] place-items-center", !e.photo && "overflow-hidden bg-paper")}
                       style={{
                         transform: "translateX(calc(var(--s, 0) * -48px)) rotate(calc(-3deg + var(--s, 0) * 5deg))",
                       }}
                     >
                       {e.photo ? (
-                        <Image src={e.photo} alt="" fill sizes="272px" className="object-cover" />
+                        // the photo in a hand-drawn frame with event doodles, drawn as it comes into view (#46)
+                        <FramedPhoto slug={e.slug} src={e.photo} doodles="events" stroke="stroke-paper" drawInView sizes="272px" className="relative size-full" />
                       ) : (
                         <motion.div
                           animate={on && onScreen && !reduce ? { y: [0, -9, 0], rotate: [0, 1.5, 0] } : { y: 0, rotate: 0 }}

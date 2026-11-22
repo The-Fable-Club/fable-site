@@ -132,7 +132,33 @@ export function alongEdge(segs: Seg[], o: Pt, t: Pt, n: Pt, k: number): string {
     .join(" ");
 }
 
-export const PF = 264; // design size of the frame's box; the photo sits at 20..244 inside it
+// Events get their own set: things from a club event rather than from a person.
+const dotS = (x: number, y: number, r: number): Seg[] => [["M", x, y], ["A", r, r, 0, 0, 1, x, y - 2 * r], ["A", r, r, 0, 0, 1, x, y]];
+const EVENT_DOODLES: Record<string, Doodle> = {
+  // a microphone on a stand
+  mic: { w: 40, segs: [["L", 20, 0], ["L", 20, -16], ["M", 12, -26], ["A", 8, 8, 0, 0, 0, 28, -26], ["M", 15, -26], ["L", 15, -42], ["A", 5, 5, 0, 0, 1, 25, -42], ["L", 25, -26], ["A", 5, 5, 0, 0, 1, 15, -26], ["M", 40, 0]] },
+  // a trophy with handles
+  trophy: { w: 40, segs: [["L", 10, 0], ["L", 10, -5], ["L", 30, -5], ["L", 30, 0], ["M", 20, -5], ["L", 20, -14], ["M", 8, -38], ["L", 32, -38], ["C", 32, -22, 24, -16, 20, -14], ["C", 16, -16, 8, -22, 8, -38], ["M", 8, -34], ["C", 0, -34, 0, -24, 9, -24], ["M", 32, -34], ["C", 40, -34, 40, -24, 31, -24], ["M", 30, 0], ["L", 40, 0]] },
+  // a burst of confetti
+  confetti: { w: 40, segs: [["L", 20, 0], ["L", 20, -12], ["L", 10, -30], ["M", 20, -12], ["L", 20, -36], ["M", 20, -12], ["L", 30, -30], ["M", 6, -38], ["L", 9, -42], ["M", 33, -40], ["L", 30, -45], ["M", 19, -45], ["L", 22, -49], ["M", 2, -26], ["L", 5, -24], ["M", 38, -24], ["L", 35, -22], ["M", 20, 0], ["L", 40, 0]] },
+  // a calendar page with its rings
+  calendar: { w: 44, segs: [["L", 6, 0], ["L", 6, -34], ["L", 38, -34], ["L", 38, 0], ["M", 6, -26], ["L", 38, -26], ["M", 14, -38], ["L", 14, -30], ["M", 30, -38], ["L", 30, -30], ["M", 13, -18], ["L", 17, -18], ["M", 21, -18], ["L", 25, -18], ["M", 29, -18], ["L", 33, -18], ["M", 13, -10], ["L", 17, -10], ["M", 21, -10], ["L", 25, -10], ["M", 38, 0], ["L", 44, 0]] },
+  // a ticket, notched, with its tear line
+  ticket: { w: 46, segs: [["L", 4, 0], ["L", 4, -10], ["A", 4, 4, 0, 0, 0, 4, -18], ["L", 4, -28], ["L", 42, -28], ["L", 42, -18], ["A", 4, 4, 0, 0, 0, 42, -10], ["L", 42, 0], ["M", 30, -26], ["L", 30, -22], ["M", 30, -17], ["L", 30, -13], ["M", 30, -8], ["L", 30, -4], ["M", 42, 0], ["L", 46, 0]] },
+  // a balloon on a wavy string
+  balloon: { w: 36, segs: [["L", 18, 0], ["C", 14, -6, 22, -12, 18, -18], ["L", 15, -21], ["L", 21, -21], ["L", 18, -18], ["M", 18, -21], ["A", 10, 12, 0, 0, 1, 18, -45], ["A", 10, 12, 0, 0, 1, 18, -21], ["M", 13, -36], ["C", 13, -40, 15, -42, 17, -42], ["M", 18, 0], ["L", 36, 0]] },
+  // a light bulb, for workshops
+  bulb: { w: 40, segs: [["L", 14, 0], ["L", 14, -8], ["L", 26, -8], ["L", 26, 0], ["M", 14, -8], ["C", 6, -16, 6, -38, 20, -38], ["C", 34, -38, 34, -16, 26, -8], ["M", 16, -14], ["L", 24, -14], ["M", 20, -42], ["L", 20, -48], ["M", 8, -36], ["L", 4, -40], ["M", 32, -36], ["L", 36, -40], ["M", 26, 0], ["L", 40, 0]] },
+  // a flag on a pole
+  flag: { w: 36, segs: [["L", 8, 0], ["L", 8, -42], ["L", 30, -36], ["L", 8, -28], ["M", 8, 0], ["L", 36, 0]] },
+  // a rocket taking off
+  rocket: { w: 40, segs: [["L", 12, 0], ["L", 14, -8], ["L", 14, -30], ["Q", 14, -42, 20, -48], ["Q", 26, -42, 26, -30], ["L", 26, -8], ["L", 28, 0], ["M", 14, -12], ["L", 8, -4], ["M", 26, -12], ["L", 32, -4], ...dotS(20, -26, 3), ["M", 17, 0], ["L", 20, 7], ["L", 23, 0], ["M", 28, 0], ["L", 40, 0]] },
+  // a speech bubble, for talks
+  talk: { w: 44, segs: [["L", 10, 0], ["L", 14, -8], ["L", 40, -8], ["L", 40, -34], ["L", 6, -34], ["L", 6, -8], ["L", 10, -8], ["M", 13, -21], ["L", 33, -21], ["M", 13, -15], ["L", 26, -15], ["M", 14, -8], ["L", 10, 0], ["M", 10, 0], ["L", 44, 0]] },
+};
+
+export const PF = 264; // design size of a square frame's box; the photo sits at 20..244 inside it
+const PAD = 20; // the photo sits PAD design units inside the frame's box on every side
 
 type Placed = { edge: number; pos: number; segs: Seg[]; w: number };
 
@@ -140,16 +166,37 @@ type Placed = { edge: number; pos: number; segs: Seg[]; w: number };
  * The loop starts (and ends) on `startEdge`, at a spot clear of doodles: that is where a line
  * from the previous person's frame arrives, or leaves for the next one. `start` is that
  * point, in the frame's design units. */
-export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: number; start: Pt } {
+export type FrameOpts = {
+  /** the frame box's width in design units (doodles are a fixed size in these units, so a
+   * bigger box makes them smaller next to the photo); default PF */
+  width?: number;
+  /** width / height of the photo (square by default) */
+  aspect?: number;
+  /** which doodles: the people's (with the hand-picked ones) or the events' */
+  set?: "people" | "events";
+};
+
+/** The frame box's size in design units for these options. */
+export function frameBox(o: FrameOpts = {}) {
+  const W = o.width ?? PF;
+  const inner = W - 2 * PAD;
+  return { W, H: inner / (o.aspect ?? 1) + 2 * PAD };
+}
+
+export function photoFrameFor(slug: string, startEdge = 0, opts: FrameOpts = {}): { d: string; tilt: number; start: Pt } {
   const rnd = seeded(slug);
-  const tilt = (rnd() < 0.5 ? -1 : 1) * (2.5 + rnd() * 3);
+  const { W, H } = frameBox(opts);
+  const wide = W / H > 1.3;
+  // wide pictures lean less, or their far corners swing a long way
+  const tilt = (rnd() < 0.5 ? -1 : 1) * (wide ? 0.8 + rnd() * 1.2 : 2.5 + rnd() * 3);
   const k = 1.35;
   const m = 12; // the frame line sits 8 design units outside the photo
   const j = () => (rnd() - 0.5) * 6; // hand-drawn wobble at the corners
   // corners, then the whole frame turned by the tilt (the photo is turned by CSS to match)
   const r = (tilt * Math.PI) / 180;
-  const turn = ([x, y]: Pt): Pt => [PF / 2 + (x - PF / 2) * Math.cos(r) - (y - PF / 2) * Math.sin(r), PF / 2 + (x - PF / 2) * Math.sin(r) + (y - PF / 2) * Math.cos(r)];
-  const c: Pt[] = ([[m + j(), m + j()], [PF - m + j(), m + j()], [PF - m + j(), PF - m + j()], [m + j(), PF - m + j()]] as Pt[]).map(turn);
+  const turn = ([x, y]: Pt): Pt => [W / 2 + (x - W / 2) * Math.cos(r) - (y - H / 2) * Math.sin(r), H / 2 + (x - W / 2) * Math.sin(r) + (y - H / 2) * Math.cos(r)];
+  const c: Pt[] = ([[m + j(), m + j()], [W - m + j(), m + j()], [W - m + j(), H - m + j()], [m + j(), H - m + j()]] as Pt[]).map(turn);
+  const events = opts.set === "events";
   const len = (e: number) => Math.hypot(c[(e + 1) % 4][0] - c[e][0], c[(e + 1) % 4][1] - c[e][1]);
 
   // choose: the hand-picked ones first, then seeded picks until 3-4 doodles are placed
@@ -173,7 +220,7 @@ export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: n
       free.delete(edge);
       return true;
     }
-    const dd: Doodle = DOODLES[name];
+    const dd: Doodle = events ? EVENT_DOODLES[name] : DOODLES[name as DoodleName];
     const options = [...free].filter((e) => (onEdge === undefined || e === onEdge) && (!dd.edges || dd.edges.includes(e)));
     if (!options.length) return false;
     const edge = options[Math.floor(rnd() * options.length)];
@@ -182,13 +229,13 @@ export function photoFrameFor(slug: string, startEdge = 0): { d: string; tilt: n
     free.delete(edge);
     return true;
   };
-  for (const pick of PICKS[slug] ?? []) {
+  for (const pick of events ? [] : (PICKS[slug] ?? [])) {
     const [name, at] = pick.split("@");
     place(name as Pick, at === undefined ? undefined : Number(at));
   }
   // wings are Harsha's (PICKS): they stay out of everyone else's random mix
-  const names: Pick[] = [...(Object.keys(DOODLES) as DoodleName[]), "mascot"];
-  const used = new Set<string>((PICKS[slug] ?? []).map((x) => x.split("@")[0]));
+  const names = (events ? Object.keys(EVENT_DOODLES) : [...(Object.keys(DOODLES) as DoodleName[]), "mascot"]) as Pick[];
+  const used = new Set<string>((events ? [] : (PICKS[slug] ?? [])).map((x) => x.split("@")[0]));
   const want = rnd() < 0.5 ? 3 : 4;
   for (let tries = 0; placed.length < want && free.size && tries < 40; tries++) {
     const name = names[Math.floor(rnd() * names.length)];
@@ -245,10 +292,16 @@ export function FramedPhoto({
   progress,
   svgRef,
   outsideTone,
+  aspect,
+  width,
+  doodles = "people",
+  stroke: strokeClass,
+  children,
   className,
 }: {
   slug: string;
-  src: string;
+  /** the picture; or pass `children` to frame something else (a video, a figure) */
+  src?: string;
   active?: boolean;
   drawInView?: boolean;
   blend?: boolean;
@@ -262,14 +315,31 @@ export function FramedPhoto({
   /** with `blend`: the stroke class for the parts of the line outside the card, where the
    * difference blend has nothing of the card under it (pale on dark backdrops, ink on light) */
   outsideTone?: string;
+  /** width / height of the photo; give the wrapper the same aspect ratio (default square) */
+  aspect?: number;
+  /** frame box width in design units (see FrameOpts) */
+  width?: number;
+  doodles?: "people" | "events";
+  /** the line's colour class when not blending (default ink; pale on dark cards) */
+  stroke?: string;
+  children?: React.ReactNode;
   className?: string;
 }) {
-  const { d, tilt } = useMemo(() => photoFrameFor(slug, startEdge), [slug, startEdge]);
+  const opts = useMemo<FrameOpts>(() => ({ aspect, width, set: doodles }), [aspect, width, doodles]);
+  const { d, tilt } = useMemo(() => photoFrameFor(slug, startEdge, opts), [slug, startEdge, opts]);
+  // where the frame's svg sits around the photo: the photo is the box less PAD on each side
+  const { W, H } = frameBox(opts);
+  const box = {
+    left: `${(-PAD / (W - 2 * PAD)) * 100}%`,
+    top: `${(-PAD / (H - 2 * PAD)) * 100}%`,
+    width: `${(W / (W - 2 * PAD)) * 100}%`,
+    height: `${(H / (H - 2 * PAD)) * 100}%`,
+  };
   const started = useStarted(active);
   const none = useMotionValue(0);
   const driven = useTransform(progress ?? none, (v) => Math.min(1, Math.max(0, v)));
   const line = { duration: 2.8, delay: 0.25, ease: [0.45, 0, 0.25, 1] as const };
-  const tone = blend ? "stroke-paper" : "stroke-ink";
+  const tone = blend ? "stroke-paper" : (strokeClass ?? "stroke-ink");
 
   // The blend only sees the card (the card is its own stacking context), so beyond the card's
   // edge the blended line comes out pale whatever is behind it, and vanishes on a light
@@ -294,14 +364,14 @@ export function FramedPhoto({
       const r = svg.getBoundingClientRect();
       const a = art.getBoundingClientRect();
       if (!r.width) return;
-      const k = PF / r.width;
+      const k = W / r.width;
       setCard({ x: (a.left - r.left) * k, y: (a.top - r.top) * k, w: a.width * k, h: a.height * k });
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(art);
     return () => ro.disconnect();
-  }, [split, svgEl]);
+  }, [split, svgEl, W]);
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const inId = `fin-${uid}`;
   const outId = `fout-${uid}`;
@@ -312,11 +382,10 @@ export function FramedPhoto({
         style={{ rotate: `${tilt.toFixed(2)}deg` }}
       >
         <div className="relative size-full overflow-hidden">
-          <Image src={src} alt="" fill sizes={sizes} className="object-cover" />
+          {children ?? (src && <Image src={src} alt="" fill sizes={sizes} className="object-cover" />)}
         </div>
       </div>
-      {/* the frame box is PF wide with the photo at 20..PF-20: 118% of the photo, offset 9% */}
-      <svg ref={setRef} aria-hidden viewBox={`0 0 ${PF} ${PF}`} className={cn("absolute -inset-[9%] size-[118%] overflow-visible", blend && "mix-blend-difference")}>
+      <svg ref={setRef} aria-hidden viewBox={`0 0 ${W} ${H}`} style={box} className={cn("absolute overflow-visible", blend && "mix-blend-difference")}>
         {split && card && (
           <defs>
             <clipPath id={inId}>
@@ -347,7 +416,7 @@ export function FramedPhoto({
         )}
       </svg>
       {split && card && (
-        <svg aria-hidden viewBox={`0 0 ${PF} ${PF}`} className="absolute -inset-[9%] size-[118%] overflow-visible">
+        <svg aria-hidden viewBox={`0 0 ${W} ${H}`} style={box} className="absolute overflow-visible">
           <defs>
             <clipPath id={outId}>
               {/* everything except the card: a huge box with the card cut out of it */}
