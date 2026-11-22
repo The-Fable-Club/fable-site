@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { FramedPhoto } from "@/components/framed-photo";
+import { photoFrameFor } from "@/components/framed-photo";
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, type Variants } from "motion/react";
 import { useReducedMotion } from "@/lib/motion";
 import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
@@ -43,23 +43,47 @@ const rise: Variants = {
 const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
 /** Outline that draws itself around its parent when `on`. */
-function DrawFrame({ on, className }: { on: boolean; className?: string }) {
+/** The card's border: one line that draws itself round the card when it is centred and, on the
+ * way, sketches a few event doodles (mic, trophy, ticket, ...) chosen from the event's slug
+ * (#46). It sits PAD px outside the card, like the plain border before it. */
+function DrawFrame({ on, seed, className }: { on: boolean; seed: string; className?: string }) {
+  const box = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = box.current?.parentElement;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: el.offsetWidth, h: el.offsetHeight }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // the generator keeps its line 12 units inside its box; the line should sit 10px outside the card
+  const OUT = 22;
+  const d = useMemo(() => {
+    if (!size) return null;
+    const W = size.w + 2 * OUT;
+    const H = size.h + 2 * OUT;
+    return photoFrameFor(seed, 0, { width: W, aspect: (W - 40) / (H - 40), set: "events", flat: true, k: 1 }).d;
+  }, [size, seed]);
   return (
-    <svg aria-hidden className={cn("pointer-events-none absolute -inset-2.5 size-[calc(100%+1.25rem)] overflow-visible", className)}>
-      <motion.rect
-        x="0"
-        y="0"
-        width="100%"
-        height="100%"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        pathLength={1}
-        strokeDasharray={1}
-        initial={false}
-        animate={{ strokeDashoffset: on ? 0 : 1, opacity: on ? 1 : 0 }}
-        transition={{ duration: on ? 1.3 : 0.5, ease: FLOW }}
-      />
+    <svg
+      ref={box}
+      aria-hidden
+      className={cn("pointer-events-none absolute overflow-visible", className)}
+      style={{ left: -OUT, top: -OUT, width: `calc(100% + ${2 * OUT}px)`, height: `calc(100% + ${2 * OUT}px)` }}
+    >
+      {d && (
+        <motion.path
+          d={d}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={false}
+          animate={{ pathLength: on ? 1 : 0, opacity: on ? 1 : 0 }}
+          transition={{ duration: on ? 2.2 : 0.5, ease: FLOW }}
+        />
+      )}
     </svg>
   );
 }
@@ -304,7 +328,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
         role="region"
         aria-roledescription="carousel"
         aria-label="Highlighted events"
-        className="hide-scrollbar flex cursor-grab touch-pan-x items-center overflow-x-auto overscroll-x-contain px-[max(1rem,calc(50%-min(40vw,27rem)))] py-10 outline-offset-[-4px] active:cursor-grabbing"
+        className="hide-scrollbar flex cursor-grab touch-pan-x items-center overflow-x-auto overscroll-x-contain px-[max(1rem,calc(50%-min(40vw,27rem)))] py-20 outline-offset-[-4px] active:cursor-grabbing"
       >
         {events.map((e, i) => {
           const t = tones[i % tones.length];
@@ -332,7 +356,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                   !on && "cursor-pointer",
                 )}
               >
-                <DrawFrame on={on} className="text-clay-deep" />
+                <DrawFrame on={on} seed={e.slug} className="text-clay-deep" />
                 <div className={cn("relative grid overflow-hidden md:min-h-[26rem] md:grid-cols-[1.15fr_0.85fr]", t.bg)}>
                   {tag && (
                     <span className="hud absolute left-0 top-0 z-30 flex items-center gap-1.5 bg-ink px-2.5 py-1 text-paper">
@@ -438,14 +462,18 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
                       <div className={cn("py-1 font-display leading-none tabular-nums", small ? "py-3 text-3xl" : "text-5xl")}>{day}</div>
                     </div>
                     <div
-                      className={cn("relative grid size-[17rem] place-items-center", !e.photo && "overflow-hidden bg-paper")}
-                      style={{
-                        transform: "translateX(calc(var(--s, 0) * -48px)) rotate(calc(-3deg + var(--s, 0) * 5deg))",
-                      }}
+                      className="relative grid size-[17rem] place-items-center overflow-hidden bg-paper"
+                      style={
+                        // a photo stands straight in a plain border; the illustration keeps its tilt
+                        e.photo
+                          ? { transform: "translateX(calc(var(--s, 0) * -48px))" }
+                          : { transform: "translateX(calc(var(--s, 0) * -48px)) rotate(calc(-3deg + var(--s, 0) * 5deg))" }
+                      }
                     >
                       {e.photo ? (
-                        // the photo in a hand-drawn frame with event doodles, drawn as it comes into view (#46)
-                        <FramedPhoto slug={e.slug} src={e.photo} doodles="events" stroke="stroke-paper" drawInView sizes="272px" className="relative size-full" />
+                        <span className="absolute inset-0 border-[5px] border-paper outline-2 outline-ink">
+                          <Image src={e.photo} alt="" fill sizes="272px" className="object-cover" />
+                        </span>
                       ) : (
                         <motion.div
                           animate={on && onScreen && !reduce ? { y: [0, -9, 0], rotate: [0, 1.5, 0] } : { y: 0, rotate: 0 }}
@@ -473,7 +501,7 @@ export function EventsCarousel({ events }: { events: ClubEvent[] }) {
           aria-label="All events"
           className="relative w-[min(70vw,24rem)] shrink-0 origin-center [transform:scale(calc(1_-_var(--d,0)*0.06))] [opacity:calc(1_-_var(--d,0)*0.38)]"
         >
-          <DrawFrame on={active === events.length} className="text-ink" />
+          <DrawFrame on={active === events.length} seed="all-events" className="text-ink" />
           <Link
             href="/events"
             className="group relative flex min-h-[26rem] flex-col justify-between bg-paper p-8 text-ink"
