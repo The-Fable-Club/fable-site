@@ -174,6 +174,10 @@ export type FrameOpts = {
   aspect?: number;
   /** which doodles: the people's (with the hand-picked ones) or the events' */
   set?: "people" | "events";
+  /** straight: no tilt and no corner wobble (a card border rather than a snapshot) */
+  flat?: boolean;
+  /** doodle scale (default 1.35) */
+  k?: number;
 };
 
 /** The frame box's size in design units for these options. */
@@ -188,10 +192,11 @@ export function photoFrameFor(slug: string, startEdge = 0, opts: FrameOpts = {})
   const { W, H } = frameBox(opts);
   const wide = W / H > 1.3;
   // wide pictures lean less, or their far corners swing a long way
-  const tilt = (rnd() < 0.5 ? -1 : 1) * (wide ? 0.8 + rnd() * 1.2 : 2.5 + rnd() * 3);
-  const k = 1.35;
+  const lean = (rnd() < 0.5 ? -1 : 1) * (wide ? 0.8 + rnd() * 1.2 : 2.5 + rnd() * 3);
+  const tilt = opts.flat ? 0 : lean;
+  const k = opts.k ?? 1.35;
   const m = 12; // the frame line sits 8 design units outside the photo
-  const j = () => (rnd() - 0.5) * 6; // hand-drawn wobble at the corners
+  const j = () => (opts.flat ? (rnd(), 0) : (rnd() - 0.5) * 6); // hand-drawn wobble at the corners
   // corners, then the whole frame turned by the tilt (the photo is turned by CSS to match)
   const r = (tilt * Math.PI) / 180;
   const turn = ([x, y]: Pt): Pt => [W / 2 + (x - W / 2) * Math.cos(r) - (y - H / 2) * Math.sin(r), H / 2 + (x - W / 2) * Math.sin(r) + (y - H / 2) * Math.cos(r)];
