@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Hud, Ph } from "@/components/hud";
+import { Hud } from "@/components/hud";
 import { HubFeed } from "@/components/hub-feed";
 import { StatusDot } from "@/components/timeline";
 import { getContent } from "@/lib/content";
@@ -59,14 +59,11 @@ async function HubDetail({
             Everything the board shares with participants of this event: updates, links, files
             and schedules. Check back before each session.
           </p>
-          <Ph className="mt-6 border-clay text-clay">
-            Placeholder: no sign-in yet, so this page is open to anyone with the link
-          </Ph>
         </div>
       </header>
       <section className="bg-paper">
         <div className="mx-auto max-w-4xl px-6 py-14 md:px-12 md:py-20">
-          <HubFeed initial={e.hub} />
+          <HubFeed items={e.hub} />
         </div>
       </section>
     </>
